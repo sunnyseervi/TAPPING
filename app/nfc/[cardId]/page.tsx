@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getStoredNFCCard, getStoredProfile, getStoredVCard } from '@/lib/storage';
+import { getStoredNFCCard, getStoredProfile, getStoredVCard, recordNFCTap } from '@/lib/storage';
 import { downloadVCardFile } from '@/lib/vcard';
 import { CreditCard } from 'lucide-react';
 
@@ -14,6 +14,7 @@ export default function NFCTapPage() {
   const [status, setStatus] = useState<string>('Reading NFC Hardware Chip');
 
   useEffect(() => {
+    recordNFCTap();
     const profile = getStoredProfile();
     const vcard = getStoredVCard();
     const nfc = getStoredNFCCard();

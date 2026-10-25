@@ -138,7 +138,7 @@ export default function LandingPage() {
                   Check Your
                 </p>
                 <p className="text-2xl font-black text-charcoal/35 leading-none mt-0.5">
-                  Team Space
+                  Bio Space
                 </p>
               </div>
 
@@ -149,29 +149,29 @@ export default function LandingPage() {
 
             {/* Sub-header row */}
             <div className="flex items-center justify-between pt-1">
-              <span className="text-xs font-bold text-charcoal/70">Friday</span>
+              <span className="text-xs font-bold text-charcoal/70">Sunday</span>
               <div className="flex items-center gap-1">
-                <span className="text-xs font-black text-charcoal">2 Tasks Today</span>
+                <span className="text-xs font-black text-charcoal">5 Links Active</span>
                 <ArrowUpRight className="w-3.5 h-3.5 text-charcoal stroke-[2.5]" />
               </div>
             </div>
 
-            {/* Action pill + Big 8/10 score */}
+            {/* Action pill + Big score */}
             <div className="flex items-center justify-between gap-2 pt-1">
               <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-black/10 shadow-xs">
                 <div className="w-7 h-7 rounded-full bg-[#141518] text-white flex items-center justify-center">
                   <Sparkles className="w-3.5 h-3.5 stroke-[2.2]" />
                 </div>
                 <div>
-                  <span className="block text-[11px] font-black leading-tight">Ask Team</span>
-                  <span className="block text-[9px] font-semibold text-charcoal/50">About Mood</span>
+                  <span className="block text-[11px] font-black leading-tight">Share Bio</span>
+                  <span className="block text-[9px] font-semibold text-charcoal/50">tapping.bio/alex</span>
                 </div>
               </div>
 
               <div className="text-right">
-                <span className="text-[9px] font-bold text-charcoal/50 block">Overall mood yesterday</span>
+                <span className="text-[9px] font-bold text-charcoal/50 block">Overall Engagement CTR</span>
                 <span className="text-3xl font-black text-charcoal leading-none">
-                  8<span className="text-xl font-black text-charcoal/30">/10</span>
+                  30.5<span className="text-xl font-black text-charcoal/30">%</span>
                 </span>
               </div>
             </div>
@@ -181,36 +181,38 @@ export default function LandingPage() {
               {/* Cobalt Blue Card */}
               <div className="bg-[#4F83FF] text-white rounded-3xl p-4 flex flex-col justify-between h-36 shadow-xs">
                 <div className="flex items-start justify-between">
-                  <span className="text-[10px] font-black leading-tight">Art-Team<br /><span className="text-white/70 font-semibold">Project of Google</span></span>
+                  <span className="text-[10px] font-black leading-tight">Physical Metal NFC<br /><span className="text-white/70 font-semibold">TAP-9482 Active</span></span>
                   <MoreVertical className="w-3.5 h-3.5 text-white/80" />
                 </div>
                 <div>
-                  <p className="text-2xl font-black leading-none">09:45</p>
-                  <p className="text-[9px] font-bold text-white/80 mt-1">20 min</p>
+                  <p className="text-2xl font-black leading-none">24</p>
+                  <p className="text-[9px] font-bold text-white/80 mt-1">Hardware Taps</p>
                 </div>
               </div>
 
               {/* Right Tiles & Team */}
               <div className="flex flex-col gap-2.5">
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-white rounded-2xl p-2.5 shadow-2xs border border-black/5 flex items-center justify-center">
-                    <UserCheck className="w-5 h-5 text-[#EA4335]" />
+                  <div className="bg-white rounded-2xl p-2.5 shadow-2xs border border-black/5 flex flex-col items-center justify-center text-center">
+                    <UserCheck className="w-5 h-5 text-[#EA4335] mb-0.5" />
+                    <span className="text-[8px] font-black text-charcoal">vCard 3.0</span>
                   </div>
-                  <div className="bg-white rounded-2xl p-2.5 shadow-2xs border border-black/5 flex items-center justify-center">
-                    <QrCode className="w-5 h-5 text-[#34A853]" />
+                  <div className="bg-white rounded-2xl p-2.5 shadow-2xs border border-black/5 flex flex-col items-center justify-center text-center">
+                    <QrCode className="w-5 h-5 text-[#34A853] mb-0.5" />
+                    <span className="text-[8px] font-black text-charcoal">Vector QR</span>
                   </div>
                 </div>
 
                 <div className="bg-white rounded-2xl p-2.5 border border-black/5 shadow-2xs flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-charcoal">Team</span>
+                  <span className="text-[10px] font-bold text-charcoal">Reach</span>
                   <div className="flex items-center -space-x-1.5">
                     {teamAvatars.slice(0, 3).map((u, i) => (
                       <div key={i} className="w-5 h-5 rounded-full overflow-hidden border border-white">
-                        <img src={u} alt="team" className="w-full h-full object-cover" />
+                        <img src={u} alt="audience" className="w-full h-full object-cover" />
                       </div>
                     ))}
                     <div className="w-5 h-5 rounded-full bg-[#FDF166] text-charcoal font-black text-[8px] flex items-center justify-center border border-white">
-                      +10
+                      +123
                     </div>
                   </div>
                 </div>
@@ -219,18 +221,18 @@ export default function LandingPage() {
 
             {/* Bottom 2 Status Cards */}
             <div className="grid grid-cols-2 gap-3 pt-1">
-              <div className="bg-[#FDF166] rounded-3xl p-4 flex flex-col justify-between h-24">
-                <p className="text-2xl font-black leading-none">98 <span className="text-xs font-bold text-charcoal/70">task</span></p>
+              <div className="bg-[#FDF166] rounded-3xl p-4 flex flex-col justify-between h-24 text-charcoal">
+                <p className="text-2xl font-black leading-none">128 <span className="text-xs font-bold text-charcoal/70">visits</span></p>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-black">In Progress</span>
+                  <span className="text-[10px] font-black">Live Traffic</span>
                   <span className="w-2 h-2 rounded-full bg-[#EAB308]" />
                 </div>
               </div>
 
-              <div className="bg-[#B6F554] rounded-3xl p-4 flex flex-col justify-between h-24">
-                <p className="text-2xl font-black leading-none">55 <span className="text-xs font-bold text-charcoal/70">task</span></p>
+              <div className="bg-[#B6F554] rounded-3xl p-4 flex flex-col justify-between h-24 text-charcoal">
+                <p className="text-2xl font-black leading-none">39 <span className="text-xs font-bold text-charcoal/70">clicks</span></p>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-black">Complete</span>
+                  <span className="text-[10px] font-black">Links Active</span>
                   <span className="w-2 h-2 rounded-full bg-[#16A34A]" />
                 </div>
               </div>

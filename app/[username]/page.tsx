@@ -8,7 +8,10 @@ import {
   getStoredLinks, 
   getStoredNFCCard, 
   incrementLinkClick, 
-  recordPageView 
+  recordPageView,
+  recordNFCTap,
+  recordVCardDownload,
+  recordQRScan
 } from '@/lib/storage';
 import { 
   initialProfile, 
@@ -80,6 +83,7 @@ export default function PublicProfilePage() {
 
     if (link.type === 'vcard_cta') {
       downloadVCardFile(vcard, `${profile.username}_contact.vcf`);
+      recordVCardDownload();
       showToast('Contact Saved', 'Direct contact card saved to device', 'success');
     } else if (link.url && link.url !== '#') {
       window.open(link.url, '_blank', 'noopener,noreferrer');
@@ -96,6 +100,7 @@ export default function PublicProfilePage() {
   };
 
   const simulateNFCTap = () => {
+    recordNFCTap();
     setNfcTapped(true);
     showToast('NFC Tap Detected', 'Connected via Tapping Smart Card', 'success');
     setTimeout(() => setNfcTapped(false), 2500);
@@ -164,23 +169,26 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
-      {/* MAIN CONTAINER: THE TEAM SPACE BENTO CARD */}
+      {/* MAIN CONTAINER: THE CREATOR SPACE BENTO CARD */}
       <div className="w-full max-w-md bg-white rounded-[40px] p-6 shadow-card border border-black/5 flex flex-col gap-5 text-left relative overflow-hidden">
-        {/* Top Header Row matching Reference */}
+        {/* Top Header Row */}
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-black text-charcoal leading-none">
-              Check Your
+              Connect With
             </h1>
             <h2 className="text-3xl font-black text-charcoal/35 leading-none mt-1">
-              Team Space
+              {profile.displayName}
             </h2>
           </div>
 
           <button
-            onClick={() => setShowQRModal(true)}
+            onClick={() => {
+              recordQRScan();
+              setShowQRModal(true);
+            }}
             className="w-11 h-11 rounded-full bg-[#EFF4FF] hover:bg-[#E2ECFF] flex items-center justify-center shadow-xs transition-colors shrink-0"
-            title="Open QR"
+            title="Open Permanent QR"
           >
             <Bell className="w-5 h-5 text-[#4F83FF] stroke-[2.4]" />
           </button>
@@ -199,10 +207,11 @@ export default function PublicProfilePage() {
           </div>
         </div>
 
-        {/* Action Button & 8/10 Score */}
+        {/* Action Button & Verification Pill */}
         <div className="flex items-center justify-between gap-2 pt-1">
           <button
             onClick={() => {
+              recordVCardDownload();
               downloadVCardFile(vcard, `${profile.username}_contact.vcf`);
               showToast('Contact Saved', 'Directly imported into phonebook', 'success');
             }}
@@ -222,9 +231,9 @@ export default function PublicProfilePage() {
           </button>
 
           <div className="text-right">
-            <span className="text-[9px] font-bold text-charcoal/50 block">Overall score yesterday</span>
-            <span className="text-3xl font-black text-charcoal leading-none">
-              8<span className="text-xl font-black text-charcoal/30">/10</span>
+            <span className="text-[9px] font-bold text-charcoal/50 block">Creator Status</span>
+            <span className="text-sm font-black text-charcoal uppercase tracking-wider bg-[#FDF166] px-2.5 py-1 rounded-full border border-black/10 inline-block mt-0.5">
+              Verified Pro
             </span>
           </div>
         </div>
@@ -234,10 +243,12 @@ export default function PublicProfilePage() {
           {/* Cobalt Blue Card */}
           <div
             onClick={() => {
+              recordVCardDownload();
               downloadVCardFile(vcard, `${profile.username}_contact.vcf`);
               showToast('Contact Saved', 'Directly imported into phonebook', 'success');
             }}
             className="bg-[#4F83FF] hover:bg-[#4375EE] text-white rounded-3xl p-4 flex flex-col justify-between h-40 shadow-xs cursor-pointer transition-all"
+            title="Download contact card"
           >
             <div className="flex items-start justify-between">
               <div>
@@ -252,8 +263,8 @@ export default function PublicProfilePage() {
             </div>
 
             <div>
-              <p className="text-2xl font-black leading-none">09:45</p>
-              <p className="text-[10px] font-bold text-white/80 mt-1">20 min &bull; Tap vCard</p>
+              <p className="text-2xl font-black leading-none">vCard 3.0</p>
+              <p className="text-[10px] font-bold text-white/80 mt-1">Tap to Save Contact</p>
             </div>
           </div>
 
@@ -262,10 +273,11 @@ export default function PublicProfilePage() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => {
+                  recordVCardDownload();
                   downloadVCardFile(vcard, `${profile.username}_contact.vcf`);
                   showToast('Contact Saved', 'Saved to contacts', 'success');
                 }}
-                className="bg-[#FAF7F2] hover:bg-white rounded-2xl p-2.5 shadow-2xs border border-black/5 flex flex-col items-center justify-center transition-all"
+                className="bg-[#FAF7F2] hover:bg-white rounded-2xl p-2.5 shadow-2xs border border-black/5 flex flex-col items-center justify-center transition-all cursor-pointer"
                 title="Download vCard"
               >
                 <UserCheck className="w-5 h-5 text-[#EA4335] mb-1" />
@@ -273,8 +285,11 @@ export default function PublicProfilePage() {
               </button>
 
               <button
-                onClick={() => setShowQRModal(true)}
-                className="bg-[#FAF7F2] hover:bg-white rounded-2xl p-2.5 shadow-2xs border border-black/5 flex flex-col items-center justify-center transition-all"
+                onClick={() => {
+                  recordQRScan();
+                  setShowQRModal(true);
+                }}
+                className="bg-[#FAF7F2] hover:bg-white rounded-2xl p-2.5 shadow-2xs border border-black/5 flex flex-col items-center justify-center transition-all cursor-pointer"
                 title="Show QR Code"
               >
                 <QrCode className="w-5 h-5 text-[#34A853] mb-1" />
@@ -283,11 +298,11 @@ export default function PublicProfilePage() {
             </div>
 
             <div className="bg-[#FAF7F2] rounded-2xl p-2.5 border border-black/5 shadow-2xs flex items-center justify-between">
-              <span className="text-[10px] font-black text-charcoal">Team</span>
+              <span className="text-[10px] font-black text-charcoal">Network</span>
               <div className="flex items-center -space-x-1.5">
                 {teamAvatars.slice(0, 3).map((u, i) => (
                   <div key={i} className="w-5 h-5 rounded-full overflow-hidden border border-white">
-                    <img src={u} alt="team" className="w-full h-full object-cover" />
+                    <img src={u} alt="network" className="w-full h-full object-cover" />
                   </div>
                 ))}
                 <div className="w-5 h-5 rounded-full bg-[#FDF166] text-charcoal font-black text-[8px] flex items-center justify-center border border-white">
@@ -308,7 +323,7 @@ export default function PublicProfilePage() {
             >
               <div>
                 <p className="text-xl font-black leading-none">
-                  98 <span className="text-[10px] font-bold text-charcoal/70">clicks</span>
+                  {activeLinks[0].clickCount} <span className="text-[10px] font-bold text-charcoal/70">clicks</span>
                 </p>
                 <p className="text-[11px] font-black truncate mt-1">
                   {activeLinks[0].title}
@@ -316,7 +331,7 @@ export default function PublicProfilePage() {
               </div>
 
               <div className="flex items-center gap-1.5">
-                <span className="text-[9px] font-black">In Progress</span>
+                <span className="text-[9px] font-black">Explore Link</span>
                 <span className="w-2 h-2 rounded-full bg-[#EAB308]" />
               </div>
             </div>
@@ -330,7 +345,7 @@ export default function PublicProfilePage() {
             >
               <div>
                 <p className="text-xl font-black leading-none">
-                  55 <span className="text-[10px] font-bold text-charcoal/70">clicks</span>
+                  {activeLinks[1].clickCount} <span className="text-[10px] font-bold text-charcoal/70">clicks</span>
                 </p>
                 <p className="text-[11px] font-black truncate mt-1">
                   {activeLinks[1].title}
@@ -338,7 +353,7 @@ export default function PublicProfilePage() {
               </div>
 
               <div className="flex items-center gap-1.5">
-                <span className="text-[9px] font-black">Complete</span>
+                <span className="text-[9px] font-black">Explore Link</span>
                 <span className="w-2 h-2 rounded-full bg-[#16A34A]" />
               </div>
             </div>

@@ -5,14 +5,11 @@ import {
   LayoutGrid, 
   Layers, 
   UserCheck, 
-  QrCode, 
   CreditCard, 
-  BarChart3, 
   Palette, 
-  ShoppingBag, 
   ExternalLink,
   X,
-  ShieldCheck
+  ArrowRight
 } from 'lucide-react';
 import { Profile } from '@/lib/types';
 
@@ -34,11 +31,11 @@ export default function AppSidebar({
   onOpenAuth,
 }: AppSidebarProps) {
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid, count: null },
-    { id: 'profile', label: 'Edit Profile', icon: UserCheck, count: '5' },
-    { id: 'digital-card', label: 'Digital Card', icon: CreditCard, count: 'v3.0' },
-    { id: 'nfc', label: 'Metal NFC Studio', icon: Layers, count: 'NFC' },
-    { id: 'themes', label: 'Themes', icon: Palette, count: null },
+    { id: 'dashboard', label: 'Creator Space', icon: LayoutGrid, count: null, color: null },
+    { id: 'profile', label: 'Edit Profile & Links', icon: UserCheck, count: '5', color: 'bg-[#FDF166] text-charcoal' },
+    { id: 'digital-card', label: 'Digital Card & QR', icon: CreditCard, count: 'v3.0', color: 'bg-[#EFF4FF] text-[#4F83FF]' },
+    { id: 'nfc', label: 'Metal NFC Studio', icon: Layers, count: 'NFC', color: 'bg-[#B6F554] text-charcoal' },
+    { id: 'themes', label: 'Themes & Styles', icon: Palette, count: null, color: null },
   ];
 
   return (
@@ -47,29 +44,34 @@ export default function AppSidebar({
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-xs transition-opacity"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs transition-opacity"
         />
       )}
 
-      {/* Slide-out Sidebar Drawer */}
+      {/* Slide-out Sidebar Drawer with Warm Stone Theme */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen bg-white border-r border-black/10 flex flex-col justify-between w-72 sm:w-80 shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 z-50 h-screen bg-[#F7F5EE] border-r border-black/10 flex flex-col justify-between w-72 sm:w-80 shadow-2xl transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Top Header in Sidebar */}
         <div>
-          <div className="h-16 px-5 flex items-center justify-between border-b border-black/5">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-2xl bg-[#1F2024] text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
+          <div className="h-20 px-6 flex items-center justify-between border-b border-black/5 bg-white/70 backdrop-blur-sm">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-2xl bg-[#141518] text-white flex items-center justify-center font-black text-base shrink-0 shadow-sm">
                 T
               </div>
               <div className="min-w-0">
-                <span className="font-extrabold text-base tracking-tight text-charcoal truncate block">
-                  TAPPING
-                </span>
-                <span className="text-[10px] text-charcoal-muted font-medium block -mt-0.5">
-                  Creator Platform
+                <div className="flex items-center gap-1.5">
+                  <span className="font-black text-lg tracking-tight text-charcoal truncate block">
+                    TAPPING
+                  </span>
+                  <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-[#FDF166] text-charcoal border border-black/10">
+                    PRO
+                  </span>
+                </div>
+                <span className="text-[10px] text-charcoal/60 font-bold block">
+                  Bio & NFC Platform
                 </span>
               </div>
             </div>
@@ -77,16 +79,16 @@ export default function AppSidebar({
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="p-1.5 rounded-xl hover:bg-black/5 text-charcoal-muted hover:text-charcoal transition-colors"
+              className="w-8 h-8 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal transition-colors shadow-xs"
               title="Close Menu"
             >
-              <X className="w-5 h-5 text-charcoal" />
+              <X className="w-4 h-4 text-charcoal stroke-[2.2]" />
             </button>
           </div>
 
-          {/* Navigation Items List */}
-          <nav className="p-3 space-y-1">
-            <p className="text-[10px] font-bold text-charcoal/50 uppercase tracking-wider px-3 py-1">
+          {/* Navigation Items List Styled in Bento Aesthetic */}
+          <nav className="p-4 space-y-2">
+            <p className="text-[10px] font-black text-charcoal/50 uppercase tracking-widest px-3 py-1">
               Modules and Studio
             </p>
             {navItems.map((item) => {
@@ -99,24 +101,24 @@ export default function AppSidebar({
                     onSelectTab(item.id);
                     onClose();
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all ${
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-black transition-all ${
                     isActive
-                      ? 'bg-[#1F2024] text-white shadow-xs'
-                      : 'text-charcoal/70 hover:text-charcoal hover:bg-black/5'
+                      ? 'bg-[#141518] text-white shadow-sm'
+                      : 'bg-white/80 hover:bg-white text-charcoal border border-black/5 shadow-2xs hover:shadow-xs'
                   }`}
                   title={item.label}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <Icon className="w-4 h-4 shrink-0" />
+                    <Icon className="w-4 h-4 shrink-0 stroke-[2.2]" />
                     <span className="truncate">{item.label}</span>
                   </div>
 
                   {item.count && (
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                      className={`text-[10px] px-2.5 py-0.5 rounded-full font-black border border-black/10 ${
                         isActive
-                          ? 'bg-white/20 text-white'
-                          : 'bg-black/5 text-charcoal/60'
+                          ? 'bg-white/20 text-white border-white/20'
+                          : item.color || 'bg-black/5 text-charcoal'
                       }`}
                     >
                       {item.count}
@@ -128,37 +130,41 @@ export default function AppSidebar({
           </nav>
         </div>
 
-        {/* Bottom User Section with Plan Name */}
-        <div className="p-3 border-t border-black/5">
-          <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-[#FAF7F2] border border-black/5">
-            <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#FAF7F2] shrink-0 border border-black/10 shadow-xs">
-              <img
-                src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
-                alt={profile.displayName}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="min-w-0 text-left flex-1">
-              <div className="flex items-center gap-1.5">
-                <p className="text-xs font-black text-charcoal truncate leading-tight">
-                  {profile.displayName}
-                </p>
-                <span className="text-[9px] font-black tracking-wide px-1.5 py-0.2 rounded-md bg-[#FDF166] border border-black/10 text-charcoal shrink-0">
-                  PRO
-                </span>
+        {/* Bottom User Profile Section Styled as elevated Bento Card */}
+        <div className="p-4 border-t border-black/5 bg-white/50 backdrop-blur-sm">
+          <div className="p-4 rounded-3xl bg-white border border-black/10 shadow-soft flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl overflow-hidden bg-[#FAF7F2] shrink-0 border border-black/10 shadow-xs">
+                <img
+                  src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
+                  alt={profile.displayName}
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <p className="text-[10px] text-charcoal/70 truncate mt-0.5 font-bold">
-                @{profile.username} &middot; Pro Plan
-              </p>
+              <div className="min-w-0 text-left flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-black text-charcoal truncate leading-tight">
+                    {profile.displayName}
+                  </p>
+                  <span className="text-[9px] font-black px-1.5 py-0.2 rounded-md bg-[#FDF166] border border-black/10 text-charcoal shrink-0">
+                    PRO
+                  </span>
+                </div>
+                <p className="text-[10px] text-charcoal/60 truncate mt-0.5 font-bold">
+                  @{profile.username} &middot; Pro Creator
+                </p>
+              </div>
             </div>
+
             <a
               href={`/${profile.username}`}
               target="_blank"
               rel="noreferrer"
-              className="p-1.5 rounded-lg hover:bg-white text-charcoal/60 hover:text-charcoal transition-colors shrink-0"
-              title="View Public Profile"
+              className="w-full py-2.5 px-3 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-xs transition-transform active:scale-95"
+              title="Open Public Bio Profile"
             >
-              <ExternalLink className="w-4 h-4" />
+              <span>View Live Bio Space</span>
+              <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>

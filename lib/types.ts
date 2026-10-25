@@ -84,8 +84,11 @@ export interface NFCCardDesign {
 }
 
 export interface AnalyticsSummary {
-  totalViews: number;
-  totalClicks: number;
+  totalViews: number; // Profile Visited
+  totalClicks: number; // Content & Links Clicked
+  nfcTaps: number; // Physical NFC Card Taps
+  vcardSaves: number; // Contacts Saved to Phonebook
+  qrScans: number; // Permanent Vector QR Scans
   ctr: number;
   topLinks: { title: string; clicks: number }[];
   audienceFlowDays: { day: string; count: number; active?: boolean }[];

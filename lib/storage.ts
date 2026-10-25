@@ -91,7 +91,15 @@ export function getStoredAnalytics(): AnalyticsSummary {
   if (typeof window === 'undefined') return initialAnalytics;
   try {
     const data = localStorage.getItem(KEYS.ANALYTICS);
-    return data ? JSON.parse(data) : initialAnalytics;
+    if (!data) return initialAnalytics;
+    const parsed = JSON.parse(data);
+    return {
+      ...initialAnalytics,
+      ...parsed,
+      nfcTaps: parsed.nfcTaps ?? initialAnalytics.nfcTaps,
+      vcardSaves: parsed.vcardSaves ?? initialAnalytics.vcardSaves,
+      qrScans: parsed.qrScans ?? initialAnalytics.qrScans,
+    };
   } catch {
     return initialAnalytics;
   }
@@ -126,6 +134,44 @@ export function recordPageView(): void {
     localStorage.setItem(KEYS.ANALYTICS, JSON.stringify(analytics));
   } catch (e) {
     console.error('Error recording page view', e);
+  }
+}
+
+export function recordNFCTap(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const analytics = getStoredAnalytics();
+    analytics.nfcTaps = (analytics.nfcTaps || 0) + 1;
+    analytics.totalViews += 1;
+    analytics.ctr = Number(((analytics.totalClicks / (analytics.totalViews || 1)) * 100).toFixed(1));
+    localStorage.setItem(KEYS.ANALYTICS, JSON.stringify(analytics));
+  } catch (e) {
+    console.error('Error recording NFC tap', e);
+  }
+}
+
+export function recordVCardDownload(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const analytics = getStoredAnalytics();
+    analytics.vcardSaves = (analytics.vcardSaves || 0) + 1;
+    analytics.totalClicks += 1;
+    analytics.ctr = Number(((analytics.totalClicks / (analytics.totalViews || 1)) * 100).toFixed(1));
+    localStorage.setItem(KEYS.ANALYTICS, JSON.stringify(analytics));
+  } catch (e) {
+    console.error('Error recording vCard save', e);
+  }
+}
+
+export function recordQRScan(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const analytics = getStoredAnalytics();
+    analytics.qrScans = (analytics.qrScans || 0) + 1;
+    analytics.totalViews += 1;
+    localStorage.setItem(KEYS.ANALYTICS, JSON.stringify(analytics));
+  } catch (e) {
+    console.error('Error recording QR scan', e);
   }
 }
 

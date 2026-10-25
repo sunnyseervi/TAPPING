@@ -129,6 +129,9 @@ export const initialNFCCard: NFCCardDesign = {
 export const initialAnalytics: AnalyticsSummary = {
   totalViews: 128,
   totalClicks: 39,
+  nfcTaps: 24,
+  vcardSaves: 18,
+  qrScans: 15,
   ctr: 30.5,
   topLinks: [
     { title: 'Design Portfolio and Selected Works', clicks: 18 },
