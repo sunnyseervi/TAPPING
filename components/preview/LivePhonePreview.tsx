@@ -22,7 +22,7 @@ import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/componen
 import { downloadVCardFile } from '@/lib/vcard';
 import { incrementLinkClick } from '@/lib/storage';
 import { useToast } from '@/components/ui/Toast';
-import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses, isDarkTheme, isPatternDark, getFontFamilyStyle } from '@/lib/themes';
+import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses, isDarkTheme, isPatternDark, isColorDark, getFontFamilyStyle } from '@/lib/themes';
 
 interface LivePreviewProps {
   profile: Profile;
@@ -60,7 +60,7 @@ export default function LivePhonePreview({
 
   const isCardBehindActive = Boolean(profile.cardBehindContent);
   const cardStyle = profile.cardContainerStyle || 'glass';
-  const isDark = isDarkTheme(profile.theme);
+  const isDark = profile.customBgColor ? isColorDark(profile.customBgColor) : isDarkTheme(profile.theme);
 
   let cardContainerClasses = '';
   let insideCardDark = isDark;

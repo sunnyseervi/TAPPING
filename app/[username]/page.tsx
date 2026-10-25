@@ -46,6 +46,7 @@ import {
   resolveLinkCardClasses, 
   isDarkTheme, 
   isPatternDark,
+  isColorDark,
   getFontFamilyStyle 
 } from '@/lib/themes';
 import PublicStore from '@/components/store/PublicStore';
@@ -249,7 +250,7 @@ export default function PublicProfilePage() {
   }
 
   const isDarkPatternActive = (profile.showHeaderBackground || profile.fullPageBackground) && isPatternDark(profile.headerBackground);
-  const isDarkCanvas = isDarkTheme(currentTheme.id) || isDarkPatternActive;
+  const isDarkCanvas = profile.customBgColor ? isColorDark(profile.customBgColor) : (isDarkTheme(currentTheme.id) || isDarkPatternActive);
   const hasDarkWallpaper = Boolean(profile.customHeaderImage) && (profile.bgImageDim ?? 30) >= 35;
   const contentIsDark = isCardBehindActive ? insideCardDark : (isDarkCanvas || hasDarkWallpaper);
 

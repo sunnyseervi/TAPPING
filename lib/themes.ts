@@ -680,7 +680,23 @@ export function isPatternDark(pattern?: BackgroundPatternType): boolean {
   ].includes(pattern);
 }
 
-export function isDarkTheme(themeId?: ThemeType): boolean {
+export function isColorDark(hexColor?: string): boolean {
+  if (!hexColor) return false;
+  let hex = hexColor.replace('#', '').trim();
+  if (hex.length === 3) {
+    hex = hex.split('').map((c) => c + c).join('');
+  }
+  if (hex.length !== 6) return false;
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  if (isNaN(r) || isNaN(g) || isNaN(b)) return false;
+  const luminance = (r * 299 + g * 587 + b * 114) / 1000;
+  return luminance < 145;
+}
+
+export function isDarkTheme(themeId?: ThemeType, customBgColor?: string): boolean {
+  if (customBgColor) return isColorDark(customBgColor);
   return themeId === 'cyberpunk-neon' || themeId === 'tokyo-night';
 }
 

@@ -18,6 +18,7 @@ import {
   Image as ImageIcon, 
   Layers, 
   Sun,
+  Moon,
   Zap,
   Flame,
   Upload,
@@ -33,7 +34,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import confetti from 'canvas-confetti';
-import { THEMES } from '@/lib/themes';
+import { THEMES, isColorDark, isDarkTheme } from '@/lib/themes';
 import { CARD_FONTS, CardFont, findCardFont } from '@/lib/cardFonts';
 import { compressWallpaperImage, formatFileSize } from '@/lib/imageCompression';
 
@@ -113,6 +114,79 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
 
   // Active theme helper from draft
   const currentTheme = THEMES[draftProfile.theme] || THEMES['pastel-bento'];
+
+  const themeColorPresets = [
+    { name: 'Clean White', hex: '#FFFFFF', desc: 'Minimal Light' },
+    { name: 'Warm Cream', hex: '#FAF7F2', desc: 'Soft Paper' },
+    { name: 'Warm Sand', hex: '#F4EFEA', desc: 'Sandstone' },
+    { name: 'Blush Rose', hex: '#FDF2F8', desc: 'Delicate Pink' },
+    { name: 'Sage Matcha', hex: '#F0FDF4', desc: 'Organic Botanical' },
+    { name: 'Sky Mist', hex: '#F0F9FF', desc: 'Nordic Clean' },
+    { name: 'Lavender Dusk', hex: '#F5F3FF', desc: 'Pastel Lilac' },
+    { name: 'Slate Gray', hex: '#1E293B', desc: 'Midnight Slate' },
+    { name: 'Deep Navy', hex: '#0F172A', desc: 'Dark Cyber Navy' },
+    { name: 'Stealth Obsidian', hex: '#0D0F12', desc: 'Sleek Dark Mode' },
+    { name: 'Pitch Black', hex: '#000000', desc: 'True Black' },
+  ];
+
+  const handleSelectCleanLight = () => {
+    const updated: Profile = {
+      ...draftProfile,
+      theme: 'pastel-bento',
+      customBgColor: '#FAF7F2',
+      headerBackground: 'none',
+      showHeaderBackground: false,
+      fontColor: undefined,
+    };
+    setDraftProfile(updated);
+    setHasUnsavedChanges(true);
+    onLivePreviewChange?.(updated);
+    showToast('Clean Light Applied', 'Crisp light canvas with black typography', 'success');
+  };
+
+  const handleSelectDeepDark = () => {
+    const updated: Profile = {
+      ...draftProfile,
+      theme: 'cyberpunk-neon',
+      customBgColor: '#0D0F12',
+      headerBackground: 'none',
+      showHeaderBackground: false,
+      fontColor: undefined,
+    };
+    setDraftProfile(updated);
+    setHasUnsavedChanges(true);
+    onLivePreviewChange?.(updated);
+    showToast('Deep Dark Applied', 'Stealth obsidian canvas with white typography', 'success');
+  };
+
+  const handleSelectThemeColor = (hex: string) => {
+    const isDark = isColorDark(hex);
+    const updated: Profile = {
+      ...draftProfile,
+      theme: isDark ? 'cyberpunk-neon' : 'pastel-bento',
+      customBgColor: hex,
+      headerBackground: 'none',
+      showHeaderBackground: false,
+      fontColor: draftProfile.fontColor || (isDark ? '#FFFFFF' : '#141518'),
+    };
+    setDraftProfile(updated);
+    setHasUnsavedChanges(true);
+    onLivePreviewChange?.(updated);
+  };
+
+  const handleResetAutoFontColor = () => {
+    const isDark = draftProfile.customBgColor
+      ? isColorDark(draftProfile.customBgColor)
+      : isDarkTheme(draftProfile.theme);
+    const updated: Profile = {
+      ...draftProfile,
+      fontColor: undefined,
+    };
+    setDraftProfile(updated);
+    setHasUnsavedChanges(true);
+    onLivePreviewChange?.(updated);
+    showToast('Auto Contrast Set', `Text set to ${isDark ? 'White' : 'Black'} for optimal contrast`, 'info');
+  };
 
   // Select theme locally for live preview — ONLY saves when user clicks Save button!
   const handleSelectTheme = (themeId: ThemeType) => {
@@ -420,7 +494,9 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
           <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FAF7F2] border border-black/10">
             <span className="text-[10px] font-bold text-charcoal/60">Selected Theme:</span>
             <span className="text-xs font-black text-charcoal">
-              {currentTheme.name}
+              {draftProfile.customBgColor 
+                ? (isColorDark(draftProfile.customBgColor) ? 'Dark Theme' : 'Light Theme') 
+                : (isDarkTheme(draftProfile.theme) ? 'Deep Dark' : 'Clean Light')}
             </span>
           </div>
 
@@ -473,16 +549,144 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
       {/* TAB 1: UNIFIED THEMES & BACKGROUND WALLPAPER STUDIO */}
       {activeStudioTab === 'themes' && (
         <div className="flex flex-col gap-6">
-          {/* SECTION A: CUSTOM WALLPAPER & BACKGROUND ARTWORK */}
+
+          {/* 1. DEFAULT BASE THEMES: CLEAN LIGHT & DEEP DARK */}
+          <div className="p-5 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
+            <div>
+              <h3 className="text-sm font-black text-charcoal flex items-center gap-2">
+                <Palette className="w-4 h-4 text-[#4F83FF]" />
+                <span>Base Theme Mode</span>
+              </h3>
+              <p className="text-xs text-charcoal/60 font-medium mt-0.5">
+                Simple, clean default styling. Dark mode automatically switches text to white; light mode automatically switches text to black.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+              {/* Clean Light Button */}
+              <button
+                type="button"
+                onClick={handleSelectCleanLight}
+                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                  !isColorDark(draftProfile.customBgColor || (isDarkTheme(draftProfile.theme) ? '#0D0F12' : '#FAF7F2')) && !draftProfile.customHeaderImage
+                    ? 'border-charcoal bg-white ring-2 ring-charcoal shadow-sm'
+                    : 'border-black/10 bg-white hover:border-black/25'
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-[#FAF7F2] border border-black/10 flex items-center justify-center text-charcoal shrink-0 shadow-2xs">
+                    <Sun className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-xs font-black text-charcoal">Clean Light</h4>
+                    <p className="text-[10px] text-charcoal/60 mt-0.5">Warm cream canvas, dark typography</p>
+                  </div>
+                </div>
+                {!isColorDark(draftProfile.customBgColor || (isDarkTheme(draftProfile.theme) ? '#0D0F12' : '#FAF7F2')) && !draftProfile.customHeaderImage && (
+                  <div className="w-5 h-5 rounded-full bg-[#141518] text-white flex items-center justify-center shadow-xs">
+                    <Check className="w-3 h-3 stroke-[2.5]" />
+                  </div>
+                )}
+              </button>
+
+              {/* Deep Dark Button */}
+              <button
+                type="button"
+                onClick={handleSelectDeepDark}
+                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                  isColorDark(draftProfile.customBgColor || (isDarkTheme(draftProfile.theme) ? '#0D0F12' : '#FAF7F2')) && !draftProfile.customHeaderImage
+                    ? 'border-charcoal bg-[#141518] text-white ring-2 ring-charcoal shadow-sm'
+                    : 'border-black/10 bg-[#141518] text-white hover:border-white/30'
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white shrink-0 shadow-2xs">
+                    <Moon className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-xs font-black text-white">Deep Dark</h4>
+                    <p className="text-[10px] text-white/60 mt-0.5">Stealth obsidian, white typography</p>
+                  </div>
+                </div>
+                {isColorDark(draftProfile.customBgColor || (isDarkTheme(draftProfile.theme) ? '#0D0F12' : '#FAF7F2')) && !draftProfile.customHeaderImage && (
+                  <div className="w-5 h-5 rounded-full bg-white text-black flex items-center justify-center shadow-xs">
+                    <Check className="w-3 h-3 stroke-[2.5]" />
+                  </div>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* 2. CHOOSE THEME COLOR: PALETTE SWATCHES & COLOR WHEEL */}
+          <div className="p-5 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h3 className="text-sm font-black text-charcoal">Choose Theme Color</h3>
+                <p className="text-xs text-charcoal/60 font-medium mt-0.5">
+                  Pick any custom color for your canvas. Dark colors automatically set font to white; light colors automatically set font to black.
+                </p>
+              </div>
+
+              {draftProfile.customBgColor && (
+                <button
+                  type="button"
+                  onClick={() => updateDraft({ customBgColor: undefined })}
+                  className="text-[11px] font-bold text-rose-500 hover:underline cursor-pointer"
+                >
+                  Reset Default
+                </button>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {themeColorPresets.map((c) => {
+                const isSelected = draftProfile.customBgColor?.toLowerCase() === c.hex.toLowerCase();
+                return (
+                  <button
+                    key={c.hex}
+                    type="button"
+                    onClick={() => handleSelectThemeColor(c.hex)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-2xl border transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-charcoal bg-black/5 ring-2 ring-charcoal shadow-2xs'
+                        : 'border-black/10 bg-white hover:bg-gray-50'
+                    }`}
+                  >
+                    <span
+                      className="w-4 h-4 rounded-full border border-black/20 shrink-0"
+                      style={{ backgroundColor: c.hex }}
+                    />
+                    <span className="text-xs font-bold text-charcoal">{c.name}</span>
+                  </button>
+                );
+              })}
+
+              {/* Custom Color Input */}
+              <div className="flex items-center gap-2 bg-white border border-black/10 rounded-2xl px-3 py-1.5 shadow-2xs">
+                <input
+                  type="color"
+                  value={draftProfile.customBgColor || '#FAF7F2'}
+                  onChange={(e) => handleSelectThemeColor(e.target.value)}
+                  className="w-6 h-6 rounded cursor-pointer border-0 p-0"
+                  title="Pick custom canvas hex color"
+                />
+                <span className="text-xs font-mono font-bold text-charcoal">
+                  {draftProfile.customBgColor || 'Custom'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. UPLOAD YOUR OWN WALLPAPER */}
           <div className="p-5 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-black text-charcoal flex items-center gap-1.5">
                   <ImageIcon className="w-4 h-4 text-[#4F83FF]" />
-                  <span>Custom Background Wallpaper Image</span>
+                  <span>Upload Your Own Theme Wallpaper</span>
                 </p>
                 <p className="text-[11px] text-charcoal/60 font-medium">
-                  Upload any photo, portrait, wallpaper, anime art, or brand background
+                  Upload any photo, portrait, wallpaper, anime art, or brand artwork from your device
                 </p>
               </div>
 
@@ -491,12 +695,12 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
                   type="button"
                   onClick={() => {
                     updateDraft({ customHeaderImage: undefined });
-                    showToast('Wallpaper Removed', 'Default theme background restored', 'info');
+                    showToast('Wallpaper Removed', 'Default background restored', 'info');
                   }}
                   className="px-2.5 py-1 rounded-xl bg-rose-50 text-rose-600 text-[10px] font-bold border border-rose-200 cursor-pointer flex items-center gap-1 hover:bg-rose-100"
                 >
                   <Trash2 className="w-3 h-3" />
-                  <span>Remove Custom</span>
+                  <span>Remove Wallpaper</span>
                 </button>
               )}
             </div>
@@ -720,7 +924,7 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
                 <div>
                   <p className="text-xs font-black text-charcoal flex items-center gap-1.5">
                     <Layers className="w-3.5 h-3.5 text-[#4F83FF]" />
-                    <span>Place Card Behind Profile Content & Data</span>
+                    <span>Place Card Behind Profile Content &amp; Data</span>
                   </p>
                   <p className="text-[11px] text-charcoal/70 mt-0.5">
                     Encloses your name, avatar, bio, buttons, and links inside a floating card container so text never clashes with the background
@@ -775,98 +979,74 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
             </div>
           </div>
 
-          {/* SECTION B: PATTERN & TEXTURE PRESETS */}
-          <div>
-            <h3 className="text-sm font-black text-charcoal mb-1">Pattern & Texture Presets</h3>
-            <p className="text-xs text-charcoal/60 mb-3">
-              Curated patterns & textures for clean or bold backgrounds:
-            </p>
+          {/* 4. CUSTOM FONT COLOR PICKER */}
+          <div className="p-5 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h3 className="text-sm font-black text-charcoal flex items-center gap-2">
+                  <Type className="w-4 h-4 text-[#4F83FF]" />
+                  <span>Font &amp; Text Color</span>
+                </h3>
+                <p className="text-xs text-charcoal/60 font-medium mt-0.5">
+                  Choose any text color you want over your theme or uploaded wallpaper.
+                </p>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {patternPresets.map((p) => {
-                const isSelected = (draftProfile.headerBackground || 'none') === p.id;
-                return (
-                  <div
-                    key={p.id}
-                    onClick={() => handleUpdateHeaderPattern(p.id)}
-                    className={`rounded-3xl border overflow-hidden transition-all cursor-pointer flex flex-col justify-between ${
-                      isSelected
-                        ? 'border-charcoal ring-2 ring-charcoal shadow-card scale-[1.01]'
-                        : 'border-black/10 bg-white hover:shadow-xs'
-                    }`}
-                  >
-                    {/* Pattern Banner Preview */}
-                    <div className={`h-24 w-full relative flex items-center justify-center ${p.previewClass}`}>
-                      {isSelected && (
-                        <div className="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center shadow-md">
-                          <Check className="w-4 h-4 stroke-[2.5]" />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-4 text-left">
-                      <h4 className="text-xs font-black text-charcoal">{p.name}</h4>
-                      <p className="text-[11px] text-charcoal/60 font-medium mt-0.5">{p.desc}</p>
-                    </div>
-                  </div>
-                );
-              })}
+              {draftProfile.fontColor && (
+                <button
+                  type="button"
+                  onClick={handleResetAutoFontColor}
+                  className="text-[11px] font-bold text-[#4F83FF] hover:underline cursor-pointer"
+                >
+                  Reset Auto Contrast
+                </button>
+              )}
             </div>
-          </div>
 
-          {/* SECTION C: CURATED THEME SYSTEMS (13 Systems) */}
-          <div>
-            <h3 className="text-sm font-black text-charcoal mb-1">Design Theme Systems (13 Curated Palettes)</h3>
-            <p className="text-xs text-charcoal/60 mb-3">
-              Select a design theme to preview it on the phone in real-time. Click &ldquo;Save Theme&rdquo; when ready to publish:
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {themeList.map((t) => {
-                const isSelected = draftProfile.theme === t.id;
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {[
+                { name: 'Pure White', hex: '#FFFFFF' },
+                { name: 'Solid Black', hex: '#141518' },
+                { name: 'Luxe Gold', hex: '#FDF166' },
+                { name: 'Cyber Cyan', hex: '#00F0FF' },
+                { name: 'Neon Lime', hex: '#B6F554' },
+                { name: 'Rose Coral', hex: '#FF6B6B' },
+                { name: 'Royal Indigo', hex: '#4F83FF' },
+              ].map((c) => {
+                const isSelected = (draftProfile.fontColor || (isColorDark(draftProfile.customBgColor) ? '#FFFFFF' : '#141518')) === c.hex;
                 return (
-                  <div
-                    key={t.id}
-                    onClick={() => handleSelectTheme(t.id)}
-                    className={`p-5 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between text-left relative ${
+                  <button
+                    key={c.hex}
+                    type="button"
+                    onClick={() => handleUpdateFontColor(c.hex)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-2xl border transition-all cursor-pointer ${
                       isSelected
-                        ? 'border-charcoal bg-black/[0.04] ring-2 ring-charcoal shadow-card scale-[1.01]'
-                        : 'border-black/10 bg-[#FAF7F2] hover:bg-white hover:border-black/20 hover:shadow-xs'
+                        ? 'border-charcoal bg-black/5 ring-2 ring-charcoal shadow-2xs'
+                        : 'border-black/10 bg-white hover:bg-gray-50'
                     }`}
                   >
-                    {isSelected && (
-                      <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-[#141518] text-white flex items-center justify-center shadow-xs">
-                        <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                      </div>
-                    )}
-
-                    <div>
-                      <div className="flex items-center gap-2 mb-1.5 pr-6">
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/5 text-charcoal/70">
-                          {t.category}
-                        </span>
-                      </div>
-
-                      <h3 className="font-black text-sm text-charcoal">{t.name}</h3>
-                      <p className="text-xs text-charcoal/70 leading-relaxed font-medium mt-1">
-                        {t.description}
-                      </p>
-                    </div>
-
-                    {/* Color Palette Swatches */}
-                    <div className="flex items-center gap-1.5 mt-5 pt-3 border-t border-black/5">
-                      {t.previewColors.map((c, i) => (
-                        <div
-                          key={i}
-                          className="w-6 h-6 rounded-full border border-black/10 shadow-2xs"
-                          style={{ backgroundColor: c }}
-                          title={c}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                    <span
+                      className="w-4 h-4 rounded-full border border-black/20 shrink-0"
+                      style={{ backgroundColor: c.hex }}
+                    />
+                    <span className="text-xs font-bold text-charcoal">{c.name}</span>
+                  </button>
                 );
               })}
+
+              {/* Custom Color Input */}
+              <div className="flex items-center gap-2 bg-white border border-black/10 rounded-2xl px-3 py-1.5 shadow-2xs">
+                <input
+                  type="color"
+                  value={draftProfile.fontColor || (isColorDark(draftProfile.customBgColor) ? '#FFFFFF' : '#141518')}
+                  onChange={(e) => handleUpdateFontColor(e.target.value)}
+                  className="w-6 h-6 rounded cursor-pointer border-0 p-0"
+                  title="Pick custom font hex color"
+                />
+                <span className="text-xs font-mono font-bold text-charcoal">
+                  {draftProfile.fontColor || 'Auto'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
