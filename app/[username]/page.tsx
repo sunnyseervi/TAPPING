@@ -233,7 +233,7 @@ export default function PublicProfilePage() {
   const contentIsDark = isCardBehindActive ? insideCardDark : (dark || hasDarkWallpaper);
 
   return (
-    <div className="min-h-screen w-full bg-[#E5E5E7] dark:bg-[#0D0F12] flex items-center justify-center p-0 sm:py-8 sm:px-4 relative overflow-x-hidden selection:bg-[#FDF166] selection:text-charcoal transition-colors">
+    <div className="min-h-screen sm:h-screen w-full bg-[#E5E5E7] dark:bg-[#0D0F12] flex items-center justify-center p-0 sm:py-6 sm:px-4 relative overflow-hidden selection:bg-[#FDF166] selection:text-charcoal transition-colors">
       
       {/* DESKTOP-ONLY FLOATING QR BADGE: Selena Gomez Linktree Reference (Bottom-Right) */}
       <div 
@@ -256,9 +256,9 @@ export default function PublicProfilePage() {
         )}
       </div>
 
-      {/* CENTERED MOBILE VIEW CANVAS (MAX-W-[430PX] WITH AUTHENTIC MOBILE PHONE RATIO) */}
+      {/* CENTERED MOBILE VIEW CANVAS (MAX-W-[430PX] WITH AUTHENTIC MOBILE PHONE RATIO & FIXED VIEWPORT) */}
       <div 
-        className={`w-full max-w-[430px] min-h-screen sm:min-h-[92vh] sm:my-auto sm:rounded-[44px] shadow-[0_25px_80px_rgba(0,0,0,0.25)] relative overflow-hidden flex flex-col items-center transition-all border border-black/10 dark:border-white/10 ${currentTheme.canvasBg}`}
+        className={`w-full max-w-[430px] h-screen h-[100dvh] sm:h-[92vh] sm:max-h-[900px] sm:rounded-[44px] shadow-[0_25px_80px_rgba(0,0,0,0.25)] relative overflow-hidden flex flex-col transition-all border border-black/10 dark:border-white/10 ${currentTheme.canvasBg}`}
         style={{
           backgroundColor: profile.customBgColor || currentTheme.canvasBgHex || currentTheme.previewColors[0] || '#FAF7F2',
           backgroundImage: profile.pageBgImage ? `url(${profile.pageBgImage})` : undefined,
@@ -267,7 +267,7 @@ export default function PublicProfilePage() {
           ...getFontFamilyStyle(profile.fontFamily)
         }}
       >
-        {/* Full Bio Canvas Theme Pattern or Custom Uploaded Wallpaper */}
+        {/* Full Bio Canvas Theme Pattern or Custom Uploaded Wallpaper (FIXED IN PLACE — NEVER STRETCHES) */}
         {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
           <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
             {profile.customHeaderImage ? (
@@ -295,8 +295,8 @@ export default function PublicProfilePage() {
           </div>
         )}
 
-        {/* TOP ACTION BAR: Integrated at top of mobile canvas */}
-        <div className="w-full flex items-center justify-between py-4 px-5 relative z-20">
+        {/* TOP ACTION BAR: Pinned cleanly at top of mobile canvas */}
+        <div className="w-full flex items-center justify-between py-3.5 px-5 relative z-20 shrink-0">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
             contentIsDark ? 'bg-white/10 text-white border border-white/15' : 'bg-black/5 text-charcoal border border-black/10'
           } backdrop-blur-md`}>
@@ -333,10 +333,11 @@ export default function PublicProfilePage() {
           </div>
         </div>
 
-        {/* MAIN BIO PROFILE STACK */}
-        <main className={`w-full flex flex-col items-center text-center px-4 sm:px-6 pt-1 pb-10 relative z-10 transition-all ${
-          isCardBehindActive ? cardContainerClasses : ''
-        }`}>
+        {/* SCROLLABLE DATA CONTAINER: Theme remains fixed in place, ONLY Data / Content scrolls smoothly */}
+        <div className="flex-1 w-full overflow-y-auto overscroll-contain no-scrollbar relative z-10 flex flex-col items-center">
+          <main className={`w-full flex flex-col items-center text-center px-4 sm:px-6 pt-1 pb-6 transition-all ${
+            isCardBehindActive ? cardContainerClasses : ''
+          }`}>
         
         {/* Avatar with Crisp White Ring & Shadow */}
         <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden ring-4 ring-white shadow-soft bg-white relative flex items-center justify-center shrink-0">
@@ -599,12 +600,13 @@ export default function PublicProfilePage() {
       </main>
 
       {/* Powered by Tapping Branding Footer */}
-      <footer className="w-full py-5 text-center relative z-10 mt-auto">
+      <footer className="w-full py-5 text-center mt-auto shrink-0">
         <span className={`text-[11px] font-bold tracking-wider ${contentIsDark ? 'text-white/50' : 'text-charcoal/40'}`}>
           Powered by TAPPING &bull; Digital Cards &amp; Bio Space
         </span>
       </footer>
     </div>
+  </div>
 
       {/* DYNAMIC QR CODE DISPLAY MODAL */}
       {showQRModal && (
