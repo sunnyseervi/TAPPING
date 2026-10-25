@@ -29,12 +29,15 @@ import {
   RotateCcw,
   Search,
   SlidersHorizontal,
-  Palette
+  Palette,
+  Download
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import confetti from 'canvas-confetti';
 import QRCodeGenerator from 'qrcode';
 import { compressImageFile } from '@/lib/imageCompression';
+import { exportCardAsPng, exportCardAsPdf, exportCardAsHtml } from '@/lib/cardExporter';
+import { createMetalCardOrder } from '@/lib/storage';
 
 interface NFCCardStudioProps {
   nfcCard: NFCCardDesign;
@@ -55,6 +58,19 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   const [qrDataUrl, setQrDataUrl] = useState('');
   const baseCardRef = useRef(nfcCard);
   const updateCardRef = useRef(onUpdateCard);
+
+  // Export Dropdown State
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Order Details Form State
+  const [shippingName, setShippingName] = useState(username.toUpperCase());
+  const [shippingPhone, setShippingPhone] = useState('+91 98765 43210');
+  const [shippingStreet, setShippingStreet] = useState('Flat 402, Skyline Residency, 100ft Road');
+  const [shippingCity, setShippingCity] = useState('Bengaluru');
+  const [shippingState, setShippingState] = useState('Karnataka');
+  const [shippingZip, setShippingZip] = useState('560038');
+  const [engravingNotes, setEngravingNotes] = useState('Please ensure laser engraving is high-contrast matte white finish.');
 
   // Font Popover Dropdown Filter States
   const [isFontDropdownOpen, setIsFontDropdownOpen] = useState(false);
@@ -113,10 +129,14 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     qrSize: nfcCard.frontSide?.qrSize ?? 56,
     nameOffsetX: nfcCard.frontSide?.nameOffsetX ?? 0,
     nameOffsetY: nfcCard.frontSide?.nameOffsetY ?? 0,
+    secondaryOffsetX: nfcCard.frontSide?.secondaryOffsetX ?? 0,
+    secondaryOffsetY: nfcCard.frontSide?.secondaryOffsetY ?? 0,
     qrOffsetX: nfcCard.frontSide?.qrOffsetX ?? 0,
     qrOffsetY: nfcCard.frontSide?.qrOffsetY ?? 0,
     brandOffsetX: nfcCard.frontSide?.brandOffsetX ?? 0,
     brandOffsetY: nfcCard.frontSide?.brandOffsetY ?? 0,
+    bottomLabelOffsetX: nfcCard.frontSide?.bottomLabelOffsetX ?? 0,
+    bottomLabelOffsetY: nfcCard.frontSide?.bottomLabelOffsetY ?? 0,
     primaryText: nfcCard.frontSide?.primaryText || nfcCard.engravedName || username.toUpperCase(),
     secondaryText: nfcCard.frontSide?.secondaryText || nfcCard.engravedTagline || 'DIGITAL CREATOR & FOUNDER',
     topLabel: nfcCard.frontSide?.topLabel || 'TAPPING',
@@ -147,10 +167,14 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     qrSize: nfcCard.backSide?.qrSize ?? 64,
     nameOffsetX: nfcCard.backSide?.nameOffsetX ?? 0,
     nameOffsetY: nfcCard.backSide?.nameOffsetY ?? 0,
+    secondaryOffsetX: nfcCard.backSide?.secondaryOffsetX ?? 0,
+    secondaryOffsetY: nfcCard.backSide?.secondaryOffsetY ?? 0,
     qrOffsetX: nfcCard.backSide?.qrOffsetX ?? 0,
     qrOffsetY: nfcCard.backSide?.qrOffsetY ?? 0,
     brandOffsetX: nfcCard.backSide?.brandOffsetX ?? 0,
     brandOffsetY: nfcCard.backSide?.brandOffsetY ?? 0,
+    bottomLabelOffsetX: nfcCard.backSide?.bottomLabelOffsetX ?? 0,
+    bottomLabelOffsetY: nfcCard.backSide?.bottomLabelOffsetY ?? 0,
     primaryText: nfcCard.backSide?.primaryText || 'TAP ANY PHONE TO CONNECT',
     secondaryText: nfcCard.backSide?.secondaryText || `${displayHost}/${username}`,
     topLabel: nfcCard.backSide?.topLabel || 'TAPPING SMART CARD',
@@ -243,21 +267,21 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   });
 
   const nudgeOffset = (
-    fieldX: 'nameOffsetX' | 'qrOffsetX' | 'brandOffsetX',
-    fieldY: 'nameOffsetY' | 'qrOffsetY' | 'brandOffsetY',
+    fieldX: 'nameOffsetX' | 'qrOffsetX' | 'brandOffsetX' | 'secondaryOffsetX' | 'bottomLabelOffsetX',
+    fieldY: 'nameOffsetY' | 'qrOffsetY' | 'brandOffsetY' | 'secondaryOffsetY' | 'bottomLabelOffsetY',
     deltaX: number,
     deltaY: number
   ) => {
     const currentX = currentConfig[fieldX] ?? 0;
     const currentY = currentConfig[fieldY] ?? 0;
-    const newX = Math.max(-32, Math.min(32, currentX + deltaX));
-    const newY = Math.max(-20, Math.min(20, currentY + deltaY));
+    const newX = Math.max(-48, Math.min(48, currentX + deltaX));
+    const newY = Math.max(-36, Math.min(36, currentY + deltaY));
     updateCurrentConfig({ [fieldX]: newX, [fieldY]: newY });
   };
 
   const resetOffset = (
-    fieldX: 'nameOffsetX' | 'qrOffsetX' | 'brandOffsetX',
-    fieldY: 'nameOffsetY' | 'qrOffsetY' | 'brandOffsetY'
+    fieldX: 'nameOffsetX' | 'qrOffsetX' | 'brandOffsetX' | 'secondaryOffsetX' | 'bottomLabelOffsetX',
+    fieldY: 'nameOffsetY' | 'qrOffsetY' | 'brandOffsetY' | 'secondaryOffsetY' | 'bottomLabelOffsetY'
   ) => {
     updateCurrentConfig({ [fieldX]: 0, [fieldY]: 0 });
   };
@@ -424,12 +448,72 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     setSaveConfirmModalOpen(true);
   };
 
+  const handleDownloadPng = async () => {
+    setIsExporting(true);
+    showToast('Generating PNG...', 'Rendering 1024x648 high-res metal card', 'info');
+    try {
+      await exportCardAsPng(nfcCard, material, activeSide, username, displayHost);
+      showToast('PNG Downloaded', 'Saved high-res image to your device', 'success');
+    } catch {
+      showToast('Export Failed', 'Could not generate card PNG', 'error');
+    } finally {
+      setIsExporting(false);
+      setExportDropdownOpen(false);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    setIsExporting(true);
+    showToast('Generating Printable PDF...', 'Compiling ISO standard card blueprint', 'info');
+    try {
+      await exportCardAsPdf(nfcCard, material, activeSide, username, displayHost);
+      showToast('PDF Exported', 'Print-ready vector PDF downloaded', 'success');
+    } catch {
+      showToast('Export Failed', 'Could not generate card PDF', 'error');
+    } finally {
+      setIsExporting(false);
+      setExportDropdownOpen(false);
+    }
+  };
+
+  const handleDownloadHtml = () => {
+    try {
+      exportCardAsHtml(nfcCard, material, activeSide, username, displayHost);
+      showToast('Vector HTML / SVG Saved', 'Downloaded vector card blueprint', 'success');
+    } catch {
+      showToast('Export Failed', 'Could not generate HTML blueprint', 'error');
+    } finally {
+      setExportDropdownOpen(false);
+    }
+  };
+
   const handlePlaceOrder = () => {
     confetti({
-      particleCount: 120,
-      spread: 80,
+      particleCount: 140,
+      spread: 90,
       origin: { y: 0.6 },
     });
+
+    // Create real persistent order in storage/backend
+    const newOrder = createMetalCardOrder({
+      userId: 'usr_001',
+      userName: shippingName || username.toUpperCase(),
+      userEmail: 'aarav@tapping.bio',
+      userPhone: shippingPhone,
+      material,
+      engravedName: frontSide.primaryText || nfcCard.engravedName || username.toUpperCase(),
+      engravedTagline: frontSide.secondaryText || nfcCard.engravedTagline || 'DIGITAL CREATOR & FOUNDER',
+      qrUrl: `https://${displayHost}/${username}`,
+      shippingAddress: {
+        name: shippingName || username.toUpperCase(),
+        street: shippingStreet,
+        city: shippingCity,
+        state: shippingState,
+        zip: shippingZip,
+        country: 'India',
+      },
+    });
+
     const updated: NFCCardDesign = {
       ...nfcCard,
       material,
@@ -439,11 +523,15 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
       engravedName: frontSide.primaryText || nfcCard.engravedName,
       engravedTagline: frontSide.secondaryText || nfcCard.engravedTagline,
       orderStatus: 'in_production',
-      trackingNumber: `TAP-${Math.floor(100000 + Math.random() * 900000)}`,
+      trackingNumber: newOrder.trackingNumber,
     };
     onUpdateCard(updated);
     setOrderModalOpen(false);
-    showToast('Order Placed Successfully', 'Your bespoke metal NFC card is queued for precision laser printing', 'success');
+    showToast(
+      'Order Confirmed!',
+      `Order ${newOrder.orderNumber} placed. Tracking: ${newOrder.trackingNumber}. Visible in Admin Panel & Orders tab.`,
+      'success'
+    );
   };
 
   const flipCard = () => {
@@ -532,16 +620,69 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 flex-wrap">
+          {/* Download Blueprint Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+              className="px-4 py-2 rounded-full bg-[#FAF7F2] hover:bg-white text-charcoal text-xs font-bold flex items-center gap-1.5 border border-black/10 transition-colors shadow-xs cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5 text-[#4F83FF]" />
+              <span>Download Blueprint</span>
+              <ChevronDown className="w-3 h-3 text-charcoal/60" />
+            </button>
+
+            {exportDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl border border-black/10 shadow-float z-30 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-150">
+                <button
+                  type="button"
+                  onClick={handleDownloadPng}
+                  disabled={isExporting}
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-charcoal hover:bg-[#EFF4FF] flex items-center justify-between transition-colors cursor-pointer"
+                >
+                  <span>Image (PNG 4K)</span>
+                  <span className="text-[10px] text-charcoal/40 font-mono">.png</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadPdf}
+                  disabled={isExporting}
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-charcoal hover:bg-[#EFF4FF] flex items-center justify-between transition-colors cursor-pointer"
+                >
+                  <span>Printable Vector PDF</span>
+                  <span className="text-[10px] text-charcoal/40 font-mono">.pdf</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadHtml}
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-charcoal hover:bg-[#EFF4FF] flex items-center justify-between transition-colors cursor-pointer"
+                >
+                  <span>Vector HTML / SVG</span>
+                  <span className="text-[10px] text-charcoal/40 font-mono">.html</span>
+                </button>
+              </div>
+            )}
+          </div>
+
           <button
             onClick={flipCard}
             className="px-4 py-2 rounded-full bg-[#FAF7F2] hover:bg-white text-charcoal text-xs font-bold flex items-center gap-1.5 border border-black/10 transition-colors shadow-xs cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>Flip Card ({flipped ? 'Back' : 'Front'})</span>
+            <span>Flip ({flipped ? 'Back' : 'Front'})</span>
           </button>
+
+          <button
+            onClick={() => setOrderModalOpen(true)}
+            className="px-4 py-2 rounded-full bg-[#B6F554] hover:bg-[#A6EC3C] text-charcoal text-xs font-black flex items-center gap-1.5 border border-black/10 shadow-xs transition-transform active:scale-95 cursor-pointer"
+          >
+            <ShoppingBag className="w-3.5 h-3.5 text-charcoal" />
+            <span>Order Metal Card (₹1,499)</span>
+          </button>
+
           <button
             onClick={handleSaveDesign}
-            className="px-5 py-2 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
+            className="px-4 py-2 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
           >
             <Check className="w-3.5 h-3.5 text-[#FDF166]" />
             <span>Save Blueprint</span>
@@ -730,7 +871,8 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                       style={{ 
                         color: frontSide.textColor || '#FFFFFF',
                         fontSize: `${frontSide.secondaryTextSize || 9}px`,
-                        lineHeight: 1.2
+                        lineHeight: 1.2,
+                        transform: `translate(${frontSide.secondaryOffsetX || 0}px, ${frontSide.secondaryOffsetY || 0}px)`,
                       }}
                     >
                       {frontSide.secondaryText || 'DIGITAL CREATOR & FOUNDER'}
@@ -1450,6 +1592,54 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                   </button>
                 ))}
               </div>
+
+              {/* Fine Nudge Controls for Tagline */}
+              <div className="flex items-center justify-between pt-1 border-t border-black/5">
+                <span className="text-[10px] font-bold text-charcoal/60">Tagline Nudge:</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('secondaryOffsetX', 'secondaryOffsetY', -4, 0)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Left"
+                  >
+                    <ArrowLeft className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('secondaryOffsetX', 'secondaryOffsetY', 4, 0)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Right"
+                  >
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('secondaryOffsetX', 'secondaryOffsetY', 0, -4)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Up"
+                  >
+                    <ArrowUp className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('secondaryOffsetX', 'secondaryOffsetY', 0, 4)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Down"
+                  >
+                    <ArrowDown className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => resetOffset('secondaryOffsetX', 'secondaryOffsetY')}
+                    className="px-2 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 text-[10px] font-bold cursor-pointer flex items-center gap-1"
+                    title="Reset Position"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                    <span>Reset</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Sub-section C: Brand "TAPPING" Sizing & Placement */}
@@ -1991,16 +2181,17 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
         </div>
       )}
 
-      {/* Checkout Modal */}
+      {/* Comprehensive Hardware Order Modal */}
       {orderModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-4xl p-6 max-w-md w-full border border-black/10 shadow-float text-left animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-4xl p-6 sm:p-7 max-w-lg w-full border border-black/10 shadow-2xl text-left animate-in fade-in zoom-in-95 duration-200 my-8">
             <div className="flex items-center justify-between pb-3 border-b border-black/5">
               <div className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-charcoal" />
-                <h3 className="font-black text-sm text-charcoal">Checkout Custom Metal NFC Card</h3>
+                <ShoppingBag className="w-5 h-5 text-charcoal" />
+                <h3 className="font-black text-base text-charcoal">Order Custom Laser-Engraved Metal NFC Card</h3>
               </div>
               <button
+                type="button"
                 onClick={() => setOrderModalOpen(false)}
                 className="text-charcoal/60 hover:text-charcoal p-1 rounded-lg cursor-pointer"
               >
@@ -2008,53 +2199,139 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
               </button>
             </div>
 
-            <div className="py-4 space-y-3 text-xs">
-              <div className="p-3.5 bg-[#FAF7F2] rounded-2xl flex justify-between items-center border border-black/5">
+            <div className="py-4 space-y-4 text-xs max-h-[75vh] overflow-y-auto pr-1">
+              {/* Selected Hardware Spec Banner */}
+              <div className="p-3.5 bg-[#FAF7F2] rounded-2xl flex justify-between items-center border border-black/10 shadow-2xs">
                 <div>
-                  <p className="font-black text-charcoal">{currentMat.name}</p>
-                  <p className="text-[11px] text-charcoal/60 font-medium">
-                    Laser Engraved: {frontSide.primaryText || username.toUpperCase()}
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-[#141518] border border-black/20" />
+                    <p className="font-black text-charcoal text-sm">{currentMat.name}</p>
+                  </div>
+                  <p className="text-[11px] text-charcoal/70 font-medium mt-1">
+                    Engraved Name: <strong className="text-charcoal font-black">{frontSide.primaryText || username.toUpperCase()}</strong>
                   </p>
-                  <p className="text-[10px] text-emerald-600 font-bold mt-0.5">
-                    {sideMode === 'single_sided' ? 'Single-Sided Precision Print' : 'Dual-Sided Precision Print'}
+                  <p className="text-[10px] text-emerald-700 font-bold mt-0.5">
+                    13.56MHz NTAG216 Contactless Chip &bull; Vector Dynamic QR
                   </p>
                 </div>
-                <span className="font-black text-sm text-charcoal">₹1,499</span>
-              </div>
-
-              <div className="space-y-1.5 text-charcoal/80 font-medium">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>₹1,499</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Pan-India Express Tracked Shipping</span>
-                  <span className="text-emerald-600 font-bold">Free</span>
-                </div>
-                <div className="flex justify-between font-black text-charcoal text-sm pt-2 border-t border-black/5">
-                  <span>Total</span>
-                  <span>₹1,499</span>
+                <div className="text-right">
+                  <span className="font-black text-lg text-charcoal">₹1,499</span>
+                  <span className="block text-[9px] text-emerald-600 font-bold">Free Tracked Courier</span>
                 </div>
               </div>
 
+              {/* Recipient Contact Details */}
+              <div className="space-y-2">
+                <h4 className="text-[11px] font-black uppercase tracking-wider text-charcoal/70">
+                  Recipient & Contact Details
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] font-bold text-charcoal/60 block mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      value={shippingName}
+                      onChange={(e) => setShippingName(e.target.value)}
+                      placeholder="Your Full Name"
+                      className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-charcoal/60 block mb-1">Phone Number (For Courier SMS)</label>
+                    <input
+                      type="text"
+                      value={shippingPhone}
+                      onChange={(e) => setShippingPhone(e.target.value)}
+                      placeholder="+91 98765 43210"
+                      className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Pan-India Shipping Address */}
+              <div className="space-y-2">
+                <h4 className="text-[11px] font-black uppercase tracking-wider text-charcoal/70">
+                  Delivery Address (Pan-India Express)
+                </h4>
+                <div>
+                  <label className="text-[10px] font-bold text-charcoal/60 block mb-1">Street Address / Flat / Floor</label>
+                  <input
+                    type="text"
+                    value={shippingStreet}
+                    onChange={(e) => setShippingStreet(e.target.value)}
+                    placeholder="e.g. Flat 402, Skyline Residency, 100ft Road"
+                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-[10px] font-bold text-charcoal/60 block mb-1">City</label>
+                    <input
+                      type="text"
+                      value={shippingCity}
+                      onChange={(e) => setShippingCity(e.target.value)}
+                      placeholder="Bengaluru"
+                      className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-charcoal/60 block mb-1">State</label>
+                    <input
+                      type="text"
+                      value={shippingState}
+                      onChange={(e) => setShippingState(e.target.value)}
+                      placeholder="Karnataka"
+                      className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-charcoal/60 block mb-1">PIN Code</label>
+                    <input
+                      type="text"
+                      value={shippingZip}
+                      onChange={(e) => setShippingZip(e.target.value)}
+                      placeholder="560038"
+                      className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Special Laser Engraving Instructions */}
+              <div>
+                <label className="text-[10px] font-bold text-charcoal/60 block mb-1">Special Engraving Notes (Optional)</label>
+                <input
+                  type="text"
+                  value={engravingNotes}
+                  onChange={(e) => setEngravingNotes(e.target.value)}
+                  placeholder="e.g. Ensure laser etch is high contrast"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-medium text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                />
+              </div>
+
+              {/* Security & Warranty Badge */}
               <div className="p-3 rounded-2xl bg-[#EFF4FF] border border-[#4F83FF]/20 flex items-center gap-2 text-[11px] text-charcoal font-medium">
                 <ShieldCheck className="w-4 h-4 text-[#4F83FF] shrink-0" />
-                <span>Protected with Razorpay Secure Checkout &bull; Lifetime NTAG216 Chip Warranty</span>
+                <span>Protected by Razorpay &bull; Lifetime NTAG216 Microchip Hardware Warranty</span>
               </div>
             </div>
 
-            <div className="flex gap-2.5 pt-2">
+            <div className="flex gap-2.5 pt-3 border-t border-black/5">
               <button
+                type="button"
                 onClick={() => setOrderModalOpen(false)}
-                className="flex-1 py-2.5 rounded-full bg-[#FAF7F2] hover:bg-gray-100 text-xs font-bold text-charcoal border border-black/10 transition-colors cursor-pointer"
+                className="flex-1 py-3 rounded-full bg-[#FAF7F2] hover:bg-gray-100 text-xs font-bold text-charcoal border border-black/10 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handlePlaceOrder}
-                className="flex-2 py-2.5 px-6 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                className="flex-2 py-3 px-6 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
               >
-                <span>Pay ₹1,499 with UPI / Razorpay</span>
+                <span>Confirm & Place Order (₹1,499)</span>
+                <Check className="w-3.5 h-3.5 text-[#B6F554]" />
               </button>
             </div>
           </div>

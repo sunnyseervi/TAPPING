@@ -203,10 +203,16 @@ export interface CardSideConfig {
   qrSize?: number; // 36 to 90 px (default: 56)
   nameOffsetX?: number; // -100 to 100 px
   nameOffsetY?: number; // -100 to 100 px
+  secondaryOffsetX?: number; // -100 to 100 px
+  secondaryOffsetY?: number; // -100 to 100 px
   qrOffsetX?: number; // -100 to 100 px
   qrOffsetY?: number; // -100 to 100 px
   brandOffsetX?: number; // -100 to 100 px
   brandOffsetY?: number; // -100 to 100 px
+  bottomLabelOffsetX?: number; // -100 to 100 px
+  bottomLabelOffsetY?: number; // -100 to 100 px
+  noteOffsetX?: number; // -100 to 100 px
+  noteOffsetY?: number; // -100 to 100 px
 
   primaryText?: string; // Main title / engraved name
   secondaryText?: string; // Tagline / role / company
@@ -290,4 +296,80 @@ export interface StoreConfig {
   products: StoreProduct[];
   storeVisits?: number;
   whatsappOrders?: number;
+}
+
+export interface UserRecord {
+  id: string;
+  username: string;
+  email: string;
+  displayName: string;
+  avatarUrl?: string;
+  status: 'active' | 'blocked';
+  plan: 'free' | 'pro_monthly' | 'pro_yearly' | 'metal_bundle';
+  createdAt: string;
+  planExpiresAt: string;
+  profile: Profile;
+  links: LinkBlock[];
+  products: StoreProduct[];
+  nfcCard?: NFCCardDesign;
+  totalViews: number;
+  totalClicks: number;
+  lastActiveAt: string;
+}
+
+export interface MetalCardOrder {
+  id: string;
+  orderNumber: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  userPhone: string;
+  material: CardMaterial;
+  engravedName: string;
+  engravedTagline: string;
+  qrUrl: string;
+  status: 'pending' | 'in_production' | 'shipped' | 'delivered' | 'cancelled';
+  trackingNumber?: string;
+  shippingCarrier?: string;
+  amount: number;
+  currency: 'INR';
+  paymentStatus: 'paid' | 'pending' | 'refunded';
+  createdAt: string;
+  shippingAddress: {
+    name: string;
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+  };
+}
+
+export interface PaymentRecord {
+  id: string;
+  userId: string;
+  userEmail: string;
+  amount: number;
+  currency: 'INR';
+  type: 'subscription_monthly' | 'subscription_yearly' | 'metal_card';
+  status: 'succeeded' | 'pending' | 'failed' | 'refunded';
+  method: 'UPI' | 'Card' | 'NetBanking';
+  transactionRef: string;
+  createdAt: string;
+  planName: string;
+}
+
+export interface AdminSession {
+  isAuthenticated: boolean;
+  adminEmail: string;
+  token: string;
+  loginTime: string;
+}
+
+export interface SystemSettings {
+  maintenanceMode: boolean;
+  globalAnnouncement: string;
+  allowSignups: boolean;
+  supabaseConnected: boolean;
+  supabaseUrl?: string;
 }

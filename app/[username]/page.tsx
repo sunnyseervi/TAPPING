@@ -10,7 +10,8 @@ import {
   recordPageView, 
   recordVCardDownload, 
   recordQRScan, 
-  getStoredStore 
+  getStoredStore,
+  getUserByUsername
 } from '@/lib/storage';
 import { 
   initialProfile, 
@@ -33,7 +34,8 @@ import {
   Phone, 
   MapPin, 
   X, 
-  ArrowUpRight 
+  ArrowUpRight,
+  Ban 
 } from 'lucide-react';
 import { downloadVCardFile } from '@/lib/vcard';
 import QRCode from 'qrcode';
@@ -69,11 +71,20 @@ export default function PublicProfilePage() {
   useEffect(() => {
     recordPageView();
     const reloadPublishedData = () => {
-      const storedProfile = getStoredProfile();
-      setProfile({ ...storedProfile, username: usernameParam || storedProfile.username });
+      const userRec = getUserByUsername(usernameParam);
+      if (userRec) {
+        setProfile({ ...userRec.profile, username: userRec.username });
+        if (userRec.links && userRec.links.length > 0) setLinks(userRec.links);
+        if (userRec.products && userRec.products.length > 0) {
+          setStore((prev) => ({ ...prev, products: userRec.products }));
+        }
+      } else {
+        const storedProfile = getStoredProfile();
+        setProfile({ ...storedProfile, username: usernameParam || storedProfile.username });
+        setLinks(getStoredLinks());
+        setStore(getStoredStore());
+      }
       setVcard(getStoredVCard());
-      setLinks(getStoredLinks());
-      setStore(getStoredStore());
       setIsHydrated(true);
     };
     reloadPublishedData();
@@ -133,6 +144,35 @@ export default function PublicProfilePage() {
           </div>
           <div className="w-full h-14 rounded-2xl bg-black/5 mt-3" />
           <div className="w-full h-14 rounded-2xl bg-black/5" />
+        </div>
+      </div>
+    );
+  }
+
+  // Check if creator has been administratively suspended by superuser
+  const userRecord = getUserByUsername(usernameParam);
+  if (userRecord && userRecord.status === 'blocked') {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-[#141518] text-white text-center">
+        <div className="max-w-md w-full p-8 rounded-4xl bg-[#1C1E24] border border-white/10 shadow-2xl flex flex-col items-center">
+          <div className="w-16 h-16 rounded-3xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center mb-4">
+            <Ban className="w-8 h-8" />
+          </div>
+          <h1 className="text-2xl font-black tracking-tight">Account Suspended</h1>
+          <p className="text-xs text-white/70 mt-2 leading-relaxed">
+            The profile for <strong className="text-white">@{usernameParam}</strong> has been temporarily suspended by the TAPPING administration for policy review.
+          </p>
+          <div className="mt-6 w-full pt-6 border-t border-white/10 flex flex-col gap-2.5">
+            <a
+              href="/"
+              className="w-full py-3 rounded-2xl bg-white text-[#141518] font-black text-xs hover:bg-gray-100 transition-colors"
+            >
+              Return to TAPPING Home
+            </a>
+            <p className="text-[10px] text-white/40 font-mono">
+              Administrative Support: admin@tapping.bio
+            </p>
+          </div>
         </div>
       </div>
     );

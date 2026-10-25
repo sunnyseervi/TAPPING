@@ -33,6 +33,7 @@ import { downloadVCardFile } from '@/lib/vcard';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 import { CardMaterial } from '@/lib/types';
+import TappingLogo from '@/components/brand/TappingLogo';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -155,15 +156,9 @@ export default function LandingPage() {
       
       {/* TOP NAVIGATION */}
       <nav className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between relative z-20">
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="w-10 h-10 rounded-2xl bg-[#141518] text-white flex items-center justify-center font-black text-lg shadow-sm">
-            T
-          </div>
-          <span className="font-black text-xl tracking-tight text-charcoal">TAPPING</span>
-          <span className="hidden sm:inline-block text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#FDF166] text-charcoal border border-black/10">
-            PRO PLATFORM
-          </span>
-        </div>
+        <Link href="/" className="flex items-center gap-3 shrink-0">
+          <TappingLogo size="md" showBadge={true} />
+        </Link>
 
         <div className="hidden lg:flex items-center gap-6 text-xs font-bold text-charcoal/70">
           <a href="#showcase" className="hover:text-black transition-colors">Link-in-Bio</a>
@@ -1104,15 +1099,18 @@ export default function LandingPage() {
 
       {/* FOOTER */}
       <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-black/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-charcoal/60">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-[#141518] text-white flex items-center justify-center font-black text-xs">
-            T
-          </div>
-          <span className="font-black text-charcoal">TAPPING &bull; Production Platform</span>
+        <div className="flex items-center gap-3">
+          <TappingLogo size="xs" variant="full" />
+          <span className="text-charcoal/40">&bull; Production Platform</span>
         </div>
-        <Link href="/dashboard" className="text-charcoal hover:underline">
-          Go to Workspace &rarr;
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/admin" className="text-charcoal/70 hover:text-black hover:underline">
+            Admin Access
+          </Link>
+          <Link href="/dashboard" className="text-charcoal font-black hover:underline">
+            Creator Dashboard &rarr;
+          </Link>
+        </div>
       </footer>
     </div>
   );

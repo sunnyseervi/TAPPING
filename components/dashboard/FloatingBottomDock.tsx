@@ -52,15 +52,15 @@ export default function FloatingBottomDock({
           <Plus className="w-6 h-6 stroke-[3]" />
         </button>
 
-        {/* Digital Card (vCard & QR) */}
+        {/* Account & Orders */}
         <button
-          onClick={() => onSelectTab('digital-card')}
+          onClick={() => onSelectTab('account')}
           className={`p-2 rounded-full transition-all ${
-            activeTab === 'digital-card'
+            activeTab === 'account'
               ? 'text-white scale-110'
               : 'text-white/60 hover:text-white'
           }`}
-          title="Digital Card"
+          title="Account & Orders"
         >
           <CreditCard className="w-5 h-5 stroke-[2.2]" />
         </button>

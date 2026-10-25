@@ -38,6 +38,7 @@ import AnimatedOnboarding from '@/components/onboarding/AnimatedOnboarding';
 import LivePhonePreview from '@/components/preview/LivePhonePreview';
 import StoreManager from '@/components/dashboard/StoreManager';
 import NFCTagShop from '@/components/dashboard/NFCTagShop';
+import AccountOrdersSection from '@/components/dashboard/AccountOrdersSection';
 import { useToast } from '@/components/ui/Toast';
 import { Check, X, CreditCard, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -96,8 +97,10 @@ function DashboardContent() {
     } else if (tab === 'themes') {
       setActiveTab('profile');
       setEditSectionTab('themes');
+    } else if (tab === 'account' || tab === 'billing' || tab === 'orders') {
+      setActiveTab('account');
     } else if (tab === 'digital-card') {
-      setActiveTab('digital-card');
+      setActiveTab('nfc');
     } else if (tab === 'store') {
       setActiveTab('profile');
       setEditSectionTab('products');
@@ -414,6 +417,16 @@ function DashboardContent() {
               nfcCard={nfcCard}
               username={profile.username}
               onUpdateCard={handleUpdateNFCCard}
+            />
+          )}
+
+          {/* TAB: USER ACCOUNT & ORDERS */}
+          {activeTab === 'account' && (
+            <AccountOrdersSection
+              profile={profile}
+              subscription={subscription}
+              nfcCard={nfcCard}
+              onUpgradeClick={() => setShowUpgradeModal(true)}
             />
           )}
         </main>
