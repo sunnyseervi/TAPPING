@@ -14,6 +14,9 @@ import {
   Calendar, 
   Headphones,
   Mail,
+  Phone,
+  MapPin,
+  Building2,
   ArrowUpRight,
   Wifi
 } from 'lucide-react';
@@ -179,14 +182,24 @@ export default function LivePhonePreview({
               @{profile.username}
             </p>
 
-            {profile.badgeTitle && (
-              <span className="text-[10px] font-black px-3 py-0.5 rounded-full bg-[#FDF166] text-charcoal border border-black/10 shadow-2xs mt-1.5">
-                {profile.badgeTitle}
+            {/* Work & Organization */}
+            {(profile.badgeTitle || vcard.organization) && (
+              <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#FDF166] text-charcoal border border-black/10 shadow-2xs mt-1.5 flex items-center gap-1">
+                <span>{profile.badgeTitle || vcard.jobTitle}</span>
+                {vcard.organization && <span>&bull; {vcard.organization}</span>}
               </span>
             )}
 
+            {/* Address / Location */}
+            {(vcard.city || vcard.country) && (
+              <div className="flex items-center gap-1 mt-1 text-[9px] font-bold text-charcoal/50">
+                <MapPin className="w-2.5 h-2.5 text-rose-500" />
+                <span>{[vcard.city, vcard.country].filter(Boolean).join(', ')}</span>
+              </div>
+            )}
+
             {profile.bio && (
-              <p className="text-[11px] text-charcoal/70 text-center mt-2 max-w-[250px] leading-relaxed font-medium">
+              <p className="text-[10px] text-charcoal/70 text-center mt-2 max-w-[250px] leading-relaxed font-medium">
                 {profile.bio}
               </p>
             )}
@@ -197,11 +210,35 @@ export default function LivePhonePreview({
                 downloadVCardFile(vcard, `${profile.username}_contact.vcf`);
                 showToast('Contact Saved', 'Downloaded contact card to phonebook', 'success');
               }}
-              className="mt-3.5 w-full py-2.5 px-4 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95 cursor-pointer"
+              className="mt-3 w-full py-2 px-3 rounded-full bg-[#141518] hover:bg-black text-white text-[11px] font-black flex items-center justify-center gap-1.5 shadow-xs transition-transform active:scale-95 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-[#FDF166] stroke-[2.5]" />
               <span>Save Contact Card</span>
             </button>
+
+            {/* Quick Contact Row (Call / Email) */}
+            {(vcard.workPhone || vcard.workEmail || profile.socialLinks?.phone) && (
+              <div className="grid grid-cols-2 gap-1.5 w-full mt-1.5">
+                {(vcard.workPhone || profile.socialLinks?.phone) && (
+                  <a
+                    href={`tel:${(vcard.workPhone || profile.socialLinks?.phone || '').replace(/[^0-9+]/g, '')}`}
+                    className="py-1.5 px-2 rounded-xl bg-white border border-black/10 text-[10px] font-bold text-charcoal flex items-center justify-center gap-1 shadow-2xs truncate"
+                  >
+                    <Phone className="w-2.5 h-2.5 text-[#34A853]" />
+                    <span className="truncate">Call</span>
+                  </a>
+                )}
+                {(vcard.workEmail || profile.socialLinks?.email) && (
+                  <a
+                    href={`mailto:${vcard.workEmail || profile.socialLinks?.email}`}
+                    className="py-1.5 px-2 rounded-xl bg-white border border-black/10 text-[10px] font-bold text-charcoal flex items-center justify-center gap-1 shadow-2xs truncate"
+                  >
+                    <Mail className="w-2.5 h-2.5 text-[#4F83FF]" />
+                    <span className="truncate">Email</span>
+                  </a>
+                )}
+              </div>
+            )}
 
             {/* Monoline Social Icons Strip */}
             <div className="w-full py-3 flex items-center justify-center gap-2">

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Profile, LinkBlock, StyleVariant } from '@/lib/types';
+import { Profile, LinkBlock, StyleVariant, VCardProfile } from '@/lib/types';
 import { 
   User, 
   Plus, 
@@ -20,23 +20,30 @@ import {
   UserCheck, 
   Save, 
   ExternalLink,
-  Edit2
+  Edit2,
+  Phone,
+  Building2,
+  MapPin
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 
 interface EditProfileSectionProps {
   profile: Profile;
+  vcard?: VCardProfile;
   links: LinkBlock[];
   onUpdateProfile: (updated: Profile) => void;
+  onUpdateVCard?: (updated: VCardProfile) => void;
   onUpdateLinks: (newLinks: LinkBlock[]) => void;
   onLiveChange?: (updated: Profile) => void;
 }
 
 export default function EditProfileSection({
   profile,
+  vcard,
   links,
   onUpdateProfile,
+  onUpdateVCard,
   onUpdateLinks,
   onLiveChange,
 }: EditProfileSectionProps) {
@@ -49,19 +56,28 @@ export default function EditProfileSection({
     }
   }, []);
 
-  // Profile Form State
+  // Profile & Contact Details State
   const [displayName, setDisplayName] = useState(profile.displayName);
   const [username, setUsername] = useState(profile.username);
-  const [badgeTitle, setBadgeTitle] = useState(profile.badgeTitle || 'Product Designer');
+  const [badgeTitle, setBadgeTitle] = useState(profile.badgeTitle || vcard?.jobTitle || 'Product Designer');
   const [bio, setBio] = useState(profile.bio);
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
+  
+  // Contact Details
+  const [phone, setPhone] = useState(vcard?.workPhone || vcard?.mobilePhone || profile.socialLinks?.phone || '+1 (415) 890-2200');
+  const [organization, setOrganization] = useState(vcard?.organization || 'Tapping Technologies');
+  const [streetAddress, setStreetAddress] = useState(vcard?.streetAddress || '742 Market Street');
+  const [city, setCity] = useState(vcard?.city || 'San Francisco, CA');
+  const [country, setCountry] = useState(vcard?.country || 'United States');
+  const [website, setWebsite] = useState(vcard?.website || '');
+
   const [socialLinks, setSocialLinks] = useState({
     instagram: profile.socialLinks?.instagram || '',
     twitter: profile.socialLinks?.twitter || '',
     linkedin: profile.socialLinks?.linkedin || '',
     github: profile.socialLinks?.github || '',
-    email: profile.socialLinks?.email || '',
-    phone: profile.socialLinks?.phone || '',
+    email: profile.socialLinks?.email || vcard?.workEmail || 'contact@alexmorgan.design',
+    phone: profile.socialLinks?.phone || vcard?.workPhone || '+1 (415) 890-2200',
   });
 
   const notifyLive = (partial: Partial<Profile>) => {
@@ -73,7 +89,10 @@ export default function EditProfileSection({
         badgeTitle,
         bio,
         avatarUrl,
-        socialLinks,
+        socialLinks: {
+          ...socialLinks,
+          phone,
+        },
         ...partial,
       });
     }
@@ -98,17 +117,49 @@ export default function EditProfileSection({
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanUsername = username.toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'creator';
-    const updated: Profile = {
+    const updatedProfile: Profile = {
       ...profile,
       displayName,
       username: cleanUsername,
       badgeTitle,
       bio,
       avatarUrl,
-      socialLinks,
+      socialLinks: {
+        ...socialLinks,
+        phone,
+      },
     };
-    onUpdateProfile(updated);
-    showToast('Profile Updated', 'Your profile details have been saved', 'success');
+    onUpdateProfile(updatedProfile);
+
+    if (onUpdateVCard) {
+      const parts = displayName.trim().split(' ');
+      const fName = parts[0] || 'Alex';
+      const lName = parts.slice(1).join(' ') || 'Morgan';
+      const updatedVCard: VCardProfile = {
+        ...(vcard || {
+          id: 'vc_default',
+          userId: profile.id,
+          note: 'Saved via Tapping Bio',
+        }),
+        id: vcard?.id || 'vc_default',
+        userId: profile.id,
+        firstName: fName,
+        lastName: lName,
+        organization,
+        jobTitle: badgeTitle,
+        workPhone: phone,
+        mobilePhone: phone,
+        workEmail: socialLinks.email,
+        website: website || `http://${displayHost}/${cleanUsername}`,
+        streetAddress,
+        city,
+        country,
+        note: vcard?.note || 'Saved via Tapping Bio Space',
+      };
+      onUpdateVCard(updatedVCard);
+    }
+
+    showToast('Profile & Contact Saved', 'Your bio and contact details have been updated', 'success');
   };
 
   const openAddLinkModal = () => {
@@ -364,6 +415,84 @@ export default function EditProfileSection({
                 }}
                 rows={2}
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-charcoal/20 resize-none"
+              />
+            </div>
+
+            {/* Direct Contact & Work Information */}
+            <div>
+              <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  notifyLive({ socialLinks: { ...socialLinks, phone: e.target.value } });
+                }}
+                placeholder="+1 (415) 890-2200"
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1">
+                Company / Organization
+              </label>
+              <input
+                type="text"
+                value={organization}
+                onChange={(e) => setOrganization(e.target.value)}
+                placeholder="Tapping Technologies"
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1">
+                Street Address
+              </label>
+              <input
+                type="text"
+                value={streetAddress}
+                onChange={(e) => setStreetAddress(e.target.value)}
+                placeholder="742 Market Street"
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1">
+                City & Country
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="San Francisco, CA"
+                  className="w-full px-3 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
+                />
+                <input
+                  type="text"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  placeholder="United States"
+                  className="w-full px-3 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
+                />
+              </div>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1">
+                Website
+              </label>
+              <input
+                type="url"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                placeholder="https://alexmorgan.design"
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
             </div>
 

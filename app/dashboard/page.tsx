@@ -176,8 +176,10 @@ export default function DashboardPage() {
                 }`}>
                   <EditProfileSection
                     profile={profile}
+                    vcard={vcard}
                     links={links}
                     onUpdateProfile={handleUpdateProfile}
+                    onUpdateVCard={handleUpdateVCard}
                     onUpdateLinks={handleUpdateLinks}
                     onLiveChange={(preview) => setProfile(preview)}
                   />
