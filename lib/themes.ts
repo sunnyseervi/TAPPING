@@ -6,9 +6,13 @@ export interface ThemeConfig {
   category: 'Pop & Comic' | 'Retro & Arcade' | 'Modern & Bento' | 'Editorial & Minimal';
   description: string;
   canvasBg: string;
+  canvasBgHex: string;
   containerBg: string;
+  containerBgHex: string;
   textHeading: string;
+  textHeadingHex: string;
   textBody: string;
+  textBodyHex: string;
   accentBtn: string;
   accentBtnText: string;
   badgeBg: string;
@@ -28,9 +32,13 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     category: 'Modern & Bento',
     description: 'Warm cream canvas with soft peach, butter yellow, spring lime and cobalt cards',
     canvasBg: 'bg-[#FAF7F2]',
+    canvasBgHex: '#FAF7F2',
     containerBg: 'bg-white',
+    containerBgHex: '#FFFFFF',
     textHeading: 'text-[#141518]',
+    textHeadingHex: '#141518',
     textBody: 'text-[#4A4B50]',
+    textBodyHex: '#4A4B50',
     accentBtn: 'bg-[#141518] hover:bg-black',
     accentBtnText: 'text-white',
     badgeBg: 'bg-[#FDF166]',
@@ -66,9 +74,13 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     category: 'Pop & Comic',
     description: 'Explosive Marvel / Comic-Con pop art with bold halftone sunbursts and thick 2.5px borders',
     canvasBg: 'bg-[#FFFBEB]',
+    canvasBgHex: '#FFFBEB',
     containerBg: 'bg-white',
+    containerBgHex: '#FFFFFF',
     textHeading: 'text-black font-black',
+    textHeadingHex: '#000000',
     textBody: 'text-zinc-800 font-bold',
+    textBodyHex: '#27272A',
     accentBtn: 'bg-[#EF4444] hover:bg-[#DC2626] border-2 border-black shadow-[3px_3px_0px_#000]',
     accentBtnText: 'text-white font-black',
     badgeBg: 'bg-[#FBBF24]',
@@ -77,7 +89,7 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     defaultFont: 'comic',
     defaultPattern: 'comic-sunburst',
     defaultCardStyle: 'comic-brutalist',
-    previewColors: ['#EF4444', '#FBBF24', '#38BDF8', '#000000', '#FFFFFF'],
+    previewColors: ['#FFFBEB', '#EF4444', '#FBBF24', '#38BDF8', '#000000'],
     linkVariantClass: (variant: string) => {
       switch (variant) {
         case 'peach':
@@ -98,31 +110,35 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     id: 'retro-arcade',
     name: 'Retro 8-Bit Arcade',
     category: 'Retro & Arcade',
-    description: 'Classic arcade pixel vibe with synthwave grid lines, neon cyan, purple & 8-bit styling',
-    canvasBg: 'bg-[#0B0F19]',
-    containerBg: 'bg-[#111827]',
-    textHeading: 'text-[#38BDF8]',
-    textBody: 'text-slate-300',
-    accentBtn: 'bg-[#8B5CF6] hover:bg-[#7C3AED] border-2 border-[#C084FC]',
-    accentBtnText: 'text-white font-mono',
-    badgeBg: 'bg-[#064E3B]',
-    badgeBorder: 'border-[#10B981]',
-    badgeText: 'text-[#34D399]',
+    description: 'Nostalgic 8-bit game canvas with pixel green, arcade yellow, and synthwave cyan',
+    canvasBg: 'bg-[#F0FDF4]',
+    canvasBgHex: '#F0FDF4',
+    containerBg: 'bg-white',
+    containerBgHex: '#FFFFFF',
+    textHeading: 'text-[#14532D] font-mono font-black',
+    textHeadingHex: '#14532D',
+    textBody: 'text-[#166534] font-mono',
+    textBodyHex: '#166534',
+    accentBtn: 'bg-[#15803D] hover:bg-[#166534] border-2 border-black text-white shadow-[3px_3px_0px_#000]',
+    accentBtnText: 'text-white font-mono font-bold',
+    badgeBg: 'bg-[#DCFCE7]',
+    badgeBorder: 'border-2 border-black',
+    badgeText: 'text-[#14532D] font-mono font-bold',
     defaultFont: 'mono',
     defaultPattern: 'retro-grid',
     defaultCardStyle: 'retro-pixel',
-    previewColors: ['#0B0F19', '#38BDF8', '#8B5CF6', '#10B981', '#F43F5E'],
+    previewColors: ['#F0FDF4', '#15803D', '#FACC15', '#38BDF8', '#141518'],
     linkVariantClass: (variant: string) => {
       switch (variant) {
         case 'peach':
         case 'yellow':
-          return 'bg-[#1E1B4B] hover:bg-[#2E1065] border-2 border-[#818CF8] text-[#A5B4FC] shadow-[3px_3px_0px_#4F46E5] font-mono';
+          return 'bg-[#FEF08A] hover:bg-[#FDE047] border-2 border-black shadow-[3px_3px_0px_#000] text-black font-mono';
         case 'mint':
-          return 'bg-[#064E3B] hover:bg-[#022C22] border-2 border-[#10B981] text-[#6EE7B7] shadow-[3px_3px_0px_#059669] font-mono';
+          return 'bg-[#BBF7D0] hover:bg-[#86EFAC] border-2 border-black shadow-[3px_3px_0px_#000] text-black font-mono';
         case 'sky':
-          return 'bg-[#082F49] hover:bg-[#0C4A6E] border-2 border-[#38BDF8] text-[#7DD3FC] shadow-[3px_3px_0px_#0284C7] font-mono';
+          return 'bg-[#BAE6FD] hover:bg-[#7DD3FC] border-2 border-black shadow-[3px_3px_0px_#000] text-black font-mono';
         default:
-          return 'bg-[#182234] hover:bg-[#1E293B] border-2 border-slate-700 text-white font-mono shadow-[3px_3px_0px_#0F172A]';
+          return 'bg-white hover:bg-slate-50 border-2 border-black shadow-[3px_3px_0px_#000] text-black font-mono';
       }
     },
   },
@@ -133,9 +149,13 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     category: 'Pop & Comic',
     description: 'Playful anime street stickers, vibrant coral, candy pink and bubble typography',
     canvasBg: 'bg-[#FEFCE8]',
+    canvasBgHex: '#FEFCE8',
     containerBg: 'bg-white',
+    containerBgHex: '#FFFFFF',
     textHeading: 'text-[#1E1B4B]',
+    textHeadingHex: '#1E1B4B',
     textBody: 'text-[#4338CA]',
+    textBodyHex: '#4338CA',
     accentBtn: 'bg-[#F43F5E] hover:bg-[#E11D48] text-white rounded-3xl',
     accentBtnText: 'text-white font-bold',
     badgeBg: 'bg-[#FCE7F3]',
@@ -167,9 +187,13 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     category: 'Retro & Arcade',
     description: 'Aesthetic Greek sculpture statue, lo-fi purple haze, retro typography and sunset chill',
     canvasBg: 'bg-[#FAF5FF]',
+    canvasBgHex: '#FAF5FF',
     containerBg: 'bg-white',
+    containerBgHex: '#FFFFFF',
     textHeading: 'text-[#3B0764]',
+    textHeadingHex: '#3B0764',
     textBody: 'text-[#581C87]',
+    textBodyHex: '#581C87',
     accentBtn: 'bg-[#7E22CE] hover:bg-[#6B21A8]',
     accentBtnText: 'text-white',
     badgeBg: 'bg-[#F3E8FF]',
@@ -199,9 +223,13 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     category: 'Editorial & Minimal',
     description: 'Terracotta accents with off-white warm paper styling and classic editorial serif',
     canvasBg: 'bg-[#F4EFEA]',
+    canvasBgHex: '#F4EFEA',
     containerBg: 'bg-[#FCFBF8]',
+    containerBgHex: '#FCFBF8',
     textHeading: 'text-[#1C1A17]',
+    textHeadingHex: '#1C1A17',
     textBody: 'text-[#48443F]',
+    textBodyHex: '#48443F',
     accentBtn: 'bg-[#C0512F] hover:bg-[#A84223]',
     accentBtnText: 'text-white',
     badgeBg: 'bg-[#F2D7CE]',
@@ -233,9 +261,13 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     category: 'Editorial & Minimal',
     description: 'Crisp high-contrast Swiss typography with subtle borders and flat surfaces',
     canvasBg: 'bg-[#F8F9FA]',
+    canvasBgHex: '#F8F9FA',
     containerBg: 'bg-white',
+    containerBgHex: '#FFFFFF',
     textHeading: 'text-[#111111]',
+    textHeadingHex: '#111111',
     textBody: 'text-[#555555]',
+    textBodyHex: '#555555',
     accentBtn: 'bg-black hover:bg-zinc-800',
     accentBtnText: 'text-white',
     badgeBg: 'bg-[#E9ECEF]',
@@ -244,7 +276,7 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     defaultFont: 'sans',
     defaultPattern: 'none',
     defaultCardStyle: 'minimal-outline',
-    previewColors: ['#FFFFFF', '#F8F9FA', '#DEE2E6', '#495057', '#111111'],
+    previewColors: ['#F8F9FA', '#DEE2E6', '#495057', '#111111', '#FFFFFF'],
     linkVariantClass: () => {
       return 'bg-white hover:bg-zinc-50 border border-black/15 text-[#111111] shadow-2xs';
     },
@@ -256,9 +288,13 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     category: 'Modern & Bento',
     description: 'Organic botanical greens with soft ivory and matcha pills',
     canvasBg: 'bg-[#F3F6F2]',
+    canvasBgHex: '#F3F6F2',
     containerBg: 'bg-[#FBFDFB]',
+    containerBgHex: '#FBFDFB',
     textHeading: 'text-[#1E2B20]',
+    textHeadingHex: '#1E2B20',
     textBody: 'text-[#3E4F41]',
+    textBodyHex: '#3E4F41',
     accentBtn: 'bg-[#2E4F36] hover:bg-[#223D29]',
     accentBtnText: 'text-white',
     badgeBg: 'bg-[#D8ECD7]',
@@ -288,9 +324,13 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     category: 'Editorial & Minimal',
     description: 'Delicate dusty rose, blush canvas, and mauve accent highlights',
     canvasBg: 'bg-[#FDF6F7]',
+    canvasBgHex: '#FDF6F7',
     containerBg: 'bg-white',
+    containerBgHex: '#FFFFFF',
     textHeading: 'text-[#281A1E]',
+    textHeadingHex: '#281A1E',
     textBody: 'text-[#574349]',
+    textBodyHex: '#574349',
     accentBtn: 'bg-[#281A1E] hover:bg-black',
     accentBtnText: 'text-white',
     badgeBg: 'bg-[#FCE6E9]',
@@ -314,13 +354,17 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
 
   'cyberpunk-neon': {
     id: 'cyberpunk-neon',
-    name: 'Cyberpunk Matrix Neon',
+    name: 'Cyberpunk Matrix Neon (Dark)',
     category: 'Retro & Arcade',
-    description: 'Electric hacker matrix with terminal green wireframes and cyber glow',
-    canvasBg: 'bg-[#050B14]',
-    containerBg: 'bg-[#0B1528]',
+    description: 'The premier dark theme: electric hacker matrix with terminal green wireframes and cyber glow',
+    canvasBg: 'bg-[#090D16]',
+    canvasBgHex: '#090D16',
+    containerBg: 'bg-[#0F172A]',
+    containerBgHex: '#0F172A',
     textHeading: 'text-[#00FF66] font-mono',
+    textHeadingHex: '#00FF66',
     textBody: 'text-[#38BDF8]',
+    textBodyHex: '#38BDF8',
     accentBtn: 'bg-[#00FF66] hover:bg-[#00DD55] border-2 border-black text-black shadow-[3px_3px_0px_#00F0FF]',
     accentBtnText: 'text-black font-mono font-black',
     badgeBg: 'bg-[#022C22]',
@@ -329,9 +373,9 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     defaultFont: 'mono',
     defaultPattern: 'cyber-matrix',
     defaultCardStyle: 'cyber-terminal',
-    previewColors: ['#050B14', '#00FF66', '#00F0FF', '#0B1528', '#FFFFFF'],
+    previewColors: ['#090D16', '#00FF66', '#00F0FF', '#0F172A', '#FFFFFF'],
     linkVariantClass: (variant: string) => {
-      return 'bg-[#081220] hover:bg-[#0C1B30] border-2 border-[#00FF66] text-[#00FF66] font-mono shadow-[0_0_12px_rgba(0,255,102,0.25)] rounded-lg';
+      return 'bg-[#0F172A] hover:bg-[#1E293B] border-2 border-[#00FF66] text-[#00FF66] font-mono shadow-[0_0_12px_rgba(0,255,102,0.25)] rounded-lg';
     },
   },
 
@@ -339,22 +383,33 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     id: 'japanese-ukiyo',
     name: 'Japanese Ukiyo-e Wave',
     category: 'Editorial & Minimal',
-    description: 'Deep indigo sea, Great Wave crests, and crimson scarlet accents',
-    canvasBg: 'bg-[#0B132B]',
-    containerBg: 'bg-[#1C2541]',
-    textHeading: 'text-[#F1F5F9]',
-    textBody: 'text-[#94A3B8]',
+    description: 'Washi cream paper canvas with deep indigo Great Wave blue and scarlet red accents',
+    canvasBg: 'bg-[#FAF7F0]',
+    canvasBgHex: '#FAF7F0',
+    containerBg: 'bg-white',
+    containerBgHex: '#FFFFFF',
+    textHeading: 'text-[#1D3557] font-serif font-black',
+    textHeadingHex: '#1D3557',
+    textBody: 'text-[#334155]',
+    textBodyHex: '#334155',
     accentBtn: 'bg-[#E63946] hover:bg-[#D62828] text-white',
     accentBtnText: 'text-white font-bold',
-    badgeBg: 'bg-[#1D3557]',
-    badgeBorder: 'border-[#457B9D]',
-    badgeText: 'text-[#A8DADC]',
+    badgeBg: 'bg-[#E0F2FE]',
+    badgeBorder: 'border-[#38BDF8]',
+    badgeText: 'text-[#0369A1]',
     defaultFont: 'serif',
     defaultPattern: 'doodle-waves',
     defaultCardStyle: 'japanese-wave',
-    previewColors: ['#0B132B', '#E63946', '#457B9D', '#F1F5F9', '#1C2541'],
+    previewColors: ['#FAF7F0', '#1D3557', '#E63946', '#38BDF8', '#FFFFFF'],
     linkVariantClass: (variant: string) => {
-      return 'bg-[#1C2541] hover:bg-[#253256] border border-[#457B9D]/50 text-white shadow-xs rounded-2xl';
+      switch (variant) {
+        case 'peach':
+          return 'bg-[#FEE2E2] hover:bg-[#FECACA] border border-[#F87171] text-[#991B1B] shadow-xs rounded-2xl';
+        case 'sky':
+          return 'bg-[#E0F2FE] hover:bg-[#BAE6FD] border border-[#38BDF8] text-[#075985] shadow-xs rounded-2xl';
+        default:
+          return 'bg-white hover:bg-[#F8FAFC] border border-[#CBD5E1] text-[#1D3557] shadow-xs rounded-2xl';
+      }
     },
   },
 
@@ -364,9 +419,13 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     category: 'Pop & Comic',
     description: 'Liquid metallic silver sheen, millennium purple bubbles and futuristic chrome',
     canvasBg: 'bg-[#EEF2F6]',
+    canvasBgHex: '#EEF2F6',
     containerBg: 'bg-white',
+    containerBgHex: '#FFFFFF',
     textHeading: 'text-[#1E1B4B] font-black',
+    textHeadingHex: '#1E1B4B',
     textBody: 'text-[#4F46E5]',
+    textBodyHex: '#4F46E5',
     accentBtn: 'bg-[#8B5CF6] hover:bg-[#7C3AED] text-white border-2 border-[#C084FC] shadow-sm',
     accentBtnText: 'text-white font-bold',
     badgeBg: 'bg-[#EDE9FE]',
@@ -387,9 +446,13 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     category: 'Pop & Comic',
     description: 'Electric butter yellow, 3px solid black borders, and hard brutalist drop shadows',
     canvasBg: 'bg-[#FEF08A]',
+    canvasBgHex: '#FEF08A',
     containerBg: 'bg-white',
+    containerBgHex: '#FFFFFF',
     textHeading: 'text-black font-black',
+    textHeadingHex: '#000000',
     textBody: 'text-black font-bold',
+    textBodyHex: '#000000',
     accentBtn: 'bg-[#FFE600] hover:bg-[#FFD600] border-3 border-black text-black shadow-[4px_4px_0px_#000]',
     accentBtnText: 'text-black font-black',
     badgeBg: 'bg-[#86EFAC]',
@@ -592,7 +655,7 @@ export function resolveLinkCardClasses(
 }
 
 export function isDarkTheme(themeId?: ThemeType): boolean {
-  return themeId === 'retro-arcade' || themeId === 'cyberpunk-neon' || themeId === 'japanese-ukiyo';
+  return themeId === 'cyberpunk-neon';
 }
 
 

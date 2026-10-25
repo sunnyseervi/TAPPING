@@ -167,7 +167,10 @@ export default function PublicProfilePage() {
   const fullAddress = [vcard.streetAddress, vcard.city, vcard.country].filter(Boolean).join(', ');
 
   return (
-    <div className={`min-h-screen ${currentTheme.canvasBg} text-charcoal flex flex-col items-center justify-between p-4 sm:p-6 lg:p-10 selection:bg-[#FDF166] selection:text-charcoal transition-colors duration-200 relative overflow-hidden`}>
+    <div 
+      className={`min-h-screen ${currentTheme.canvasBg} text-charcoal flex flex-col items-center justify-between p-4 sm:p-6 lg:p-10 selection:bg-[#FDF166] selection:text-charcoal transition-colors duration-200 relative overflow-hidden`}
+      style={{ backgroundColor: currentTheme.canvasBgHex || currentTheme.previewColors[0] || '#FAF7F2' }}
+    >
       {/* Full-Screen Bio Page Theme Pattern or Custom Uploaded Wallpaper */}
       {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
         <div 

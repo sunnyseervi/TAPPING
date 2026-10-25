@@ -24,17 +24,27 @@ import {
   Trash2
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
+import confetti from 'canvas-confetti';
 import { THEMES } from '@/lib/themes';
 
 interface ThemesStudioProps {
   profile: Profile;
   onUpdateProfile: (updated: Profile) => void;
+  onLivePreviewChange?: (updated: Profile) => void;
 }
 
-export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioProps) {
+export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewChange }: ThemesStudioProps) {
   const { showToast } = useToast();
+  const [draftProfile, setDraftProfile] = useState<Profile>(profile);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeStudioTab, setActiveStudioTab] = useState<'themes' | 'typography' | 'cards' | 'background'>('themes');
   const bannerInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Synchronize draft when incoming profile ID or saved data changes
+  React.useEffect(() => {
+    setDraftProfile(profile);
+    setHasUnsavedChanges(false);
+  }, [profile.id]);
 
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,25 +59,27 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
       const updated: Profile = {
-        ...profile,
+        ...draftProfile,
         customHeaderImage: dataUrl,
         showHeaderBackground: true,
       };
-      onUpdateProfile(updated);
-      showToast('Custom Header Banner Uploaded', 'Applied directly to your profile header', 'success');
+      setDraftProfile(updated);
+      setHasUnsavedChanges(true);
+      onLivePreviewChange?.(updated);
     };
     reader.readAsDataURL(file);
   };
 
   const themeList = Object.values(THEMES);
 
-  // Active theme helper
-  const currentTheme = THEMES[profile.theme] || THEMES['pastel-bento'];
+  // Active theme helper from draft
+  const currentTheme = THEMES[draftProfile.theme] || THEMES['pastel-bento'];
 
+  // Select theme locally for live preview — ONLY saves when user clicks Save button!
   const handleSelectTheme = (themeId: ThemeType) => {
     const selected = THEMES[themeId];
     const updated: Profile = {
-      ...profile,
+      ...draftProfile,
       theme: themeId,
       fontFamily: selected.defaultFont,
       headerBackground: selected.defaultPattern,
@@ -75,71 +87,97 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
       linkCardStyle: selected.defaultCardStyle,
       fontColor: undefined,
     };
-    onUpdateProfile(updated);
-    showToast('Theme Applied', `Switched to ${selected.name}`, 'success');
+    setDraftProfile(updated);
+    setHasUnsavedChanges(true);
+    // Real-time phone preview update without saving or spamming toasts
+    onLivePreviewChange?.(updated);
   };
 
   const handleUpdateFontFamily = (font: FontFamilyType) => {
     const updated: Profile = {
-      ...profile,
+      ...draftProfile,
       fontFamily: font,
     };
-    onUpdateProfile(updated);
-    showToast('Font Updated', `Applied ${font.toUpperCase()} typography`, 'info');
+    setDraftProfile(updated);
+    setHasUnsavedChanges(true);
+    onLivePreviewChange?.(updated);
   };
 
   const handleUpdateFontSize = (size: FontSizeScale) => {
     const updated: Profile = {
-      ...profile,
+      ...draftProfile,
       fontSize: size,
     };
-    onUpdateProfile(updated);
-    showToast('Size Adjusted', `Font scale set to ${size.toUpperCase()}`, 'info');
+    setDraftProfile(updated);
+    setHasUnsavedChanges(true);
+    onLivePreviewChange?.(updated);
   };
 
   const handleUpdateFontColor = (hex: string) => {
     const updated: Profile = {
-      ...profile,
+      ...draftProfile,
       fontColor: hex,
     };
-    onUpdateProfile(updated);
-    showToast('Color Updated', `Heading color set to ${hex}`, 'info');
+    setDraftProfile(updated);
+    setHasUnsavedChanges(true);
+    onLivePreviewChange?.(updated);
   };
 
   const handleUpdateLinkCardStyle = (style: LinkCardStyleType) => {
     const updated: Profile = {
-      ...profile,
+      ...draftProfile,
       linkCardStyle: style,
     };
-    onUpdateProfile(updated);
-    showToast('Card Style Applied', `Links will render in ${style} aesthetic`, 'success');
+    setDraftProfile(updated);
+    setHasUnsavedChanges(true);
+    onLivePreviewChange?.(updated);
   };
 
   const handleUpdateHeaderPattern = (pattern: BackgroundPatternType) => {
-    // Intelligently harmonize theme if picking bright comic or pop patterns
-    let nextTheme = profile.theme;
-    if ((pattern === 'comic-sunburst' || pattern === 'comic-sunburst-red' || pattern === 'pop-halftone' || pattern === 'pop-halftone-cyan') && (profile.theme === 'retro-arcade' || profile.theme === 'cyberpunk-neon')) {
+    let nextTheme = draftProfile.theme;
+    if ((pattern === 'comic-sunburst' || pattern === 'comic-sunburst-red' || pattern === 'pop-halftone' || pattern === 'pop-halftone-cyan') && (draftProfile.theme === 'cyberpunk-neon')) {
       nextTheme = 'comic-pop';
     }
     const updated: Profile = {
-      ...profile,
+      ...draftProfile,
       theme: nextTheme,
       headerBackground: pattern,
       showHeaderBackground: pattern !== 'none',
     };
-    onUpdateProfile(updated);
-    showToast('Background Pattern Set', `Header styled with ${pattern}`, 'success');
+    setDraftProfile(updated);
+    setHasUnsavedChanges(true);
+    onLivePreviewChange?.(updated);
   };
 
   const handleToggleHeaderBackground = () => {
-    const nextVal = !profile.showHeaderBackground;
+    const nextVal = !draftProfile.showHeaderBackground;
     const updated: Profile = {
-      ...profile,
+      ...draftProfile,
       showHeaderBackground: nextVal,
-      headerBackground: nextVal ? (profile.headerBackground || 'comic-sunburst') : 'none',
+      headerBackground: nextVal ? (draftProfile.headerBackground || 'comic-sunburst') : 'none',
     };
-    onUpdateProfile(updated);
-    showToast(nextVal ? 'Header Banner Active' : 'Header Banner Hidden', '', 'info');
+    setDraftProfile(updated);
+    setHasUnsavedChanges(true);
+    onLivePreviewChange?.(updated);
+  };
+
+  // Explicit Save Handler — ONLY saves when user clicks Save button!
+  const handleSaveThemeChanges = () => {
+    onUpdateProfile(draftProfile);
+    setHasUnsavedChanges(false);
+    confetti({
+      particleCount: 60,
+      spread: 70,
+      origin: { y: 0.6 },
+    });
+    showToast('Theme Saved Successfully', `Your link-in-bio is published with ${THEMES[draftProfile.theme]?.name || 'new theme'}`, 'success');
+  };
+
+  const handleDiscardChanges = () => {
+    setDraftProfile(profile);
+    setHasUnsavedChanges(false);
+    onLivePreviewChange?.(profile);
+    showToast('Changes Discarded', 'Reverted back to saved theme', 'info');
   };
 
   const fontOptions: { id: FontFamilyType; name: string; preview: string; class: string; desc: string }[] = [
@@ -338,12 +376,25 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
           </p>
         </div>
 
-        {/* Active Theme Chip */}
-        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-          <span className="text-[11px] font-bold text-charcoal/60">Active Theme:</span>
-          <span className="px-3.5 py-1.5 rounded-full bg-[#FDF166] text-charcoal text-xs font-black border border-black/10 shadow-xs">
-            {currentTheme.name}
-          </span>
+        {/* Active Theme & Save Changes Pill */}
+        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 flex-wrap">
+          <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FAF7F2] border border-black/10">
+            <span className="text-[10px] font-bold text-charcoal/60">Selected Theme:</span>
+            <span className="text-xs font-black text-charcoal">
+              {currentTheme.name}
+            </span>
+          </div>
+
+          {hasUnsavedChanges && (
+            <button
+              type="button"
+              onClick={handleSaveThemeChanges}
+              className="px-4 py-1.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer ring-2 ring-[#4F83FF]/30"
+            >
+              <Check className="w-3.5 h-3.5 text-[#FDF166]" />
+              <span>Save Theme</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -394,12 +445,12 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
       {activeStudioTab === 'themes' && (
         <div className="flex flex-col gap-4">
           <p className="text-xs font-bold text-charcoal/60">
-            Select a design theme inspired by your reference library (Comic Pop Art, Retro Arcade, Playful Cartoons, Editorial Paper, etc.):
+            Select a design theme to preview it on the phone in real-time. Click &ldquo;Save Theme&rdquo; when ready to publish:
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {themeList.map((t) => {
-              const isSelected = profile.theme === t.id;
+              const isSelected = draftProfile.theme === t.id;
               return (
                 <div
                   key={t.id}
@@ -457,7 +508,7 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {fontOptions.map((f) => {
-                const isSelected = (profile.fontFamily || 'sans') === f.id;
+                const isSelected = (draftProfile.fontFamily || 'sans') === f.id;
                 return (
                   <div
                     key={f.id}
@@ -489,7 +540,7 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl">
               {sizeOptions.map((s) => {
-                const isSelected = (profile.fontSize || 'md') === s.id;
+                const isSelected = (draftProfile.fontSize || 'md') === s.id;
                 return (
                   <button
                     key={s.id}
@@ -515,7 +566,7 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
 
             <div className="flex flex-wrap items-center gap-3">
               {fontColorPresets.map((c) => {
-                const isSelected = (profile.fontColor || '#141518') === c.hex;
+                const isSelected = (draftProfile.fontColor || '#141518') === c.hex;
                 return (
                   <button
                     key={c.hex}
@@ -551,7 +602,7 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {cardStyles.map((cs) => {
-              const isSelected = (profile.linkCardStyle || 'solid') === cs.id;
+              const isSelected = (draftProfile.linkCardStyle || 'solid') === cs.id;
               return (
                 <div
                   key={cs.id}
@@ -599,12 +650,12 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
             <button
               onClick={handleToggleHeaderBackground}
               className={`px-4 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer ${
-                profile.showHeaderBackground
+                draftProfile.showHeaderBackground
                   ? 'bg-[#141518] text-white shadow-xs'
                   : 'bg-white border border-black/10 text-charcoal'
               }`}
             >
-              {profile.showHeaderBackground ? 'Active / Shown' : 'Disabled / Hidden'}
+              {draftProfile.showHeaderBackground ? 'Active / Shown' : 'Disabled / Hidden'}
             </button>
           </div>
 
@@ -618,11 +669,13 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
                 </p>
               </div>
 
-              {profile.customHeaderImage && (
+              {draftProfile.customHeaderImage && (
                 <button
                   onClick={() => {
-                    onUpdateProfile({ ...profile, customHeaderImage: undefined });
-                    showToast('Custom Banner Removed', 'Switched back to preset pattern', 'info');
+                    const updated = { ...draftProfile, customHeaderImage: undefined };
+                    setDraftProfile(updated);
+                    setHasUnsavedChanges(true);
+                    onLivePreviewChange?.(updated);
                   }}
                   className="px-2.5 py-1 rounded-xl bg-rose-50 text-rose-600 text-[10px] font-bold border border-rose-200 cursor-pointer flex items-center gap-1"
                 >
@@ -651,10 +704,10 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
               </button>
             </div>
 
-            {profile.customHeaderImage && (
+            {draftProfile.customHeaderImage && (
               <div 
                 className="w-full h-24 rounded-2xl border border-black/10 bg-cover bg-center shadow-xs"
-                style={{ backgroundImage: `url(${profile.customHeaderImage})` }}
+                style={{ backgroundImage: `url(${draftProfile.customHeaderImage})` }}
               />
             )}
           </div>
@@ -668,7 +721,7 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {patternPresets.map((p) => {
-                const isSelected = (profile.headerBackground || 'none') === p.id;
+                const isSelected = (draftProfile.headerBackground || 'none') === p.id;
                 return (
                   <div
                     key={p.id}
@@ -699,6 +752,58 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
           </div>
         </div>
       )}
+
+      {/* SAVE THEME & STYLES ACTION BAR */}
+      <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <p className="font-black text-xs text-charcoal">
+              {hasUnsavedChanges ? 'Unsaved Theme & Styling Changes' : 'Theme Blueprint Saved & Active'}
+            </p>
+            {hasUnsavedChanges ? (
+              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                Draft Preview
+              </span>
+            ) : (
+              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                <Check className="w-2.5 h-2.5" />
+                Published
+              </span>
+            )}
+          </div>
+          <p className="text-[11px] text-charcoal/60 mt-0.5">
+            {hasUnsavedChanges 
+              ? `Previewing "${THEMES[draftProfile.theme]?.name || 'Theme'}" on the live phone. Click Save to publish.` 
+              : `Active on your live public link-in-bio: ${THEMES[profile.theme]?.name || 'Theme'}`}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {hasUnsavedChanges && (
+            <button
+              type="button"
+              onClick={handleDiscardChanges}
+              className="flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-white hover:bg-gray-100 border border-black/10 text-xs font-bold text-charcoal cursor-pointer"
+            >
+              Discard
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={handleSaveThemeChanges}
+            disabled={!hasUnsavedChanges}
+            className={`flex-1 sm:flex-none px-6 py-2.5 rounded-full text-xs font-black flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer ${
+              hasUnsavedChanges
+                ? 'bg-[#4F83FF] hover:bg-[#3B6DE6] text-white shadow-sm ring-2 ring-[#4F83FF]/30'
+                : 'bg-black/10 text-charcoal/40 cursor-not-allowed'
+            }`}
+          >
+            <Check className="w-4 h-4 text-[#FDF166]" />
+            <span>{hasUnsavedChanges ? 'Save Theme & Publish' : 'Saved'}</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

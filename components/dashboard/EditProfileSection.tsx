@@ -1383,6 +1383,9 @@ export default function EditProfileSection({
             onUpdateProfile(updated);
             onLiveChange?.(updated);
           }}
+          onLivePreviewChange={(updated) => {
+            onLiveChange?.(updated);
+          }}
         />
       )}
 

@@ -21,7 +21,7 @@ import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/componen
 import { downloadVCardFile } from '@/lib/vcard';
 import { incrementLinkClick } from '@/lib/storage';
 import { useToast } from '@/components/ui/Toast';
-import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses } from '@/lib/themes';
+import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses, isDarkTheme } from '@/lib/themes';
 
 interface LivePreviewProps {
   profile: Profile;
@@ -123,10 +123,13 @@ export default function LivePhonePreview({
       {/* Realistic iPhone Mockup Frame */}
       <div className="w-[320px] sm:w-[340px] h-[670px] bg-[#141518] rounded-[48px] p-[10px] shadow-2xl border border-black/10 ring-1 ring-white/10 relative flex flex-col select-none">
         {/* Inner Phone Screen */}
-        <div className={`w-full h-full rounded-[38px] overflow-hidden flex flex-col relative transition-colors duration-200 ${currentTheme.canvasBg}`}>
+        <div 
+          className={`w-full h-full rounded-[38px] overflow-hidden flex flex-col relative transition-colors duration-200 ${currentTheme.canvasBg}`}
+          style={{ backgroundColor: currentTheme.canvasBgHex || currentTheme.previewColors[0] || '#FAF7F2' }}
+        >
           {/* Authentic Dynamic Island & Status Bar */}
-          <div className="w-full pt-3 px-6 pb-2 flex items-center justify-between bg-black/5 backdrop-blur-xs z-20 shrink-0">
-            <span className="text-[11px] font-black font-mono tracking-tight text-charcoal">9:41</span>
+          <div className={`w-full pt-3 px-6 pb-2 flex items-center justify-between backdrop-blur-xs z-20 shrink-0 ${isDarkTheme(profile.theme) ? 'bg-white/5 text-white' : 'bg-black/5 text-charcoal'}`}>
+            <span className="text-[11px] font-black font-mono tracking-tight">9:41</span>
             
             {/* Dynamic Island */}
             <div className="w-24 h-6 bg-black rounded-full flex items-center justify-between px-2.5 shadow-sm">
@@ -137,10 +140,10 @@ export default function LivePhonePreview({
             </div>
 
             {/* Signal & Battery */}
-            <div className="flex items-center gap-1.5 text-charcoal">
+            <div className="flex items-center gap-1.5">
               <Wifi className="w-3.5 h-3.5 stroke-[2.5]" />
-              <div className="w-4 h-2 rounded-[2px] border border-charcoal p-[1px] flex items-center">
-                <div className="w-full h-full bg-charcoal rounded-[1px]" />
+              <div className={`w-4 h-2 rounded-[2px] border p-[1px] flex items-center ${isDarkTheme(profile.theme) ? 'border-white' : 'border-charcoal'}`}>
+                <div className={`w-full h-full rounded-[1px] ${isDarkTheme(profile.theme) ? 'bg-white' : 'bg-charcoal'}`} />
               </div>
             </div>
           </div>
@@ -192,12 +195,15 @@ export default function LivePhonePreview({
             {/* Display Name & Handle */}
             <h1 
               className={`${titleSizeClass} font-black mt-2.5 tracking-tight text-center ${fontFamilyClass}`}
-              style={profile.fontColor ? { color: profile.fontColor } : undefined}
+              style={{ color: profile.fontColor || currentTheme.textHeadingHex || (isDarkTheme(profile.theme) ? '#00FF66' : '#141518') }}
             >
               {profile.displayName}
             </h1>
 
-            <p className="text-[11px] font-bold opacity-60 mt-0.5 font-mono">
+            <p 
+              className="text-[11px] font-bold opacity-75 mt-0.5 font-mono"
+              style={{ color: currentTheme.textBodyHex || (isDarkTheme(profile.theme) ? '#38BDF8' : '#4A4B50') }}
+            >
               @{profile.username}
             </p>
 
@@ -218,7 +224,10 @@ export default function LivePhonePreview({
             )}
 
             {profile.bio && (
-              <p className={`${bodySizeClass} opacity-75 text-center mt-2 max-w-[250px] leading-relaxed font-medium`}>
+              <p 
+                className={`${bodySizeClass} opacity-80 text-center mt-2 max-w-[250px] leading-relaxed font-medium`}
+                style={{ color: currentTheme.textBodyHex || (isDarkTheme(profile.theme) ? '#CBD5E1' : '#4A4B50') }}
+              >
                 {profile.bio}
               </p>
             )}
