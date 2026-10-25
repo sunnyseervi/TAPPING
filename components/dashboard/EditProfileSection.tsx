@@ -1251,7 +1251,7 @@ export default function EditProfileSection({
                       </button>
                     </div>
 
-                    <div className="w-10 h-10 rounded-2xl bg-[#A6462D] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <div className="w-10 h-10 rounded-2xl bg-[#141518] text-white flex items-center justify-center shrink-0 shadow-xs">
                       <ShoppingBag className="w-5 h-5" />
                     </div>
 
@@ -1260,7 +1260,7 @@ export default function EditProfileSection({
                         <p className="text-xs sm:text-sm font-black text-charcoal truncate">
                           {link.title || 'Featured Products'}
                         </p>
-                        <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-[#A6462D]/10 text-[#A6462D] border border-[#A6462D]/20 shrink-0">
+                        <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-black/5 text-charcoal border border-black/10 shrink-0">
                           Product Slider
                         </span>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white text-charcoal/70 border border-black/10 shrink-0">
@@ -1447,8 +1447,8 @@ export default function EditProfileSection({
             {modalBlockType === 'product_slider' ? (
               /* PRODUCT SLIDER BLOCK CONFIGURATION FORM */
               <div className="space-y-4">
-                <div className="p-3.5 rounded-2xl bg-[#FFF9F5] border border-[#A6462D]/20 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-[#A6462D] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <div className="p-3.5 rounded-2xl bg-[#FAF7F2] border border-black/10 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-[#141518] text-white flex items-center justify-center shrink-0 shadow-xs">
                     <ShoppingBag className="w-5 h-5" />
                   </div>
                   <div>
@@ -1544,7 +1544,7 @@ export default function EditProfileSection({
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="text-xs font-black text-charcoal truncate">{prod.name}</p>
-                                <p className="text-[10px] text-[#A6462D] font-black">₹{prod.price}</p>
+                                <p className="text-[10px] text-charcoal font-black">₹{prod.price}</p>
                               </div>
                             </label>
                           );
@@ -1960,7 +1960,7 @@ export default function EditProfileSection({
           <div className="flex flex-col sm:flex-row sm:items-start justify-between pb-6 border-b border-black/5 gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#FAF7F2] text-[#A6462D] border border-[#D9CFC2] flex items-center gap-1.5">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#FAF7F2] text-charcoal border border-black/10 flex items-center gap-1.5">
                   <ShoppingBag className="w-3 h-3" />
                   <span>Slidable Bio Store</span>
                 </span>
@@ -2200,7 +2200,7 @@ export default function EditProfileSection({
 
             {(localStore.products || []).length === 0 ? (
               <div className="p-8 rounded-3xl bg-[#FAF7F2] border border-black/10 text-center flex flex-col items-center justify-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-white border border-black/10 flex items-center justify-center text-[#A6462D] shadow-2xs">
+                <div className="w-12 h-12 rounded-2xl bg-white border border-black/10 flex items-center justify-center text-charcoal shadow-2xs">
                   <ShoppingBag className="w-6 h-6" />
                 </div>
                 <div>
@@ -2246,7 +2246,7 @@ export default function EditProfileSection({
                           )}
                         </div>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-xs font-black text-[#A6462D]">₹{product.price}</span>
+                          <span className="text-xs font-black text-charcoal">₹{product.price}</span>
                           {product.compareAtPrice && product.compareAtPrice > product.price && (
                             <span className="text-[10px] text-charcoal/40 line-through">₹{product.compareAtPrice}</span>
                           )}

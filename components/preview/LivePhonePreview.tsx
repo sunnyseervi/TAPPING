@@ -436,9 +436,9 @@ export default function LivePhonePreview({
                     return (
                       <div key={link.id} className="w-full my-1.5 flex flex-col gap-1.5 text-left">
                         <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl border border-black/10 bg-white/95 text-charcoal shadow-2xs backdrop-blur-md">
-                          <span className="text-[9px] font-black uppercase tracking-wider flex items-center gap-1 text-[#A6462D]">
-                            <ShoppingBag className="w-2.5 h-2.5" />
-                            <span>{link.title || 'Store Products'}</span>
+                          <span className="text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 text-charcoal">
+                            <ShoppingBag className="w-2.5 h-2.5 opacity-70" />
+                            <span>{link.title || 'Featured Products'}</span>
                           </span>
                           <span className="text-[8px] font-bold text-charcoal/60">
                             {sliderProducts.length} items &bull; Slidable
@@ -460,14 +460,14 @@ export default function LivePhonePreview({
                                 ) : (
                                   <div className="w-full h-full bg-[#E3DFF8] flex items-center justify-center text-[8px] font-bold text-charcoal/40">Item</div>
                                 )}
-                                <span className="absolute left-1 top-1 rounded-full bg-[#A6462D] px-1.5 py-0.5 text-[8px] font-black text-white shadow-2xs">
+                                <span className="absolute left-1 top-1 rounded-full bg-[#141518] px-1.5 py-0.5 text-[8px] font-black text-white shadow-2xs">
                                   ₹{product.price}
                                 </span>
                               </div>
                               <p className="text-[10px] font-black truncate leading-tight text-charcoal">{product.name}</p>
                               <div className="mt-1.5 flex items-center justify-between pt-1 border-t border-black/5">
-                                <span className="text-[9px] font-black text-[#A6462D]">₹{product.price}</span>
-                                <span className="text-[8px] font-black px-1.5 py-0.5 rounded-md bg-[#A6462D] text-white shadow-2xs">Bag</span>
+                                <span className="text-[9px] font-black text-charcoal">₹{product.price}</span>
+                                <span className="text-[8px] font-black px-2 py-0.5 rounded-md bg-[#141518] text-white shadow-2xs">Bag</span>
                               </div>
                             </div>
                           ))}
@@ -535,9 +535,9 @@ export default function LivePhonePreview({
             {!activeLinks.some((l) => l.type === 'product_slider') && store?.enabled && store.products.some((p) => p.isActive) && (
               <div className="w-full mt-2 pt-3 border-t border-black/10 flex flex-col gap-2 text-left">
                 <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl border border-black/10 bg-white/95 text-charcoal shadow-2xs backdrop-blur-md">
-                  <span className="text-[9px] font-black uppercase tracking-wider flex items-center gap-1 text-[#A6462D]">
-                    <ShoppingBag className="w-2.5 h-2.5" />
-                    <span>Store Products</span>
+                  <span className="text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 text-charcoal">
+                    <ShoppingBag className="w-2.5 h-2.5 opacity-70" />
+                    <span>Featured Products</span>
                   </span>
                   <span className="text-[8px] font-bold text-charcoal/60">
                     {store.products.filter(p => p.isActive).length} items &bull; Slidable
@@ -559,14 +559,14 @@ export default function LivePhonePreview({
                         ) : (
                           <div className="w-full h-full bg-[#E3DFF8] flex items-center justify-center text-[9px] font-bold text-charcoal/40">Item</div>
                         )}
-                        <span className="absolute left-1 top-1 rounded-full bg-[#A6462D] px-1.5 py-0.5 text-[8px] font-black text-white shadow-2xs">
+                        <span className="absolute left-1 top-1 rounded-full bg-[#141518] px-1.5 py-0.5 text-[8px] font-black text-white shadow-2xs">
                           ₹{product.price}
                         </span>
                       </div>
                       <p className="text-[10px] font-black truncate leading-tight text-charcoal">{product.name}</p>
                       <div className="mt-1.5 flex items-center justify-between pt-1 border-t border-black/5">
-                        <span className="text-[9px] font-black text-[#A6462D]">₹{product.price}</span>
-                        <span className="text-[8px] font-black px-1.5 py-0.5 rounded-md bg-[#A6462D] text-white shadow-2xs">Bag</span>
+                        <span className="text-[9px] font-black text-charcoal">₹{product.price}</span>
+                        <span className="text-[8px] font-black px-2 py-0.5 rounded-md bg-[#141518] text-white shadow-2xs">Bag</span>
                       </div>
                     </div>
                   ))}

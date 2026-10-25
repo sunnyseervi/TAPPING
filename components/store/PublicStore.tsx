@@ -134,14 +134,14 @@ export default function PublicStore({ store, sellerName, dark, productIds, title
       {/* Light Clean Header Bar */}
       <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-2xl border shadow-sm backdrop-blur-xl bg-white/95 border-black/10 text-charcoal">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Tag className="h-3.5 w-3.5 shrink-0 text-[#A6462D]" />
+          <Tag className="h-3.5 w-3.5 shrink-0 text-charcoal opacity-70" />
           <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-charcoal truncate">
             {title || 'Featured Products'}
           </h2>
         </div>
         <button 
           onClick={() => setCartOpen(true)} 
-          className="relative flex shrink-0 items-center gap-1.5 rounded-full bg-[#A6462D] hover:bg-[#8e3822] px-3 py-1.5 text-xs font-black text-white shadow-sm transition-transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
+          className="relative flex shrink-0 items-center gap-1.5 rounded-full bg-[#141518] hover:bg-black px-3 py-1.5 text-xs font-black text-white shadow-sm transition-transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
         >
           <ShoppingBag className="h-3.5 w-3.5" />
           <span>Bag</span>
@@ -219,7 +219,7 @@ export default function PublicStore({ store, sellerName, dark, productIds, title
                     {product.name}
                   </h3>
                   <div className="flex items-baseline gap-1 mt-0.5">
-                    <span className="text-xs font-black text-[#A6462D]">
+                    <span className="text-xs font-black text-charcoal">
                       {formatPrice(product.price)}
                     </span>
                     {product.compareAtPrice && product.compareAtPrice > product.price && (
@@ -248,7 +248,7 @@ export default function PublicStore({ store, sellerName, dark, productIds, title
                   <button 
                     type="button"
                     onClick={() => addToCart(product)} 
-                    className="w-full flex items-center justify-center gap-1 rounded-xl bg-[#A6462D] hover:bg-[#873721] px-2 py-1.5 text-[10px] font-black text-white transition-all active:scale-98 cursor-pointer shadow-2xs"
+                    className="w-full flex items-center justify-center gap-1 rounded-xl bg-[#141518] hover:bg-black px-2 py-1.5 text-[10px] font-black text-white transition-all active:scale-98 cursor-pointer shadow-2xs"
                   >
                     <ShoppingBag className="h-3 w-3" />
                     <span>Add to Bag</span>

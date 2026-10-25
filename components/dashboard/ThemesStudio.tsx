@@ -17,8 +17,6 @@ import {
   Sliders, 
   Image as ImageIcon, 
   Layers, 
-  Sun,
-  Moon,
   Zap,
   Flame,
   Upload,
@@ -574,9 +572,7 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-[#FAF7F2] border border-black/10 flex items-center justify-center text-charcoal shrink-0 shadow-2xs">
-                    <Sun className="w-5 h-5 text-amber-500" />
-                  </div>
+                  <div className="w-5 h-5 rounded-full border border-black/20 bg-[#FAF7F2] shrink-0 shadow-2xs" />
                   <div className="min-w-0">
                     <h4 className="text-xs font-black text-charcoal">Clean Light</h4>
                     <p className="text-[10px] text-charcoal/60 mt-0.5">Warm cream canvas, dark typography</p>
@@ -600,9 +596,7 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white shrink-0 shadow-2xs">
-                    <Moon className="w-5 h-5 text-cyan-400" />
-                  </div>
+                  <div className="w-5 h-5 rounded-full border border-white/30 bg-[#0D0F12] shrink-0 shadow-2xs" />
                   <div className="min-w-0">
                     <h4 className="text-xs font-black text-white">Deep Dark</h4>
                     <p className="text-[10px] text-white/60 mt-0.5">Stealth obsidian, white typography</p>

@@ -616,7 +616,7 @@ export default function LandingPage() {
                   { icon: BarChart3, title: 'Store insights', text: 'See visits, product interest and popular products.' },
                 ].map(({ icon: Icon, title, text }) => (
                   <div key={title} className="rounded-3xl border border-black/8 bg-white/55 p-4 backdrop-blur-md">
-                    <Icon className="h-5 w-5 text-[#A6462D]" /><h3 className="mt-3 text-sm font-black">{title}</h3>
+                    <Icon className="h-5 w-5 text-charcoal" /><h3 className="mt-3 text-sm font-black">{title}</h3>
                     <p className="mt-1 text-[11px] font-medium leading-relaxed text-charcoal/55">{text}</p>
                   </div>
                 ))}
