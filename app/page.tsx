@@ -23,10 +23,10 @@ import {
   ExternalLink,
   Repeat,
   ShoppingBag,
-  MessageCircle,
   BarChart3,
   ImageUp,
-  Store
+  SlidersHorizontal,
+  Palette
 } from 'lucide-react';
 import { saveStoredProfile, getStoredProfile } from '@/lib/storage';
 import { downloadVCardFile } from '@/lib/vcard';
@@ -140,13 +140,13 @@ export default function LandingPage() {
   ];
 
   const marqueeCards = [
-    { title: 'WhatsApp Storefront', tag: 'Cart Orders Sent Directly to You', badge: 'No Commission', color: 'bg-[#25D366] text-[#07160D] border border-black/10', accent: 'text-[#07160D]' },
-    { title: 'Product Image Uploads', tag: 'Compressed, Fast and Mobile Ready', badge: 'Real Files', color: 'bg-[#FFE5D6] text-charcoal border border-black/10', accent: 'text-[#C04E20]' },
+    { title: 'Interactive Link Blocks', tag: 'Socials, Spotify, YouTube & Portfolios', badge: 'Smart Blocks', color: 'bg-[#B6F554] text-[#141518] border border-black/10', accent: 'text-[#141518]' },
+    { title: 'Slidable Product Slider', tag: 'Curate Merch, Art & Direct Links', badge: 'Product Slider', color: 'bg-[#EFF4FF] text-charcoal border border-[#4F83FF]/20', accent: 'text-[#4F83FF]' },
     { title: 'Matte Stealth Black NFC', tag: 'Laser Engraved Stainless Steel', badge: '13.56MHz', color: 'bg-[#141518] text-white', accent: 'text-[#FDF166]' },
-    { title: 'Direct Contact Card Export', tag: 'Zero App Installation Required', badge: 'Apple & Android', color: 'bg-[#EFF4FF] text-charcoal border border-[#4F83FF]/20', accent: 'text-[#4F83FF]' },
+    { title: 'Direct Contact Card Export', tag: 'Zero App Installation Required', badge: 'Apple & Android', color: 'bg-[#FAF7F2] text-charcoal border border-black/10', accent: 'text-charcoal' },
     { title: 'Permanent Dynamic QR Code', tag: 'Vector Crisp Print Quality', badge: 'Dynamic URL', color: 'bg-[#FDF166] text-charcoal border border-black/10', accent: 'text-charcoal' },
     { title: '24K Brushed Gold Hardware', tag: 'Weighted Solid Metallic Core', badge: 'NTAG216 Chip', color: 'bg-[#FAF7F2] text-charcoal border border-black/10', accent: 'text-amber-600' },
-    { title: 'Instant Link-in-Bio Space', tag: 'High Converting Pastel Bento System', badge: 'Live Space', color: 'bg-[#B6F554] text-charcoal border border-black/10', accent: 'text-charcoal' },
+    { title: 'Custom Theme Wallpapers', tag: 'Upload, Zoom & Pan Framing Controls', badge: 'Theme Studio', color: 'bg-[#FFE5D6] text-charcoal border border-black/10', accent: 'text-[#C04E20]' },
     { title: 'Physical Metal NFC Studio', tag: 'Laser-Etched Custom Name & UID', badge: 'Hardware Studio', color: 'bg-[#4F83FF] text-white', accent: 'text-[#FDF166]' },
   ];
 
@@ -166,7 +166,7 @@ export default function LandingPage() {
         </div>
 
         <div className="hidden lg:flex items-center gap-6 text-xs font-bold text-charcoal/70">
-          <a href="#store" className="hover:text-black transition-colors">WhatsApp Store</a>
+          <a href="#showcase" className="hover:text-black transition-colors">Link-in-Bio</a>
           <a href="#hardware" className="hover:text-black transition-colors">Metal NFC</a>
           <a href="#features" className="hover:text-black transition-colors">Features</a>
           <a href="#pricing" className="hover:text-black transition-colors">Pricing (&#8377;299)</a>
@@ -206,26 +206,26 @@ export default function LandingPage() {
       {/* HERO HEADER */}
       <section className="max-w-7xl mx-auto px-6 pt-6 pb-12 flex flex-col items-center text-center relative z-10">
         <div className="w-full flex items-center justify-between text-xs font-bold text-charcoal/60 max-w-4xl mb-4 px-2">
-          <span>Bio, Store &amp; NFC Ecosystem</span>
+          <span>Everything You Are &bull; In One Simple Link</span>
           <span className="hidden sm:inline-block max-w-xs text-right">
-            Your profile, products and direct orders in one simple space
+            Connect socials, showcase slidable products, and bridge the physical world with metal NFC
           </span>
         </div>
 
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-charcoal leading-[1.05] max-w-4xl">
-          One Page to <br />
-          <span className="text-charcoal/35">Share, Sell &amp; Connect</span>
+          Everything You Are. <br />
+          <span className="text-charcoal/35">In One Simple Link.</span>
         </h1>
 
         <p className="text-sm sm:text-base text-charcoal/70 max-w-xl mt-4 leading-relaxed font-medium">
-          Build a link-in-bio and product store, collect complete cart details through WhatsApp, share your contact card, and connect in person with custom metal NFC cards.
+          Connect your audience to everything you create. Share your social channels, slidable product collections, custom theme wallpapers, and tap to exchange contacts with laser-engraved metal NFC cards.
         </p>
 
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-[11px] font-black">
           <span className="rounded-full border border-black/10 bg-[#FDF166] px-3 py-1.5">Link-in-bio</span>
-          <span className="rounded-full border border-black/10 bg-[#B6F554] px-3 py-1.5">WhatsApp orders</span>
-          <span className="rounded-full border border-black/10 bg-[#FFE5D6] px-3 py-1.5">Product catalogue</span>
-          <span className="rounded-full border border-black/10 bg-white px-3 py-1.5">QR &amp; NFC</span>
+          <span className="rounded-full border border-black/10 bg-[#B6F554] px-3 py-1.5">Product slider</span>
+          <span className="rounded-full border border-black/10 bg-[#EFF4FF] text-[#4F83FF] px-3 py-1.5">Digital vCard</span>
+          <span className="rounded-full border border-black/10 bg-white px-3 py-1.5">Metal NFC &amp; QR</span>
         </div>
 
         {/* Claim Handle Bar */}
@@ -590,77 +590,207 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* WHATSAPP COMMERCE */}
-      <section id="store" className="max-w-7xl mx-auto px-6 pb-20">
-        <div className="relative overflow-hidden rounded-[2.25rem] border border-[#D7A997]/45 bg-[#F6CFC1] text-charcoal shadow-card">
-          <div className="pointer-events-none absolute -left-16 -top-20 h-64 w-64 rounded-full bg-[#FDF166]/70 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 right-1/3 h-72 w-72 rounded-full bg-[#B6F554]/30 blur-3xl" />
-          <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="relative z-10 flex flex-col justify-between p-7 sm:p-10 lg:p-12">
+      {/* LINK-IN-BIO & PRODUCT SHOWCASE (LINKTREE INSPIRED) */}
+      <section id="showcase" className="max-w-7xl mx-auto px-6 pb-20">
+        <div className="relative overflow-hidden rounded-[2.25rem] border border-black/10 bg-[#FAF7F2] text-charcoal shadow-card">
+          <div className="pointer-events-none absolute -left-16 -top-20 h-64 w-64 rounded-full bg-[#B6F554]/20 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-[#FDF166]/30 blur-3xl" />
+          
+          <div className="grid lg:grid-cols-12 gap-8 items-center p-7 sm:p-10 lg:p-12">
+            
+            {/* Left Content Column */}
+            <div className="relative z-10 lg:col-span-7 flex flex-col justify-between">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/65 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-charcoal backdrop-blur-md">
-                  <Store className="h-3.5 w-3.5" /> Built-in WhatsApp store
+                <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-charcoal shadow-2xs">
+                  <Layers className="h-3.5 w-3.5 text-[#4F83FF]" /> Link in Bio Architecture
                 </div>
-                <div className="mt-5 flex items-center gap-3">
-                  <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=240&auto=format&fit=crop&q=85" alt="Independent woman creator" className="h-16 w-16 rounded-[1.25rem] border-4 border-white object-cover shadow-lg" />
-                  <div><p className="text-xs font-black">Meet Aanya</p><p className="mt-0.5 text-[11px] font-bold text-charcoal/55">Maker, seller and studio owner</p></div>
-                </div>
-                <h2 className="mt-5 max-w-xl text-3xl font-black leading-[1.05] tracking-tight sm:text-5xl">She makes it. Her Tapping page sells it.</h2>
-                <p className="mt-4 max-w-lg text-sm font-medium leading-relaxed text-charcoal/65">Aanya turns handmade ideas into a beautiful mobile shop. Customers choose products, build a cart and send one organised order directly to her WhatsApp.</p>
+
+                <h2 className="mt-5 max-w-xl text-3xl font-black leading-[1.08] tracking-tight sm:text-5xl text-charcoal">
+                  Connect your audience to everything you do.
+                </h2>
+                
+                <p className="mt-4 max-w-xl text-sm font-medium leading-relaxed text-charcoal/70">
+                  The modern link in bio built for creators, makers, and founders. Share your socials, portfolio, music, videos, and slidable product collections in one fast, beautiful mobile experience.
+                </p>
               </div>
+
+              {/* 4 Feature Value Pillars */}
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
                 {[
-                  { icon: ImageUp, title: 'Upload real photos', text: 'Automatic compression keeps every product page fast.' },
-                  { icon: ShoppingBag, title: 'Simple cart', text: 'Quantities, variants and totals stay clear on mobile.' },
-                  { icon: MessageCircle, title: 'Direct WhatsApp order', text: 'A ready-to-send message includes every order detail.' },
-                  { icon: BarChart3, title: 'Store insights', text: 'See visits, product interest and popular products.' },
+                  {
+                    icon: Share2,
+                    title: 'Unlimited Smart Links',
+                    text: 'Connect Instagram, YouTube, Spotify, GitHub, TikTok, Substack, and custom links with instant previews.',
+                  },
+                  {
+                    icon: SlidersHorizontal,
+                    title: 'Slidable Product Slider',
+                    text: 'Curate physical merch, art, books, or digital tools in a smooth touch carousel without clutter.',
+                  },
+                  {
+                    icon: Palette,
+                    title: 'Custom Canvas Themes',
+                    text: 'Clean light, deep dark, custom color palettes, and upload your own wallpaper with zoom and framing.',
+                  },
+                  {
+                    icon: UserCheck,
+                    title: 'One-Tap vCard Export',
+                    text: 'Let fans and clients save your verified contact details straight into Apple and Google contacts with no app.',
+                  },
                 ].map(({ icon: Icon, title, text }) => (
-                  <div key={title} className="rounded-3xl border border-black/8 bg-white/55 p-4 backdrop-blur-md">
-                    <Icon className="h-5 w-5 text-charcoal" /><h3 className="mt-3 text-sm font-black">{title}</h3>
-                    <p className="mt-1 text-[11px] font-medium leading-relaxed text-charcoal/55">{text}</p>
+                  <div key={title} className="rounded-3xl border border-black/8 bg-white/80 p-4 shadow-2xs backdrop-blur-sm">
+                    <Icon className="h-5 w-5 text-charcoal" />
+                    <h3 className="mt-3 text-sm font-black text-charcoal">{title}</h3>
+                    <p className="mt-1 text-[11px] font-medium leading-relaxed text-charcoal/60">{text}</p>
                   </div>
                 ))}
               </div>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href="/dashboard?tab=store" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#B6F554] px-5 py-3.5 text-xs font-black text-[#141518] transition-transform active:scale-95">Create your store <ArrowRight className="h-4 w-4" /></Link>
-                <Link href="/aarav/shop" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white/65 px-5 py-3.5 text-xs font-black text-charcoal hover:bg-white">View sample shop <ArrowUpRight className="h-4 w-4" /></Link>
+
+              {/* Action Buttons */}
+              <div className="mt-8 flex flex-col sm:flex-row items-center gap-3">
+                <Link
+                  href="/dashboard?tab=profile"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] px-6 py-3.5 text-xs font-black text-white shadow-sm transition-transform active:scale-95 cursor-pointer"
+                >
+                  <span>Build Your Bio Page</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/aarav"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white hover:bg-black/5 px-6 py-3.5 text-xs font-black text-charcoal shadow-2xs transition-colors"
+                >
+                  <span>View Sample Creator Page</span>
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
               </div>
             </div>
-            <div className="relative overflow-hidden bg-[#EEE8DC]/75 p-4 text-charcoal sm:p-7 lg:p-10">
-              <img src="https://images.unsplash.com/photo-1452860606245-08befc0ff44b?w=1400&auto=format&fit=crop&q=85" alt="Creative maker workspace" className="absolute inset-0 h-full w-full object-cover opacity-25 mix-blend-multiply" />
-              <div className="relative rounded-[1.8rem] border border-white/80 bg-white/90 p-4 shadow-2xl backdrop-blur-md sm:ml-5 sm:mt-5 sm:p-5">
-                <div className="flex items-center justify-between border-b border-black/8 pb-4">
-                  <div><p className="text-[10px] font-black uppercase tracking-wider text-charcoal/45">Aarav Studio Essentials</p><p className="mt-1 text-lg font-black">Shop the collection</p></div>
-                  <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[#141518] text-white"><ShoppingBag className="h-4 w-4" /><span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#FDF166] text-[9px] font-black text-charcoal">2</span></div>
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  {[
-                    { name: 'Everyday Carry Pouch', price: '₹799', image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=700&auto=format&fit=crop&q=85', mark: 'HANDMADE 01' },
-                    { name: 'Studio Notebook', price: '₹499', image: 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=700&auto=format&fit=crop&q=85', mark: 'HANDMADE 02' },
-                  ].map((product) => (
-                    <div key={product.name} className="overflow-hidden rounded-2xl border border-black/8 bg-[#FAF7F2]">
-                      <div className="relative aspect-[4/3] overflow-hidden"><img src={product.image} alt={product.name} className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" /><span className="absolute left-2.5 top-2.5 rounded-full bg-white/90 px-2 py-1 text-[8px] font-black tracking-[0.12em] text-charcoal shadow-sm">{product.mark}</span></div>
-                      <div className="p-3"><p className="truncate text-[11px] font-black sm:text-xs">{product.name}</p><div className="mt-2 flex items-center justify-between gap-2"><span className="text-xs font-black">{product.price}</span><span className="rounded-lg bg-[#4F83FF] px-2 py-1 text-[9px] font-black text-white">Add</span></div></div>
+
+            {/* Right Interactive Mockup Column */}
+            <div className="relative z-10 lg:col-span-5 flex justify-center">
+              <div className="w-full max-w-[340px] rounded-[2.5rem] bg-white border border-black/10 p-5 shadow-2xl relative select-none">
+                {/* Simulated Profile Card */}
+                <div className="flex flex-col items-center text-center">
+                  <div className="relative">
+                    <img
+                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=85"
+                      alt="Creator"
+                      className="w-18 h-18 rounded-2xl object-cover border-2 border-black/10 shadow-sm"
+                    />
+                    <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#B6F554] border-2 border-white flex items-center justify-center">
+                      <Check className="w-2.5 h-2.5 stroke-[3] text-charcoal" />
+                    </span>
+                  </div>
+
+                  <h3 className="text-base font-black text-charcoal mt-3">Mira Kapoor</h3>
+                  <p className="text-[11px] font-bold text-charcoal/50 font-mono">@mirakapoor &bull; Art &amp; Design</p>
+                  <p className="text-[11px] text-charcoal/70 mt-1 max-w-[240px] leading-relaxed font-medium">
+                    Ceramic artist &amp; spatial designer. Building functional daily objects in Mumbai.
+                  </p>
+
+                  {/* Social Dock */}
+                  <div className="flex items-center gap-2 mt-3">
+                    <div className="w-7 h-7 rounded-full bg-[#FAF7F2] border border-black/10 flex items-center justify-center shadow-2xs">
+                      <InstagramIcon className="w-3.5 h-3.5 text-charcoal" />
                     </div>
-                  ))}
-                </div>
-                <div className="mt-4 rounded-2xl bg-[#EAFBEF] p-4 ring-1 ring-[#25D366]/25">
-                  <div className="flex items-center gap-2 text-[#0D6B32]"><MessageCircle className="h-4 w-4" /><p className="text-[10px] font-black uppercase tracking-wider">Ready for WhatsApp</p></div>
-                  <p className="mt-2 text-[11px] font-bold leading-relaxed text-charcoal/70">2 products · quantities · variants · customer name · phone · delivery address · order total</p>
-                  <div className="mt-3 flex items-center justify-between rounded-xl bg-[#25D366] px-3 py-2.5 text-[11px] font-black text-[#07160D]"><span>Send order to seller</span><ArrowRight className="h-3.5 w-3.5" /></div>
+                    <div className="w-7 h-7 rounded-full bg-[#FAF7F2] border border-black/10 flex items-center justify-center shadow-2xs">
+                      <TwitterIcon className="w-3.5 h-3.5 text-charcoal" />
+                    </div>
+                    <div className="w-7 h-7 rounded-full bg-[#FAF7F2] border border-black/10 flex items-center justify-center shadow-2xs">
+                      <LinkedinIcon className="w-3.5 h-3.5 text-charcoal" />
+                    </div>
+                    <div className="w-7 h-7 rounded-full bg-[#FAF7F2] border border-black/10 flex items-center justify-center shadow-2xs">
+                      <GithubIcon className="w-3.5 h-3.5 text-charcoal" />
+                    </div>
+                  </div>
+
+                  {/* Curated Products Slider Header */}
+                  <div className="w-full flex items-center justify-between mt-4 mb-2 px-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-charcoal/60">
+                      Curated Works &bull; Slider
+                    </span>
+                    <span className="text-[9px] font-bold text-[#4F83FF]">Swipe &rarr;</span>
+                  </div>
+
+                  {/* Product Slider Cards */}
+                  <div className="w-full flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
+                    {[
+                      {
+                        title: 'Sculpted Ceramic Mug',
+                        price: '₹1,299',
+                        image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop&q=85',
+                      },
+                      {
+                        title: 'Terracotta Vase No. 4',
+                        price: '₹2,499',
+                        image: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=400&auto=format&fit=crop&q=85',
+                      },
+                      {
+                        title: 'Studio Linen Apron',
+                        price: '₹899',
+                        image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&auto=format&fit=crop&q=85',
+                      },
+                    ].map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="shrink-0 w-[125px] rounded-2xl border border-black/10 bg-[#FAF7F2] p-2 text-left flex flex-col justify-between shadow-2xs"
+                      >
+                        <div className="w-full aspect-square rounded-xl overflow-hidden bg-white mb-2">
+                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                        </div>
+                        <p className="text-[10px] font-black text-charcoal truncate">{item.title}</p>
+                        <div className="mt-1 flex items-center justify-between">
+                          <span className="text-[10px] font-black text-charcoal">{item.price}</span>
+                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded-md bg-[#141518] text-white">
+                            View
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Featured Link Blocks */}
+                  <div className="w-full space-y-2 mt-3">
+                    <div className="w-full p-2.5 rounded-2xl bg-[#EFF4FF] border border-[#4F83FF]/20 flex items-center justify-between text-left shadow-2xs">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black text-charcoal truncate">Exhibition &bull; Nature &amp; Form 2026</p>
+                        <p className="text-[8px] text-charcoal/60 truncate">Gallery RSVP &amp; Catalog</p>
+                      </div>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-charcoal/50 shrink-0" />
+                    </div>
+
+                    <div className="w-full p-2.5 rounded-2xl bg-[#FDF166] border border-black/10 flex items-center justify-between text-left shadow-2xs">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black text-charcoal truncate">Book a Pottery Workshop</p>
+                        <p className="text-[8px] text-charcoal/60 truncate">Weekend batches in Bandra</p>
+                      </div>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-charcoal/50 shrink-0" />
+                    </div>
+                  </div>
+
+                  {/* Save Contact CTA */}
+                  <div className="w-full mt-3 py-2 px-3 rounded-2xl bg-[#141518] text-white text-[10px] font-black flex items-center justify-center gap-1.5 shadow-xs">
+                    <Download className="w-3 h-3 text-[#B6F554]" />
+                    <span>Save Contact to Phone (.vcf)</span>
+                  </div>
                 </div>
               </div>
-              <p className="relative mx-auto mt-4 max-w-md rounded-full bg-white/70 px-4 py-2 text-center text-[10px] font-bold leading-relaxed text-charcoal/55 backdrop-blur">No online checkout or payment collection. Aanya confirms stock, delivery and payment directly on WhatsApp.</p>
             </div>
+
           </div>
         </div>
+
+        {/* 3 Steps: How It Works */}
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           {[
-            ['01', 'Add products', 'Upload images from your device, add pricing, options and product details.'],
-            ['02', 'Customer builds a cart', 'Your mobile storefront keeps quantities, variants and totals organised.'],
-            ['03', 'Receive the order', 'One prefilled WhatsApp message arrives with everything needed to respond.'],
+            ['01', 'Claim your custom handle', 'Grab tapping.bio/yourname in seconds to claim your permanent home on the web.'],
+            ['02', 'Add links & product sliders', 'Add socials, portfolios, videos, and slidable merchandise with full theme customization.'],
+            ['03', 'Share everywhere & tap in person', 'Put your link in your social bios and tap phones instantly with laser-engraved metal NFC cards.'],
           ].map(([number, title, text]) => (
-            <div key={number} className="rounded-3xl border border-black/10 bg-white p-5 shadow-2xs"><span className="text-[10px] font-black text-[#4F83FF]">STEP {number}</span><h3 className="mt-2 text-base font-black">{title}</h3><p className="mt-1.5 text-xs font-medium leading-relaxed text-charcoal/55">{text}</p></div>
+            <div key={number} className="rounded-3xl border border-black/10 bg-white p-5 shadow-2xs">
+              <span className="text-[10px] font-black text-[#4F83FF]">STEP {number}</span>
+              <h3 className="mt-2 text-base font-black text-charcoal">{title}</h3>
+              <p className="mt-1.5 text-xs font-medium leading-relaxed text-charcoal/60">{text}</p>
+            </div>
           ))}
         </div>
       </section>
@@ -704,17 +834,28 @@ export default function LandingPage() {
             SYSTEM ARCHITECTURE
           </span>
           <h2 className="text-3xl sm:text-5xl font-black text-charcoal mt-3 tracking-tight">
-            Everything for Your Profile, Shop &amp; Contact
+            Everything for Your Profile, Products &amp; Identity
           </h2>
           <p className="text-xs sm:text-sm text-charcoal/60 mt-2 max-w-lg mx-auto font-medium">
-            Publish your identity, sell through WhatsApp, share contact details, and connect in person from one creator workspace.
+            Publish your identity, showcase slidable products, share contact details, and connect in person from one creator workspace.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="bg-[#25D366] text-[#07160D] rounded-4xl p-7 shadow-card flex flex-col justify-between min-h-[280px] md:col-span-2">
-            <div><div className="w-12 h-12 rounded-2xl bg-white/35 flex items-center justify-center mb-5 shadow-xs"><ShoppingBag className="w-6 h-6 stroke-[2.4]" /></div><h3 className="font-black text-xl">WhatsApp Store &amp; Cart</h3><p className="text-xs text-[#07160D]/75 mt-2 leading-relaxed font-medium max-w-xl">A separate shop customers can browse without confusion. Upload product images, manage variants and receive a complete, prefilled order on WhatsApp without adding a payment gateway.</p></div>
-            <Link href="/dashboard?tab=store" className="mt-6 text-xs font-black flex items-center gap-1 hover:underline"><span>Build Your Store</span><ArrowRight className="w-3.5 h-3.5" /></Link>
+          <div className="bg-[#141518] text-white rounded-4xl p-7 shadow-card flex flex-col justify-between min-h-[280px] md:col-span-2">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-5 shadow-xs">
+                <ShoppingBag className="w-6 h-6 text-[#B6F554] stroke-[2.4]" />
+              </div>
+              <h3 className="font-black text-xl text-white">Slidable Product Showcase</h3>
+              <p className="text-xs text-white/75 mt-2 leading-relaxed font-medium max-w-xl">
+                Showcase your merchandise, curated physical goods, artworks, or digital tools in a smooth touch-enabled horizontal slider. Upload compressed photos, display prices, and route customers directly to your buy links without checkout friction.
+              </p>
+            </div>
+            <Link href="/dashboard?tab=profile" className="mt-6 text-xs font-black text-[#B6F554] flex items-center gap-1 hover:underline">
+              <span>Add Products in Studio</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
           {/* Module 1: Metal NFC Hardware */}
           <div className="bg-[#4F83FF] text-white rounded-4xl p-7 shadow-card flex flex-col justify-between min-h-[280px]">
@@ -764,7 +905,7 @@ export default function LandingPage() {
               </div>
               <h3 className="font-black text-lg text-charcoal">Digital Business Card</h3>
               <p className="text-xs text-charcoal/80 mt-2 leading-relaxed font-medium">
-                Instant digital contact card. One tap exports your verified name, phone, email, WhatsApp, and company directly to Apple & Google phonebooks.
+                Instant digital contact card. One tap exports your verified name, phone, email, socials, and company directly to Apple & Google phonebooks.
               </p>
             </div>
             <Link
@@ -808,7 +949,7 @@ export default function LandingPage() {
             Activate Your Bio Space &amp; Dynamic QR
           </h2>
           <p className="text-xs sm:text-sm text-charcoal/65 mt-2 max-w-lg mx-auto font-medium">
-            Publish your link-in-bio and WhatsApp shop, generate permanent QR codes, print visiting cards, and connect with NFC hardware.
+            Publish your link-in-bio, showcase products, generate permanent QR codes, print visiting cards, and connect with NFC hardware.
           </p>
 
           {/* Monthly / Yearly Billing Toggle */}
@@ -873,8 +1014,8 @@ export default function LandingPage() {
               <div className="space-y-3 mt-6 pt-6 border-t border-black/5 text-xs font-bold text-charcoal/80">
                 {[
                   'Custom Link-in-Bio space (tapping.bio/yourname)',
-                  'WhatsApp product store with cart and prefilled orders',
-                  '13 Full-System Themes & authentic typography styles',
+                  'Slidable Product Showcase & direct buy links',
+                  'Clean light, deep dark & custom wallpaper themes',
                   'Permanent Dynamic QR Code (never breaks)',
                   'Digital Visiting Card with 300 DPI PNG & PDF export',
                   'Instant Phonebook Contact Card (.vcf) Save',
@@ -932,7 +1073,7 @@ export default function LandingPage() {
               <div className={`space-y-3 mt-6 pt-6 border-t text-xs font-bold ${billingCycle === 'yearly' ? 'border-white/10 text-white/85' : 'border-black/5 text-charcoal/80'}`}>
                 {[
                   'Everything in Monthly Plan included',
-                  'WhatsApp storefront, product manager and shop insights',
+                  'Slidable Product Showcase & direct buy links',
                   'Save 16% with full 12-month account activation',
                   'Custom domain mapping (yourbrand.com)',
                   '20% exclusive discount on Physical Metal NFC Cards',
