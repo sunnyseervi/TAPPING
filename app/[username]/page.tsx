@@ -35,7 +35,10 @@ import {
   MapPin, 
   X, 
   ArrowUpRight,
-  Ban 
+  Ban,
+  Clock,
+  Sparkles,
+  Lock
 } from 'lucide-react';
 import { downloadVCardFile } from '@/lib/vcard';
 import QRCode from 'qrcode';
@@ -172,6 +175,77 @@ export default function PublicProfilePage() {
             <p className="text-[10px] text-white/40 font-mono">
               Administrative Support: admin@tapping.bio
             </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if creator has not yet activated their profile with payment
+  if (userRecord && (userRecord.status === 'pending_payment' || userRecord.isActivated === false)) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-[#FAF7F2] text-charcoal text-center">
+        <div className="max-w-md w-full p-8 rounded-4xl bg-white border border-black/10 shadow-card flex flex-col items-center">
+          <div className="w-16 h-16 rounded-3xl bg-[#FDF166] text-charcoal border border-black/10 flex items-center justify-center mb-4 shadow-xs">
+            <Clock className="w-8 h-8 stroke-[2.3]" />
+          </div>
+          <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 mb-2">
+            RESERVED &bull; PAYMENT PENDING
+          </span>
+          <h1 className="text-2xl font-black tracking-tight text-charcoal">Profile Pending Activation</h1>
+          <p className="text-xs text-charcoal/70 mt-2 leading-relaxed font-medium">
+            The handle <strong className="text-charcoal font-black">@{usernameParam}</strong> is reserved on TAPPING, but profile activation requires an active creator pass.
+          </p>
+          <div className="mt-6 w-full pt-6 border-t border-black/10 flex flex-col gap-2.5">
+            <a
+              href="/dashboard?action=activate"
+              className="w-full py-3.5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95"
+            >
+              <span>Activate This Profile</span>
+              <ArrowUpRight className="w-4 h-4 text-[#FDF166]" />
+            </a>
+            <a
+              href="/"
+              className="w-full py-2.5 rounded-2xl bg-[#FAF7F2] text-charcoal font-bold text-xs hover:bg-black/5 transition-colors"
+            >
+              Back to Home
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if this handle is completely unclaimed
+  const activeProfile = getStoredProfile();
+  if (!userRecord && usernameParam.toLowerCase() !== activeProfile.username.toLowerCase()) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-[#FAF7F2] text-charcoal text-center">
+        <div className="max-w-md w-full p-8 rounded-4xl bg-white border border-black/10 shadow-card flex flex-col items-center">
+          <div className="w-16 h-16 rounded-3xl bg-[#B6F554] text-charcoal border border-black/10 flex items-center justify-center mb-4 shadow-xs">
+            <Sparkles className="w-8 h-8 stroke-[2.3]" />
+          </div>
+          <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 mb-2">
+            AVAILABLE HANDLE
+          </span>
+          <h1 className="text-2xl font-black tracking-tight text-charcoal">@{usernameParam} is Available!</h1>
+          <p className="text-xs text-charcoal/70 mt-2 leading-relaxed font-medium">
+            Nobody has claimed this permanent handle yet. Create your verified creator bio link, dynamic vector QR code, and laser-engraved metal NFC card today.
+          </p>
+          <div className="mt-6 w-full pt-6 border-t border-black/10 flex flex-col gap-2.5">
+            <a
+              href="/dashboard"
+              className="w-full py-3.5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95"
+            >
+              <span>Claim @{usernameParam} Now</span>
+              <ArrowUpRight className="w-4 h-4 text-[#FDF166]" />
+            </a>
+            <a
+              href="/"
+              className="w-full py-2.5 rounded-2xl bg-[#FAF7F2] text-charcoal font-bold text-xs hover:bg-black/5 transition-colors"
+            >
+              Learn More
+            </a>
           </div>
         </div>
       </div>

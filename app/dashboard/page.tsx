@@ -15,6 +15,8 @@ import {
   getStoredStore,
   saveStoredStore,
   getOnboardingCompleted,
+  getProfileActivated,
+  getStoredSubscription,
 } from '@/lib/storage';
 import { 
   initialProfile, 
@@ -113,22 +115,47 @@ function DashboardContent() {
       if (plan === 'yearly' || plan === 'monthly') {
         setUpgradePlan(plan);
       }
+    } else if (action === 'activate') {
+      setShowOnboarding(true);
     }
   }, [searchParams]);
 
   // Sync state on client mount to prevent SSR hydration mismatch
   useEffect(() => {
-    setProfile(getStoredProfile());
-    setVcard(getStoredVCard());
-    setLinks(getStoredLinks());
-    setNfcCard(getStoredNFCCard());
-    setAnalytics(getStoredAnalytics());
-    setStore(getStoredStore());
+    const refreshAll = () => {
+      setProfile(getStoredProfile());
+      setVcard(getStoredVCard());
+      setLinks(getStoredLinks());
+      setNfcCard(getStoredNFCCard());
+      setAnalytics(getStoredAnalytics());
+      setStore(getStoredStore());
+      setSubscription(getStoredSubscription());
+    };
 
-    // Show onboarding if first visit
-    if (!getOnboardingCompleted()) {
+    refreshAll();
+
+    // Show onboarding & payment activation if first visit or unactivated
+    if (!getOnboardingCompleted() || !getProfileActivated()) {
       setShowOnboarding(true);
     }
+
+    const handleAccountDeleted = () => {
+      refreshAll();
+      setShowOnboarding(true);
+    };
+
+    const handleProfileActivated = () => {
+      refreshAll();
+      setShowOnboarding(false);
+    };
+
+    window.addEventListener('tapping-account-deleted', handleAccountDeleted);
+    window.addEventListener('tapping-profile-activated', handleProfileActivated);
+
+    return () => {
+      window.removeEventListener('tapping-account-deleted', handleAccountDeleted);
+      window.removeEventListener('tapping-profile-activated', handleProfileActivated);
+    };
   }, []);
 
   const handleUpdateProfile = (newProfile: Profile) => {

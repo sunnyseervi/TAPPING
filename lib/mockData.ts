@@ -24,6 +24,8 @@ export const initialProfile: Profile = {
   bgImageBlur: 0,
   accentColor: '#FED5C3',
   isVerified: true,
+  isActivated: true,
+  mobileNumber: '+91 98765 43210',
   socialLinks: {
     instagram: 'https://instagram.com/aaravsharma',
     twitter: 'https://x.com/aaravsharma_in',

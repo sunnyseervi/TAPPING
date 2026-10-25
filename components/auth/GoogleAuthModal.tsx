@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import { ShieldCheck, ArrowRight, X } from 'lucide-react';
-import { setOnboardingCompleted, saveStoredProfile, getStoredProfile } from '@/lib/storage';
+import { saveStoredProfile, getStoredProfile } from '@/lib/storage';
 import { Profile } from '@/lib/types';
 import { useToast } from '@/components/ui/Toast';
+import TappingLogo from '@/components/brand/TappingLogo';
 
 interface GoogleAuthModalProps {
   isOpen: boolean;
@@ -31,12 +32,11 @@ export default function GoogleAuthModal({
         isVerified: true,
       };
       saveStoredProfile(updated);
-      setOnboardingCompleted(true);
       setIsLoading(false);
       showToast('Signed in with Google', `Welcome back, ${updated.displayName}`, 'success');
       onAuthenticated(updated);
       onClose();
-    }, 700);
+    }, 600);
   };
 
   return (
@@ -51,15 +51,15 @@ export default function GoogleAuthModal({
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-1.5 rounded-full hover:bg-black/5 text-charcoal/60 hover:text-charcoal transition-colors"
+          className="absolute top-5 right-5 p-1.5 rounded-full hover:bg-black/5 text-charcoal/60 hover:text-charcoal transition-colors cursor-pointer"
           title="Close"
         >
           <X className="w-4 h-4" />
         </button>
 
         {/* Brand Icon */}
-        <div className="w-14 h-14 rounded-2xl bg-[#1F2024] text-white flex items-center justify-center mx-auto font-black text-xl shadow-md mb-4">
-          T
+        <div className="flex justify-center mb-4">
+          <TappingLogo size="md" />
         </div>
 
         <h2 className="text-xl sm:text-2xl font-extrabold text-[#1F2024] tracking-tight">

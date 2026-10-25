@@ -12,7 +12,8 @@ import {
   getStoredOrders, 
   getStoredProfile, 
   saveStoredProfile,
-  resetAllToDefault
+  resetAllToDefault,
+  deleteCurrentCustomerAccount
 } from '@/lib/storage';
 import { 
   CreditCard, 
@@ -30,7 +31,13 @@ import {
   ShoppingBag,
   Sparkles,
   ChevronRight,
-  Package
+  Package,
+  Trash2,
+  AlertTriangle,
+  Lock,
+  Phone,
+  RefreshCw,
+  X
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import TappingLogo from '@/components/brand/TappingLogo';
@@ -52,6 +59,9 @@ export default function AccountOrdersSection({
   const { showToast } = useToast();
   const [orders, setOrders] = useState<MetalCardOrder[]>([]);
   const [displayHost, setDisplayHost] = useState('tapping.bio');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -73,6 +83,24 @@ export default function AccountOrdersSection({
     saveStoredProfile(p);
     showToast('Signed Out', 'You have been safely logged out of your session', 'info');
     router.push('/');
+  };
+
+  const handleDeleteAccount = () => {
+    const targetMatch = profile.username.toLowerCase();
+    const inputMatch = deleteConfirmText.trim().toLowerCase();
+    if (inputMatch !== targetMatch && deleteConfirmText.trim().toUpperCase() !== 'DELETE') {
+      showToast('Confirmation Mismatch', `Please type "${profile.username}" or "DELETE" to confirm account deletion`, 'error');
+      return;
+    }
+    setIsDeleting(true);
+    setTimeout(() => {
+      deleteCurrentCustomerAccount();
+      showToast('Account Deleted', 'Your profile and public link have been completely removed. You can start fresh from zero anytime.', 'info');
+      setShowDeleteModal(false);
+      setIsDeleting(false);
+      router.push('/dashboard');
+      window.location.reload();
+    }, 700);
   };
 
   // Expiry calculation
@@ -103,9 +131,18 @@ export default function AccountOrdersSection({
                 PRO ACTIVE
               </span>
             </div>
-            <p className="text-xs text-charcoal/60 font-mono mt-0.5">
-              @{profile.username} &bull; aarav@tapping.bio
-            </p>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="text-xs text-charcoal/80 font-mono font-bold flex items-center gap-1 bg-[#FAF7F2] px-2 py-0.5 rounded-md border border-black/5">
+                <Lock className="w-3 h-3 text-charcoal/50" />
+                @{profile.username}
+                <span className="text-[9px] text-charcoal/40 font-sans font-semibold">(Permanent)</span>
+              </span>
+              <span className="text-xs text-charcoal/70 font-mono flex items-center gap-1 bg-[#FAF7F2] px-2 py-0.5 rounded-md border border-black/5">
+                <Phone className="w-3 h-3 text-emerald-600" />
+                {profile.mobileNumber || '+91 98765 43210'}
+                <span className="text-[9px] text-emerald-700 font-sans font-bold">Verified</span>
+              </span>
+            </div>
             <p className="text-[11px] text-charcoal/50 mt-1 font-medium">
               Member since January 2026 &bull; Verified Creator Platform
             </p>
@@ -373,6 +410,116 @@ export default function AccountOrdersSection({
           </div>
         )}
       </div>
+
+      {/* Danger Zone: Permanent Customer Profile Deletion */}
+      <div className="p-6 md:p-8 rounded-4xl bg-rose-50/60 border border-rose-200/80 shadow-soft">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-rose-100 border border-rose-300 text-rose-700 flex items-center justify-center shrink-0 shadow-2xs">
+              <AlertTriangle className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-rose-950">
+                Danger Zone: Permanent Profile Deletion
+              </h3>
+              <p className="text-xs text-rose-800/80 mt-1 leading-relaxed max-w-xl font-medium">
+                Completely erase your creator profile, links, showcase products, and permanent handle (<code>@{profile.username}</code>). Your public URL will be deactivated immediately. If you wish to use TAPPING again, you will start completely fresh from zero with a new phone verification, username, and plan activation.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setDeleteConfirmText('');
+              setShowDeleteModal(true);
+            }}
+            className="self-start sm:self-center px-5 py-3 rounded-2xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-black text-xs flex items-center gap-2 shadow-sm transition-all shrink-0 cursor-pointer"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>Delete Profile & Account</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Confirmation Modal for Permanent Account Deletion */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-4xl p-6 sm:p-8 w-full max-w-md shadow-2xl border border-black/10 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-black/5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-charcoal">Delete Account Permanently?</h3>
+                  <p className="text-[11px] font-bold text-rose-600">This action cannot be undone</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="p-1.5 rounded-full hover:bg-black/5 text-charcoal/50 hover:text-charcoal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-charcoal/70 leading-relaxed">
+              <p>
+                You are about to completely delete your profile for <strong className="text-charcoal font-black">@{profile.username}</strong> ({profile.displayName}).
+              </p>
+              <ul className="list-disc pl-5 space-y-1 text-[11px] text-charcoal/80">
+                <li>Your public bio link (<code>{displayHost}/{profile.username}</code>) will immediately go offline.</li>
+                <li>All link blocks, click analytics, and product showcases will be purged.</li>
+                <li>Your laser-engraved NFC card redirect will become inactive.</li>
+                <li>You can start fresh from zero with a new registration and plan renewal anytime.</li>
+              </ul>
+              <p className="font-bold text-charcoal pt-1">
+                To confirm, type <span className="font-mono text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">{profile.username}</span> or <span className="font-mono text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">DELETE</span> below:
+              </p>
+            </div>
+
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder={`Type "${profile.username}" to confirm`}
+              className="w-full px-4 py-3 rounded-2xl bg-[#FAF7F2] border border-black/15 text-xs font-mono font-bold text-charcoal focus:outline-none focus:ring-2 focus:ring-rose-500/30"
+              autoFocus
+            />
+
+            <div className="flex gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-3 px-4 rounded-2xl bg-[#FAF7F2] hover:bg-black/5 text-xs font-bold text-charcoal transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={
+                  isDeleting ||
+                  (deleteConfirmText.trim().toLowerCase() !== profile.username.toLowerCase() &&
+                   deleteConfirmText.trim().toUpperCase() !== 'DELETE')
+                }
+                onClick={handleDeleteAccount}
+                className="flex-1 py-3 px-4 rounded-2xl bg-rose-600 hover:bg-rose-700 disabled:opacity-40 text-white text-xs font-black transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:cursor-not-allowed"
+              >
+                {isDeleting ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Confirm Delete</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

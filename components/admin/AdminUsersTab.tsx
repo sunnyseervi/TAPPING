@@ -19,11 +19,14 @@ import {
   Check, 
   Printer, 
   Filter,
-  UserCheck
+  UserCheck,
+  Phone,
+  Lock
 } from 'lucide-react';
 import { UserRecord, Profile } from '@/lib/types';
 import { useToast } from '@/components/ui/Toast';
 import { jsPDF } from 'jspdf';
+import { checkUsernameAvailability } from '@/lib/storage';
 
 interface AdminUsersTabProps {
   users: UserRecord[];
@@ -55,6 +58,7 @@ export default function AdminUsersTab({
   const [newUsername, setNewUsername] = useState('');
   const [newDisplayName, setNewDisplayName] = useState('');
   const [newEmail, setNewEmail] = useState('');
+  const [newPhone, setNewPhone] = useState('+91 98000 00000');
   const [newPlan, setNewPlan] = useState<'free' | 'pro_monthly' | 'pro_yearly'>('pro_monthly');
 
   // Filter users
@@ -62,7 +66,8 @@ export default function AdminUsersTab({
     const matchSearch =
       u.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase());
+      u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (u.mobileNumber && u.mobileNumber.includes(searchQuery));
 
     if (!matchSearch) return false;
 
@@ -79,19 +84,27 @@ export default function AdminUsersTab({
       showToast('Validation Error', 'Username and email are required', 'error');
       return;
     }
-    const cleanUsername = newUsername.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    const availability = checkUsernameAvailability(newUsername);
+    if (!availability.available) {
+      showToast('Username Error', availability.reason || 'This handle is unavailable', 'error');
+      return;
+    }
+
     onAddUser({
-      username: cleanUsername,
-      displayName: newDisplayName.trim() || cleanUsername,
+      username: availability.normalized,
+      displayName: newDisplayName.trim() || availability.normalized,
       email: newEmail.trim(),
+      mobileNumber: newPhone.trim() || '+91 98000 00000',
       plan: newPlan,
       status: 'active',
+      isActivated: true,
     });
-    showToast('User Created', `Creator @${cleanUsername} successfully added`, 'success');
+    showToast('User Created', `Creator @${availability.normalized} successfully registered`, 'success');
     setIsAddUserModalOpen(false);
     setNewUsername('');
     setNewDisplayName('');
     setNewEmail('');
+    setNewPhone('+91 98000 00000');
   };
 
   const handleSaveEdit = (e: React.FormEvent) => {
@@ -100,6 +113,7 @@ export default function AdminUsersTab({
     onUpdateUser(editingUser.id, {
       displayName: editingUser.displayName,
       email: editingUser.email,
+      mobileNumber: editingUser.mobileNumber,
       plan: editingUser.plan,
       planExpiresAt: editingUser.planExpiresAt,
       status: editingUser.status,
@@ -283,9 +297,15 @@ export default function AdminUsersTab({
                         </div>
                       </td>
 
-                      {/* Email */}
+                      {/* Email & Verified Phone */}
                       <td className="py-3.5 px-4 font-mono text-[11px] text-charcoal/70">
-                        {user.email}
+                        <div>{user.email}</div>
+                        {user.mobileNumber && (
+                          <div className="text-[10px] text-charcoal/50 flex items-center gap-1 mt-0.5 font-sans font-bold">
+                            <Phone className="w-2.5 h-2.5 text-emerald-600 shrink-0" />
+                            <span>{user.mobileNumber}</span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Plan & Expiry */}
@@ -418,6 +438,16 @@ export default function AdminUsersTab({
                 <div>
                   <h3 className="font-black text-base text-charcoal">{selectedUserForDetails.displayName}</h3>
                   <p className="text-xs text-charcoal/60 font-mono">@{selectedUserForDetails.username} &bull; {selectedUserForDetails.email}</p>
+                  <p className="text-[11px] text-charcoal/60 flex items-center gap-2 mt-0.5 font-bold">
+                    <span className="flex items-center gap-1 text-charcoal/80">
+                      <Phone className="w-3 h-3 text-emerald-600" />
+                      {selectedUserForDetails.mobileNumber || '+91 98000 00000'}
+                    </span>
+                    &bull;
+                    <span className={selectedUserForDetails.isActivated !== false ? 'text-emerald-700' : 'text-amber-700'}>
+                      {selectedUserForDetails.isActivated !== false ? 'Profile Activated (Paid)' : 'Pending Payment'}
+                    </span>
+                  </p>
                 </div>
               </div>
               <button
@@ -569,6 +599,17 @@ export default function AdminUsersTab({
               </div>
 
               <div>
+                <label className="text-[10px] font-bold text-charcoal/60 block mb-1">Mobile Number</label>
+                <input
+                  type="tel"
+                  value={editingUser.mobileNumber || ''}
+                  onChange={(e) => setEditingUser({ ...editingUser, mobileNumber: e.target.value })}
+                  placeholder="+91 98765 43210"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-mono font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                />
+              </div>
+
+              <div>
                 <label className="text-[10px] font-bold text-charcoal/60 block mb-1">Subscription Tier</label>
                 <select
                   value={editingUser.plan}
@@ -665,6 +706,18 @@ export default function AdminUsersTab({
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder="creator@example.com"
                   className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-charcoal/60 block mb-1">Mobile Number (India / Global)</label>
+                <input
+                  type="tel"
+                  value={newPhone}
+                  onChange={(e) => setNewPhone(e.target.value)}
+                  placeholder="+91 98765 43210"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-mono font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
                   required
                 />
               </div>

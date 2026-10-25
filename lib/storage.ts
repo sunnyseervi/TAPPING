@@ -22,6 +22,7 @@ const KEYS = {
   ANALYTICS: 'tapping_analytics_v4',
   SUBSCRIPTION: 'tapping_sub_v3',
   ONBOARDING_DONE: 'tapping_onboarding_completed_v3',
+  ACTIVATED: 'tapping_profile_activated_v1',
   STORE: 'tapping_store_v1',
   USERS: 'tapping_admin_users_v1',
   ORDERS: 'tapping_metal_orders_v1',
@@ -228,6 +229,26 @@ export function recordQRScan(): void {
   }
 }
 
+export function getStoredSubscription(): Subscription {
+  if (typeof window === 'undefined') return initialSubscription;
+  try {
+    const data = localStorage.getItem(KEYS.SUBSCRIPTION);
+    return data ? JSON.parse(data) : initialSubscription;
+  } catch {
+    return initialSubscription;
+  }
+}
+
+export function saveStoredSubscription(sub: Subscription): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(KEYS.SUBSCRIPTION, JSON.stringify(sub));
+    window.dispatchEvent(new CustomEvent('tapping-subscription-updated', { detail: sub }));
+  } catch (e) {
+    console.error('Error saving subscription', e);
+  }
+}
+
 export function getOnboardingCompleted(): boolean {
   if (typeof window === 'undefined') return false;
   return localStorage.getItem(KEYS.ONBOARDING_DONE) === 'true';
@@ -236,6 +257,222 @@ export function getOnboardingCompleted(): boolean {
 export function setOnboardingCompleted(completed: boolean): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(KEYS.ONBOARDING_DONE, completed ? 'true' : 'false');
+}
+
+export function getProfileActivated(): boolean {
+  if (typeof window === 'undefined') return true;
+  const val = localStorage.getItem(KEYS.ACTIVATED);
+  if (val !== null) return val === 'true';
+  const profile = getStoredProfile();
+  return profile.isActivated !== false;
+}
+
+export function setProfileActivated(activated: boolean): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(KEYS.ACTIVATED, activated ? 'true' : 'false');
+  const profile = getStoredProfile();
+  profile.isActivated = activated;
+  saveStoredProfile(profile);
+  window.dispatchEvent(new CustomEvent('tapping-profile-activated', { detail: activated }));
+}
+
+export function sanitizeUsername(input: string): string {
+  if (!input) return '';
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/^@+/, '')
+    .replace(/[\s,.]+/g, '-')
+    .replace(/[^a-z0-9_-]/g, '');
+}
+
+export function checkUsernameAvailability(rawInput: string, currentUserId?: string): {
+  available: boolean;
+  normalized: string;
+  reason?: string;
+} {
+  const normalized = sanitizeUsername(rawInput);
+  if (!normalized || normalized.length < 3) {
+    return {
+      available: false,
+      normalized,
+      reason: 'Username must be at least 3 characters long',
+    };
+  }
+  if (normalized.length > 30) {
+    return {
+      available: false,
+      normalized,
+      reason: 'Username cannot exceed 30 characters',
+    };
+  }
+  const reserved = [
+    'admin', 'dashboard', 'api', 'login', 'signup', 'settings', 
+    'auth', 'tapping', 'system', 'root', 'help', 'terms', 'privacy',
+    'explore', 'shop', 'billing', 'orders', 'nfc', 'store'
+  ];
+  if (reserved.includes(normalized)) {
+    return {
+      available: false,
+      normalized,
+      reason: `'${normalized}' is a reserved platform handle`,
+    };
+  }
+
+  const users = getStoredUsers();
+  const exists = users.some((u) => {
+    if (currentUserId && u.id === currentUserId) return false;
+    return u.username.toLowerCase() === normalized;
+  });
+
+  if (exists) {
+    return {
+      available: false,
+      normalized,
+      reason: `'@${normalized}' is already taken by another creator`,
+    };
+  }
+
+  return {
+    available: true,
+    normalized,
+  };
+}
+
+export function activateUserProfile(params: {
+  username: string;
+  mobileNumber: string;
+  fullName: string;
+  email?: string;
+  plan: 'pro_monthly' | 'pro_yearly';
+  paymentMethod: 'UPI' | 'Card' | 'NetBanking';
+  amount?: number;
+}): { user: UserRecord; payment: PaymentRecord } {
+  const normalized = sanitizeUsername(params.username) || 'creator';
+  const amount = params.amount || (params.plan === 'pro_yearly' ? 2999 : 299);
+  const planDays = params.plan === 'pro_yearly' ? 365 : 30;
+  const planExpiresAt = new Date(Date.now() + planDays * 24 * 60 * 60 * 1000).toISOString();
+  const createdAt = new Date().toISOString();
+
+  // 1. Get or create user profile
+  const currentProfile = getStoredProfile();
+  const updatedProfile: Profile = {
+    ...currentProfile,
+    username: normalized,
+    displayName: params.fullName || normalized,
+    mobileNumber: params.mobileNumber,
+    isActivated: true,
+    isVerified: true,
+  };
+  saveStoredProfile(updatedProfile);
+
+  // 2. Update vCard with phone number and website
+  const currentVCard = getStoredVCard();
+  saveStoredVCard({
+    ...currentVCard,
+    firstName: params.fullName.split(' ')[0] || normalized,
+    lastName: params.fullName.split(' ').slice(1).join(' ') || '',
+    mobilePhone: params.mobileNumber,
+    workPhone: params.mobileNumber,
+    website: `https://tapping.bio/${normalized}`,
+  });
+
+  // 3. Create and record payment
+  const payment: PaymentRecord = {
+    id: `pay_${Date.now()}`,
+    userId: currentProfile.id || `usr_${Date.now()}`,
+    userEmail: params.email || `${normalized}@tapping.bio`,
+    amount,
+    currency: 'INR',
+    type: params.plan === 'pro_yearly' ? 'subscription_yearly' : 'subscription_monthly',
+    status: 'succeeded',
+    method: params.paymentMethod,
+    transactionRef: `${params.paymentMethod.toLowerCase()}_tx_${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
+    createdAt,
+    planName: params.plan === 'pro_yearly' ? 'Creator Pro Annual Membership' : 'Creator Pro Monthly Membership',
+  };
+  recordPayment(payment);
+
+  // 4. Update or add user to stored users registry
+  const users = getStoredUsers();
+  const existingIdx = users.findIndex((u) => u.username.toLowerCase() === normalized || u.id === currentProfile.id);
+
+  let userRecord: UserRecord;
+  if (existingIdx !== -1) {
+    users[existingIdx] = {
+      ...users[existingIdx],
+      username: normalized,
+      displayName: params.fullName || users[existingIdx].displayName,
+      email: params.email || users[existingIdx].email,
+      mobileNumber: params.mobileNumber,
+      status: 'active',
+      isActivated: true,
+      plan: params.plan,
+      planExpiresAt,
+      profile: updatedProfile,
+      lastActiveAt: createdAt,
+    };
+    userRecord = users[existingIdx];
+  } else {
+    userRecord = {
+      id: `usr_${Date.now()}`,
+      username: normalized,
+      email: params.email || `${normalized}@tapping.bio`,
+      displayName: params.fullName || normalized,
+      mobileNumber: params.mobileNumber,
+      status: 'active',
+      isActivated: true,
+      plan: params.plan,
+      createdAt,
+      planExpiresAt,
+      profile: updatedProfile,
+      links: getStoredLinks(),
+      products: getStoredStore().products,
+      totalViews: 1,
+      totalClicks: 0,
+      lastActiveAt: createdAt,
+    };
+    users.unshift(userRecord);
+  }
+  saveStoredUsers(users);
+
+  // 5. Update subscription
+  saveStoredSubscription({
+    tier: 'pro',
+    status: 'active',
+    expiresAt: planExpiresAt,
+  });
+
+  // 6. Set flags
+  setOnboardingCompleted(true);
+  setProfileActivated(true);
+
+  return { user: userRecord, payment };
+}
+
+export function deleteCurrentCustomerAccount(): void {
+  if (typeof window === 'undefined') return;
+  const currentProfile = getStoredProfile();
+  
+  // Remove from users list
+  const users = getStoredUsers();
+  const filtered = users.filter(
+    (u) => u.username.toLowerCase() !== currentProfile.username.toLowerCase() && u.id !== currentProfile.id
+  );
+  saveStoredUsers(filtered);
+
+  // Reset local items
+  localStorage.removeItem(KEYS.PROFILE);
+  localStorage.removeItem(KEYS.VCARD);
+  localStorage.removeItem(KEYS.LINKS);
+  localStorage.removeItem(KEYS.NFC);
+  localStorage.removeItem(KEYS.ANALYTICS);
+  localStorage.removeItem(KEYS.STORE);
+  localStorage.removeItem(KEYS.SUBSCRIPTION);
+  localStorage.setItem(KEYS.ONBOARDING_DONE, 'false');
+  localStorage.setItem(KEYS.ACTIVATED, 'false');
+
+  window.dispatchEvent(new CustomEvent('tapping-account-deleted'));
 }
 
 export function resetAllToDefault(): void {
@@ -260,6 +497,8 @@ const INITIAL_USERS: UserRecord[] = [
     email: 'aarav@tapping.bio',
     displayName: 'Aarav Sharma',
     avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+    mobileNumber: '+91 98765 43210',
+    isActivated: true,
     status: 'active',
     plan: 'pro_yearly',
     createdAt: '2026-01-15T10:30:00Z',
@@ -328,6 +567,8 @@ const INITIAL_USERS: UserRecord[] = [
     email: 'priya.patel@designstudio.in',
     displayName: 'Priya Patel',
     avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
+    mobileNumber: '+91 98200 12345',
+    isActivated: true,
     status: 'active',
     plan: 'pro_monthly',
     createdAt: '2026-02-10T14:20:00Z',
@@ -366,6 +607,8 @@ const INITIAL_USERS: UserRecord[] = [
     email: 'rohit.beats@indieaudio.co',
     displayName: 'Rohit Verma',
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
+    mobileNumber: '+91 99300 54321',
+    isActivated: true,
     status: 'active',
     plan: 'pro_yearly',
     createdAt: '2026-03-01T09:10:00Z',
@@ -404,6 +647,8 @@ const INITIAL_USERS: UserRecord[] = [
     email: 'aanya.pottery@studio.in',
     displayName: 'Aanya Sen',
     avatarUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400',
+    mobileNumber: '+91 97110 98765',
+    isActivated: true,
     status: 'active',
     plan: 'pro_monthly',
     createdAt: '2026-04-18T16:40:00Z',
@@ -442,6 +687,8 @@ const INITIAL_USERS: UserRecord[] = [
     email: 'vikram@growthconsulting.in',
     displayName: 'Vikram Joshi',
     avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
+    mobileNumber: '+91 98100 11223',
+    isActivated: false,
     status: 'blocked',
     plan: 'free',
     createdAt: '2026-05-12T11:00:00Z',
@@ -685,6 +932,8 @@ export function addStoredUser(newUser: Partial<UserRecord>): UserRecord {
     email: newUser.email || 'user@example.com',
     displayName: newUser.displayName || 'New Creator',
     avatarUrl: newUser.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
+    mobileNumber: newUser.mobileNumber || '+91 98000 00000',
+    isActivated: newUser.isActivated !== false,
     status: newUser.status || 'active',
     plan: newUser.plan || 'pro_monthly',
     createdAt: new Date().toISOString(),

@@ -33,7 +33,8 @@ import {
   Download,
   QrCode as QrCodeIcon,
   ShoppingBag,
-  Tag
+  Tag,
+  Lock
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useToast } from '@/components/ui/Toast';
@@ -354,11 +355,11 @@ export default function EditProfileSection({
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanUsername = username.toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'creator';
+    // Username is permanently locked and immutable to protect live URL & NFC blueprints
     const updatedProfile: Profile = {
       ...profile,
       displayName,
-      username: cleanUsername,
+      username: profile.username,
       badgeTitle,
       bio,
       avatarUrl,
@@ -393,7 +394,7 @@ export default function EditProfileSection({
         workPhone: phone,
         mobilePhone: phone,
         workEmail: socialLinks.email,
-        website: website || `http://${displayHost}/${cleanUsername}`,
+        website: website || `http://${displayHost}/${profile.username}`,
         streetAddress,
         city,
         country,
@@ -403,7 +404,7 @@ export default function EditProfileSection({
     }
 
     // Generate real-time dynamic QR for confirmation popup with user data
-    QRCode.toDataURL(`http://${displayHost}/${cleanUsername}`, { width: 360, margin: 2 })
+    QRCode.toDataURL(`http://${displayHost}/${profile.username}`, { width: 360, margin: 2 })
       .then((qr) => setConfirmQrUrl(qr))
       .catch(console.error);
 
@@ -858,22 +859,29 @@ export default function EditProfileSection({
             </div>
 
             <div>
-              <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1">
-                Username (@handle)
-              </label>
-              <div className="flex items-center bg-[#FAF7F2] rounded-2xl border border-black/10 px-3.5 py-2.5">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[11px] font-black text-charcoal/80 uppercase tracking-wider flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-charcoal/60" />
+                  <span>Permanent Bio Handle</span>
+                </label>
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-black/5 text-charcoal/60 border border-black/10 flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5" />
+                  Immutable
+                </span>
+              </div>
+              <div className="flex items-center bg-black/5 rounded-2xl border border-black/10 px-3.5 py-2.5 cursor-not-allowed">
                 <span className="text-xs font-bold text-charcoal/50 select-none mr-1">{displayHost}/</span>
                 <input
                   type="text"
-                  value={username}
-                  onChange={(e) => {
-                    setUsername(e.target.value);
-                    notifyLive({ username: e.target.value });
-                  }}
-                  required
-                  className="w-full bg-transparent text-xs font-bold focus:outline-none"
+                  value={profile.username}
+                  readOnly
+                  disabled
+                  className="w-full bg-transparent text-xs font-black text-charcoal/70 cursor-not-allowed select-all focus:outline-none"
                 />
               </div>
+              <p className="text-[10px] text-charcoal/50 mt-1.5 font-medium leading-relaxed">
+                Your handle is permanently mapped to your public URL (<code>{displayHost}/{profile.username}</code>) and laser-engraved NFC blueprints. It cannot be altered after registration.
+              </p>
             </div>
 
             <div>

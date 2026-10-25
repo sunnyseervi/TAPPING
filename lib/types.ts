@@ -77,6 +77,8 @@ export interface Profile {
   theme: ThemeType;
   accentColor: string;
   isVerified: boolean;
+  isActivated?: boolean;
+  mobileNumber?: string;
   socialLinks: SocialLinks;
   createdAt: string;
 
@@ -304,7 +306,9 @@ export interface UserRecord {
   email: string;
   displayName: string;
   avatarUrl?: string;
-  status: 'active' | 'blocked';
+  mobileNumber?: string;
+  isActivated?: boolean;
+  status: 'active' | 'blocked' | 'pending_payment';
   plan: 'free' | 'pro_monthly' | 'pro_yearly' | 'metal_bundle';
   createdAt: string;
   planExpiresAt: string;
