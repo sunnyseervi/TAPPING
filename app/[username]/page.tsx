@@ -357,8 +357,8 @@ export default function PublicProfilePage() {
             isCardBehindActive ? cardContainerClasses : ''
           }`}>
         
-        {/* Avatar with Crisp White Ring & Shadow */}
-        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden ring-4 ring-white shadow-soft bg-white relative flex items-center justify-center shrink-0">
+        {/* Avatar with Crisp White Ring & Shadow (Modern Rounded Square / Squircle) */}
+        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] sm:rounded-[32px] overflow-hidden ring-4 ring-white/90 shadow-soft bg-white relative flex items-center justify-center shrink-0">
           <img
             src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
             alt={profile.displayName}
@@ -389,11 +389,11 @@ export default function PublicProfilePage() {
         {/* Professional Work / Title / Company Badge (Frosted Blurry Glass) */}
         {(jobTitleText || organizationName) && (
           <div className="mt-2.5 flex items-center justify-center">
-            <span className={`text-xs font-black px-3.5 py-1.5 rounded-full ${
+            <span className={`text-xs font-black px-4 py-1.5 rounded-full ${
               contentIsDark 
-                ? 'bg-black/40 text-white border border-white/20' 
-                : 'bg-white/80 text-charcoal border border-black/10'
-            } backdrop-blur-md shadow-2xs flex items-center gap-1.5`}>
+                ? 'bg-black/50 text-white border border-white/25 shadow-sm' 
+                : 'bg-white/85 text-charcoal border border-white/60 shadow-sm'
+            } backdrop-blur-xl shadow-2xs flex items-center gap-1.5`}>
               <Briefcase className="w-3.5 h-3.5 shrink-0 text-[#4F83FF]" />
               <span>{jobTitleText}</span>
               {organizationName && (
@@ -409,10 +409,10 @@ export default function PublicProfilePage() {
         {/* Location / Address (Frosted Blurry Glass Pill) */}
         {fullAddress && (
           <div className="mt-2 flex items-center justify-center">
-            <div className={`px-3.5 py-1 rounded-full backdrop-blur-md shadow-2xs flex items-center justify-center gap-1.5 text-xs font-semibold border ${
+            <div className={`px-4 py-1.5 rounded-full backdrop-blur-xl shadow-sm flex items-center justify-center gap-1.5 text-xs font-semibold border ${
               contentIsDark 
-                ? 'bg-black/35 text-white/90 border-white/15' 
-                : 'bg-white/75 text-charcoal/80 border-black/10'
+                ? 'bg-black/50 text-white/95 border-white/20' 
+                : 'bg-white/85 text-charcoal/85 border-white/60'
             }`}>
               <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
               <span>{fullAddress}</span>
@@ -422,10 +422,10 @@ export default function PublicProfilePage() {
 
         {/* Bio Description (Frosted Blurry Glass Capsule) */}
         {profile.bio && (
-          <div className={`mt-3 max-w-sm px-4 py-2.5 rounded-2xl backdrop-blur-md border shadow-2xs text-center leading-relaxed font-medium ${bodySizeClass} ${
+          <div className={`mt-3 max-w-sm px-4 py-2.5 rounded-2xl backdrop-blur-xl border shadow-sm text-center leading-relaxed font-medium ${bodySizeClass} ${
             contentIsDark 
-              ? 'bg-black/30 text-white/95 border-white/15' 
-              : 'bg-white/75 text-charcoal/85 border-white/60'
+              ? 'bg-black/45 text-white/95 border-white/20' 
+              : 'bg-white/85 text-charcoal/90 border-white/70'
           }`}>
             {profile.bio}
           </div>

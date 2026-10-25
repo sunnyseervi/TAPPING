@@ -52,6 +52,7 @@ interface EditProfileSectionProps {
   onUpdateLinks: (newLinks: LinkBlock[]) => void;
   onUpdateStore?: (updated: StoreConfig) => void;
   onLiveChange?: (updated: Profile) => void;
+  onLiveVCardChange?: (updated: VCardProfile) => void;
   activeSectionTab?: 'profile' | 'links' | 'products' | 'themes';
   onSectionTabChange?: (tab: 'profile' | 'links' | 'products' | 'themes') => void;
 }
@@ -66,6 +67,7 @@ export default function EditProfileSection({
   onUpdateLinks,
   onUpdateStore,
   onLiveChange,
+  onLiveVCardChange,
   activeSectionTab = 'profile',
   onSectionTabChange,
 }: EditProfileSectionProps) {
@@ -245,6 +247,30 @@ export default function EditProfileSection({
           ...socialLinks,
           phone,
         },
+        ...partial,
+      });
+    }
+  };
+
+  const notifyVCardLive = (partial: Partial<VCardProfile>) => {
+    if (onLiveVCardChange) {
+      const parts = displayName.trim().split(' ');
+      onLiveVCardChange({
+        ...(vcard || { id: 'vc_default', userId: profile.id, note: 'Saved via Tapping Bio' }),
+        id: vcard?.id || 'vc_default',
+        userId: profile.id,
+        firstName: parts[0] || '',
+        lastName: parts.slice(1).join(' ') || '',
+        organization,
+        jobTitle: badgeTitle,
+        workPhone: phone,
+        mobilePhone: phone,
+        workEmail: socialLinks.email,
+        website: website || `http://${displayHost}/${username}`,
+        streetAddress,
+        city,
+        country,
+        note: vcard?.note || 'Saved via Tapping Bio Space',
         ...partial,
       });
     }
@@ -854,7 +880,10 @@ export default function EditProfileSection({
               <input
                 type="text"
                 value={organization}
-                onChange={(e) => setOrganization(e.target.value)}
+                onChange={(e) => {
+                  setOrganization(e.target.value);
+                  notifyVCardLive({ organization: e.target.value });
+                }}
                 placeholder="Tapping Technologies India"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
@@ -867,7 +896,10 @@ export default function EditProfileSection({
               <input
                 type="text"
                 value={streetAddress}
-                onChange={(e) => setStreetAddress(e.target.value)}
+                onChange={(e) => {
+                  setStreetAddress(e.target.value);
+                  notifyVCardLive({ streetAddress: e.target.value });
+                }}
                 placeholder="Indiranagar 100ft Road"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
@@ -881,14 +913,20 @@ export default function EditProfileSection({
                 <input
                   type="text"
                   value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  onChange={(e) => {
+                    setCity(e.target.value);
+                    notifyVCardLive({ city: e.target.value });
+                  }}
                   placeholder="Bengaluru, Karnataka"
                   className="w-full px-3 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
                 />
                 <input
                   type="text"
                   value={country}
-                  onChange={(e) => setCountry(e.target.value)}
+                  onChange={(e) => {
+                    setCountry(e.target.value);
+                    notifyVCardLive({ country: e.target.value });
+                  }}
                   placeholder="India"
                   className="w-full px-3 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
                 />

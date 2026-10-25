@@ -188,6 +188,7 @@ export default function NFCTagShop({ profile, vcard, username }: NFCTagShopProps
   const [targetUrl, setTargetUrl] = useState<string>(`https://tapping.bio/${username}`);
   const [engravedName, setEngravedName] = useState<string>(profile.displayName || 'Aarav Sharma');
   const [engravedTagline, setEngravedTagline] = useState<string>(vcard.jobTitle || 'Founder & Architect');
+  const [laserTextColor, setLaserTextColor] = useState<string>('');
   const [customLogoUrl, setCustomLogoUrl] = useState<string>(profile.avatarUrl || '');
   const [specialInstructions, setSpecialInstructions] = useState<string>('');
 
@@ -679,13 +680,22 @@ export default function NFCTagShop({ profile, vcard, username }: NFCTagShopProps
 
                 {/* Middle/Bottom: Laser Engraved Custom Name & Tagline */}
                 <div className="text-left mt-auto pt-4">
-                  <p className={`font-black tracking-wide text-base sm:text-lg uppercase drop-shadow-xs truncate ${selectedColor.textClass}`}>
+                  <p 
+                    className={`font-black tracking-wide text-base sm:text-lg uppercase drop-shadow-xs truncate ${!laserTextColor ? selectedColor.textClass : ''}`}
+                    style={laserTextColor ? { color: laserTextColor } : undefined}
+                  >
                     {engravedName || 'YOUR FULL NAME'}
                   </p>
-                  <p className={`text-[11px] font-medium tracking-wide opacity-80 uppercase truncate mt-0.5 ${selectedColor.textClass}`}>
+                  <p 
+                    className={`text-[11px] font-medium tracking-wide opacity-80 uppercase truncate mt-0.5 ${!laserTextColor ? selectedColor.textClass : ''}`}
+                    style={laserTextColor ? { color: laserTextColor } : undefined}
+                  >
                     {engravedTagline || 'FOUNDER & ARCHITECT'}
                   </p>
-                  <p className={`text-[9px] font-mono opacity-60 mt-1 truncate ${selectedColor.textClass}`}>
+                  <p 
+                    className={`text-[9px] font-mono opacity-60 mt-1 truncate ${!laserTextColor ? selectedColor.textClass : ''}`}
+                    style={laserTextColor ? { color: laserTextColor } : undefined}
+                  >
                     Tap to launch: {targetUrl}
                   </p>
                 </div>
@@ -806,6 +816,63 @@ export default function NFCTagShop({ profile, vcard, username }: NFCTagShopProps
                       placeholder="e.g. FOUNDER & ARCHITECT"
                       maxLength={40}
                     />
+                  </div>
+                </div>
+
+                {/* Laser Engraved Font / Text Color Selector */}
+                <div className="pt-2">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] font-bold text-charcoal/70 block">
+                      Laser Engraving Font &amp; Text Color:
+                    </label>
+                    {laserTextColor && (
+                      <button
+                        type="button"
+                        onClick={() => setLaserTextColor('')}
+                        className="text-[10px] font-bold text-rose-500 hover:underline cursor-pointer"
+                      >
+                        Reset to Auto
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {[
+                      { name: 'Auto', hex: '' },
+                      { name: 'Pure White', hex: '#FFFFFF' },
+                      { name: 'Laser Gold', hex: '#D4AF37' },
+                      { name: 'Stealth Black', hex: '#141518' },
+                      { name: 'Cyber Cyan', hex: '#38BDF8' },
+                      { name: 'Neon Lime', hex: '#22C55E' },
+                      { name: 'Rose Coral', hex: '#F43F5E' },
+                    ].map((col) => (
+                      <button
+                        key={col.name}
+                        type="button"
+                        onClick={() => setLaserTextColor(col.hex)}
+                        className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                          laserTextColor === col.hex
+                            ? 'bg-[#141518] text-white border-black shadow-2xs'
+                            : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                        }`}
+                      >
+                        {col.hex && (
+                          <div
+                            className="w-2.5 h-2.5 rounded-full border border-black/20"
+                            style={{ backgroundColor: col.hex }}
+                          />
+                        )}
+                        <span>{col.name}</span>
+                      </button>
+                    ))}
+                    <div className="flex items-center gap-1 pl-1">
+                      <input
+                        type="color"
+                        value={laserTextColor || '#FFFFFF'}
+                        onChange={(e) => setLaserTextColor(e.target.value)}
+                        className="w-6 h-6 rounded-lg border border-black/10 cursor-pointer p-0"
+                        title="Pick custom laser engraving color"
+                      />
+                    </div>
                   </div>
                 </div>
 

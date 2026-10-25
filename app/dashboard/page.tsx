@@ -374,6 +374,7 @@ function DashboardContent() {
                     onUpdateVCard={handleUpdateVCard}
                     onUpdateLinks={handleUpdateLinks}
                     onLiveChange={(preview) => setProfile(preview)}
+                    onLiveVCardChange={(previewVCard) => setVcard(previewVCard)}
                     activeSectionTab={activeTab === 'themes' ? 'themes' : editSectionTab}
                     onSectionTabChange={(tab) => setEditSectionTab(tab)}
                   />
