@@ -536,6 +536,56 @@ export function resolveLinkCardClasses(
     return 'bg-white hover:bg-yellow-50 border-2 border-black text-black font-cartoon rounded-3xl shadow-[3px_3px_0px_#000] rotate-[-0.5deg] hover:rotate-0 transition-transform';
   }
 
+  // 13. Bauhaus Geometric Colorblock
+  if (cardStyle === 'bauhaus-colorblock') {
+    return 'bg-[#FFF9F0] hover:bg-[#FFF3E0] border-2 border-[#111111] text-[#111111] font-black shadow-[4px_4px_0px_#EF4444] rounded-none active:translate-x-0.5 active:translate-y-0.5';
+  }
+
+  // 14. Swiss International Minimal Mono
+  if (cardStyle === 'swiss-minimal-mono') {
+    return 'bg-white hover:bg-neutral-50 border border-black text-black font-sans font-bold tracking-tight rounded-none shadow-none';
+  }
+
+  // 15. Haute Editorial Magazine
+  if (cardStyle === 'editorial-magazine') {
+    return 'bg-[#FAF7F2] hover:bg-[#F2ECE1] border border-[#78716C]/30 text-[#1C1917] font-serif italic rounded-xl shadow-2xs';
+  }
+
+  // 16. Matte Technical Carbon
+  if (cardStyle === 'matte-carbon') {
+    return 'bg-[#13151A] hover:bg-[#1B1E26] border border-cyan-500/30 text-white font-mono shadow-[0_4px_12px_rgba(0,0,0,0.5)] rounded-2xl';
+  }
+
+  // 17. Antique Parchment Paper
+  if (cardStyle === 'vintage-parchment') {
+    return 'bg-[#FBF4DE] hover:bg-[#F4E8C1] border-2 border-[#8C6D46] text-[#3E2723] font-serif shadow-xs rounded-lg';
+  }
+
+  // 18. Tokyo Neon Noir
+  if (cardStyle === 'tokyo-neon-noir') {
+    return 'bg-[#0D0E15] hover:bg-[#141522] border-2 border-[#A855F7] text-white font-bold shadow-[0_0_15px_rgba(168,85,247,0.35)] rounded-2xl';
+  }
+
+  // 19. Retro Cassette Tape
+  if (cardStyle === 'retro-cassette') {
+    return 'bg-[#242426] hover:bg-[#2C2D30] border-2 border-[#F97316] text-[#F97316] font-mono shadow-[3px_3px_0px_#EA580C] rounded-xl';
+  }
+
+  // 20. Frosted Prismatic Holographic
+  if (cardStyle === 'prismatic-glass') {
+    return 'bg-white/75 hover:bg-white/90 backdrop-blur-md border-2 border-indigo-200/80 text-charcoal shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-3xl';
+  }
+
+  // 21. Soft Claymorphic 3D
+  if (cardStyle === 'claymorphism-soft') {
+    return 'bg-[#EEF2F6] hover:bg-[#E2E8F0] border border-white/60 text-[#1E293B] font-bold shadow-[inset_0_2px_4px_rgba(255,255,255,0.8),0_8px_20px_rgba(0,0,0,0.06)] rounded-3xl';
+  }
+
+  // 22. Floating Capsule Pill
+  if (cardStyle === 'minimal-pill') {
+    return 'bg-white hover:bg-[#F8FAFC] border border-black/15 text-charcoal font-semibold shadow-xs rounded-full transition-transform hover:-translate-y-0.5';
+  }
+
   // Fallback to active theme's styling
   const theme = THEMES[themeId] || THEMES['pastel-bento'];
   return theme.linkVariantClass(variant, cardStyle);

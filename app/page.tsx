@@ -22,7 +22,6 @@ import {
   Wifi, 
   Building2,
   ExternalLink,
-  Sparkles,
   Repeat
 } from 'lucide-react';
 import { saveStoredProfile, getStoredProfile } from '@/lib/storage';

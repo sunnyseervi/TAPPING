@@ -14,7 +14,6 @@ import {
   Globe, 
   FileText, 
   Upload,
-  Sparkles,
   ExternalLink,
   Printer,
   Sliders,

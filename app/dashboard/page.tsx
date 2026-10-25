@@ -46,10 +46,25 @@ export default function DashboardPage() {
   const [subscription, setSubscription] = useState<Subscription>(initialSubscription);
 
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [editSectionTab, setEditSectionTab] = useState<'profile' | 'links' | 'themes'>('profile');
   const [profileViewMode, setProfileViewMode] = useState<'form' | 'preview'>('form');
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+
+  const handleSelectTab = (tab: string) => {
+    if (tab === 'themes') {
+      setActiveTab('profile');
+      setEditSectionTab('themes');
+      return;
+    }
+    if (tab === 'profile') {
+      setActiveTab('profile');
+      setEditSectionTab('profile');
+      return;
+    }
+    setActiveTab(tab);
+  };
 
   // Sync state on client mount to prevent SSR hydration mismatch
   useEffect(() => {
@@ -109,8 +124,8 @@ export default function DashboardPage() {
 
       {/* Left Collapsible Navigation Sidebar Drawer (toggled via 3-lines header button) */}
       <AppSidebar
-        activeTab={activeTab}
-        onSelectTab={(tab) => setActiveTab(tab)}
+        activeTab={activeTab === 'profile' && editSectionTab === 'themes' ? 'themes' : activeTab}
+        onSelectTab={handleSelectTab}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         profile={profile}
@@ -124,7 +139,7 @@ export default function DashboardPage() {
           <DashboardHeader
             profile={profile}
             onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-            onSelectTab={(tab) => setActiveTab(tab)}
+            onSelectTab={handleSelectTab}
           />
 
           {/* User Data Modules Workspace (100% Full Width — Fits Screen) */}
@@ -134,12 +149,12 @@ export default function DashboardPage() {
             <TeamSpaceBento
               profile={profile}
               analytics={analytics}
-              onSelectTab={(tab) => setActiveTab(tab)}
+              onSelectTab={handleSelectTab}
             />
           )}
 
           {/* TAB: EDIT PROFILE (Profile Settings + Real-time Live Phone Preview on Right Side) */}
-          {activeTab === 'profile' && (
+          {(activeTab === 'profile' || activeTab === 'themes') && (
             <div className="w-full flex flex-col gap-4">
               {/* Mobile/Tablet View Toggle (Shown only below lg breakpoint) */}
               <div className="lg:hidden flex items-center justify-center p-1 rounded-2xl bg-white border border-black/10 shadow-xs max-w-sm mx-auto w-full">
@@ -170,7 +185,7 @@ export default function DashboardPage() {
 
               {/* Side-by-Side on Desktop (lg:), Adaptive View on Mobile */}
               <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                {/* Left Column: Form & Link Block Manager */}
+                {/* Left Column: Form & Link Block Manager & Theme Studio */}
                 <div className={`lg:col-span-7 xl:col-span-8 flex flex-col gap-6 ${
                   profileViewMode === 'preview' ? 'hidden lg:flex' : 'flex'
                 }`}>
@@ -182,6 +197,8 @@ export default function DashboardPage() {
                     onUpdateVCard={handleUpdateVCard}
                     onUpdateLinks={handleUpdateLinks}
                     onLiveChange={(preview) => setProfile(preview)}
+                    activeSectionTab={activeTab === 'themes' ? 'themes' : editSectionTab}
+                    onSectionTabChange={(tab) => setEditSectionTab(tab)}
                   />
                 </div>
 
@@ -207,7 +224,7 @@ export default function DashboardPage() {
               vcard={vcard}
               username={profile.username}
               onUpdateVCard={handleUpdateVCard}
-              onSelectTab={(tab) => setActiveTab(tab)}
+              onSelectTab={handleSelectTab}
             />
           )}
 
@@ -219,37 +236,15 @@ export default function DashboardPage() {
               onUpdateCard={handleUpdateNFCCard}
             />
           )}
-
-          {/* TAB: PASTEL THEMES & DESIGN STUDIO */}
-          {activeTab === 'themes' && (
-            <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              <div className="lg:col-span-7 xl:col-span-8">
-                <ThemesStudio
-                  profile={profile}
-                  onUpdateProfile={handleUpdateProfile}
-                />
-              </div>
-
-              {/* Right Column: Sticky Live Mobile Phone Preview with Real-time Updates */}
-              <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-8 self-start flex flex-col items-center justify-center">
-                <LivePhonePreview
-                  profile={profile}
-                  vcard={vcard}
-                  links={links}
-                  nfcCard={nfcCard}
-                />
-              </div>
-            </div>
-          )}
         </main>
         </div>
       </div>
 
       {/* Floating Bottom Pill Dock - Strictly Mobile Viewport (< lg) */}
       <FloatingBottomDock
-        activeTab={activeTab}
-        onSelectTab={(tab) => setActiveTab(tab)}
-        onQuickAdd={() => setActiveTab('profile')}
+        activeTab={activeTab === 'profile' && editSectionTab === 'themes' ? 'themes' : activeTab}
+        onSelectTab={handleSelectTab}
+        onQuickAdd={() => handleSelectTab('profile')}
       />
     </div>
   );

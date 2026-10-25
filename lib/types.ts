@@ -18,7 +18,9 @@ export type FontSizeScale = 'sm' | 'md' | 'lg' | 'xl';
 export type BackgroundPatternType = 
   | 'none' 
   | 'comic-sunburst' 
+  | 'comic-sunburst-red'
   | 'pop-halftone' 
+  | 'pop-halftone-cyan'
   | 'retro-grid' 
   | 'doodle-waves' 
   | 'cloud-burst' 
@@ -40,7 +42,17 @@ export type LinkCardStyleType =
   | 'vintage-ticket' 
   | 'minimal-outline'
   | 'y2k-metallic'
-  | 'sticker-doodle';
+  | 'sticker-doodle'
+  | 'bauhaus-colorblock'
+  | 'swiss-minimal-mono'
+  | 'editorial-magazine'
+  | 'matte-carbon'
+  | 'vintage-parchment'
+  | 'tokyo-neon-noir'
+  | 'retro-cassette'
+  | 'prismatic-glass'
+  | 'claymorphism-soft'
+  | 'minimal-pill';
 
 export type CardMaterial = 'matte_black' | 'brushed_gold' | 'rose_gold' | 'titanium_silver';
 
@@ -87,7 +99,7 @@ export interface Profile {
 }
 
 export type VisitingCardShape = 'rounded' | 'square';
-export type VisitingCardTheme = 'executive_dark' | 'clean_white' | 'gold_luxury' | 'neo_brutalist' | 'cyber_neon' | 'pastel_bento';
+export type VisitingCardTheme = 'executive_dark' | 'clean_white' | 'gold_luxury' | 'brushed_gold' | 'neo_brutalist' | 'cyber_neon' | 'pastel_bento';
 
 export interface VisitingCardConfig {
   shape: VisitingCardShape;

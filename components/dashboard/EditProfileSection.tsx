@@ -27,7 +27,8 @@ import {
   MapPin,
   Upload,
   Image as ImageIcon,
-  Sparkles,
+  Palette,
+  Link2,
   Copy,
   Download,
   QrCode as QrCodeIcon
@@ -35,6 +36,7 @@ import {
 import QRCode from 'qrcode';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
+import ThemesStudio from '@/components/dashboard/ThemesStudio';
 
 interface EditProfileSectionProps {
   profile: Profile;
@@ -44,6 +46,8 @@ interface EditProfileSectionProps {
   onUpdateVCard?: (updated: VCardProfile) => void;
   onUpdateLinks: (newLinks: LinkBlock[]) => void;
   onLiveChange?: (updated: Profile) => void;
+  activeSectionTab?: 'profile' | 'links' | 'themes';
+  onSectionTabChange?: (tab: 'profile' | 'links' | 'themes') => void;
 }
 
 export default function EditProfileSection({
@@ -54,9 +58,25 @@ export default function EditProfileSection({
   onUpdateVCard,
   onUpdateLinks,
   onLiveChange,
+  activeSectionTab = 'profile',
+  onSectionTabChange,
 }: EditProfileSectionProps) {
   const { showToast } = useToast();
   const [displayHost, setDisplayHost] = useState('tapping.bio');
+  const [currentTab, setCurrentTab] = useState<'profile' | 'links' | 'themes'>(activeSectionTab || 'profile');
+
+  React.useEffect(() => {
+    if (activeSectionTab) {
+      setCurrentTab(activeSectionTab);
+    }
+  }, [activeSectionTab]);
+
+  const handleTabSelect = (tab: 'profile' | 'links' | 'themes') => {
+    setCurrentTab(tab);
+    if (onSectionTabChange) {
+      onSectionTabChange(tab);
+    }
+  };
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -371,7 +391,50 @@ export default function EditProfileSection({
 
   return (
     <div className="flex flex-col gap-6">
+      {/* TOP SUB-NAVIGATION TABS */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white border border-black/10 shadow-2xs w-full max-w-xl mx-auto">
+        <button
+          type="button"
+          onClick={() => handleTabSelect('profile')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            currentTab === 'profile'
+              ? 'bg-[#4F83FF] text-white shadow-xs'
+              : 'text-charcoal/70 hover:text-black hover:bg-black/5'
+          }`}
+        >
+          <User className="w-3.5 h-3.5" />
+          <span>Profile & Bio</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleTabSelect('links')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            currentTab === 'links'
+              ? 'bg-[#4F83FF] text-white shadow-xs'
+              : 'text-charcoal/70 hover:text-black hover:bg-black/5'
+          }`}
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span>Link Blocks ({links.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleTabSelect('themes')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            currentTab === 'themes'
+              ? 'bg-[#4F83FF] text-white shadow-xs'
+              : 'text-charcoal/70 hover:text-black hover:bg-black/5'
+          }`}
+        >
+          <Palette className="w-3.5 h-3.5" />
+          <span>Themes & Styles</span>
+        </button>
+      </div>
+
       {/* SECTION 1: PROFILE DETAILS FORM */}
+      {currentTab === 'profile' && (
       <form onSubmit={handleSaveProfile} className="bg-white rounded-4xl p-6 md:p-8 border border-black/5 shadow-soft">
         <div className="flex items-start justify-between pb-6 border-b border-black/5 mb-6">
           <div>
@@ -773,9 +836,12 @@ export default function EditProfileSection({
           </div>
         </div>
       </form>
+      )}
 
       {/* SECTION 2: LINKS & CONTENT BLOCKS */}
-      <div className="bg-white rounded-4xl p-6 md:p-8 border border-black/5 shadow-soft">
+      {currentTab === 'links' && (
+        <>
+          <div className="bg-white rounded-4xl p-6 md:p-8 border border-black/5 shadow-soft">
         <div className="flex items-center justify-between pb-4 border-b border-black/5 mb-5">
           <div>
             <h3 className="text-xl font-black text-charcoal tracking-tight">Active Link Blocks</h3>
@@ -1037,6 +1103,16 @@ export default function EditProfileSection({
                     { id: 'sticker-doodle', name: 'Sticker Doodle', tag: 'Anime' },
                     { id: 'minimal-outline', name: 'Minimal Outline', tag: 'Swiss' },
                     { id: 'solid', name: 'Pastel Bento Solid', tag: 'Classic' },
+                    { id: 'bauhaus-colorblock', name: 'Bauhaus Block', tag: 'Geometric' },
+                    { id: 'swiss-minimal-mono', name: 'Swiss Minimal', tag: 'Hairline' },
+                    { id: 'editorial-magazine', name: 'Haute Editorial', tag: 'Magazine' },
+                    { id: 'matte-carbon', name: 'Technical Carbon', tag: 'Stealth' },
+                    { id: 'vintage-parchment', name: 'Vintage Parchment', tag: 'Antique' },
+                    { id: 'tokyo-neon-noir', name: 'Tokyo Neon Noir', tag: 'Cyber Glow' },
+                    { id: 'retro-cassette', name: 'Retro Cassette', tag: 'Mixtape' },
+                    { id: 'prismatic-glass', name: 'Prismatic Glass', tag: 'Hologram' },
+                    { id: 'claymorphism-soft', name: 'Soft Claymorphic', tag: '3D Tactile' },
+                    { id: 'minimal-pill', name: 'Floating Capsule', tag: 'Capsule Pill' },
                   ].map((preset) => (
                     <button
                       key={preset.name}
@@ -1044,12 +1120,13 @@ export default function EditProfileSection({
                       onClick={() => {
                         setSelectedLinkTheme(preset.id as any);
                         if (preset.id === 'cyber-terminal') setLinkTextColor('#00FF66');
-                        else if (preset.id === 'japanese-wave' || preset.id === 'vaporwave-gradient') setLinkTextColor('#FFFFFF');
+                        else if (preset.id === 'japanese-wave' || preset.id === 'vaporwave-gradient' || preset.id === 'matte-carbon' || preset.id === 'tokyo-neon-noir') setLinkTextColor('#FFFFFF');
+                        else if (preset.id === 'retro-cassette') setLinkTextColor('#F97316');
                         else setLinkTextColor('#141518');
                       }}
                       className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
                         selectedLinkTheme === preset.id
-                          ? 'bg-[#141518] text-white border-black shadow-2xs'
+                          ? 'bg-[#4F83FF] text-white border-[#4F83FF] shadow-2xs'
                           : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
                       }`}
                     >
@@ -1237,6 +1314,19 @@ export default function EditProfileSection({
             </div>
           </div>
         </div>
+      )}
+        </>
+      )}
+
+      {/* SECTION 3: THEMES & DESIGN SYSTEM (Theme Menu Inside Editing Menu) */}
+      {currentTab === 'themes' && (
+        <ThemesStudio
+          profile={profile}
+          onUpdateProfile={(updated) => {
+            onUpdateProfile(updated);
+            onLiveChange?.(updated);
+          }}
+        />
       )}
 
       {/* THEME-BASED SAVE CONFIRMATION POPUP WITH GENERATED LINK & REAL DATA QR */}

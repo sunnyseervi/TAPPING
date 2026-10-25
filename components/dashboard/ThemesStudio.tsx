@@ -13,7 +13,7 @@ import {
   Palette, 
   Check, 
   Type, 
-  Sparkles, 
+  Link2, 
   Sliders, 
   Image as ImageIcon, 
   Layers, 
@@ -238,6 +238,66 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
       name: 'Minimal Clean Outline', 
       desc: 'Zero background with razor-sharp 1px neutral border', 
       previewClass: 'bg-transparent border border-black/20 text-charcoal' 
+    },
+    { 
+      id: 'bauhaus-colorblock', 
+      name: 'Bauhaus Geometric Colorblock', 
+      desc: 'Primary red offset with crisp structural borders & bold grotesk', 
+      previewClass: 'bg-[#FFF9F0] border-2 border-[#111111] text-[#111111] font-black shadow-[3px_3px_0px_#EF4444]' 
+    },
+    { 
+      id: 'swiss-minimal-mono', 
+      name: 'Swiss International Mono', 
+      desc: 'Precision 1px hairline border, jet typography, zero clutter', 
+      previewClass: 'bg-white border border-black text-black font-sans font-bold' 
+    },
+    { 
+      id: 'editorial-magazine', 
+      name: 'Haute Editorial Magazine', 
+      desc: 'Warm ivory canvas with refined warm slate border & serif italic', 
+      previewClass: 'bg-[#FAF7F2] border border-[#78716C]/30 text-[#1C1917] font-serif italic' 
+    },
+    { 
+      id: 'matte-carbon', 
+      name: 'Matte Technical Carbon', 
+      desc: 'Stealth obsidian weave with cyber cyan border highlight', 
+      previewClass: 'bg-[#13151A] border border-cyan-500/30 text-white font-mono shadow-xs' 
+    },
+    { 
+      id: 'vintage-parchment', 
+      name: 'Antique Parchment Paper', 
+      desc: 'Warm sepia card with deckled aged border & classic serif', 
+      previewClass: 'bg-[#FBF4DE] border-2 border-[#8C6D46] text-[#3E2723] font-serif' 
+    },
+    { 
+      id: 'tokyo-neon-noir', 
+      name: 'Tokyo Neon Noir', 
+      desc: 'Pitch-black obsidian with electric violet neon aura glow', 
+      previewClass: 'bg-[#0D0E15] border-2 border-[#A855F7] text-white font-bold shadow-[0_0_12px_rgba(168,85,247,0.35)]' 
+    },
+    { 
+      id: 'retro-cassette', 
+      name: 'Retro Cassette Tape', 
+      desc: 'Vintage mixtape aesthetic with industrial orange offset stamp', 
+      previewClass: 'bg-[#242426] border-2 border-[#F97316] text-[#F97316] font-mono shadow-[3px_3px_0px_#EA580C]' 
+    },
+    { 
+      id: 'prismatic-glass', 
+      name: 'Frosted Prismatic Glass', 
+      desc: 'Frosted glass blur with soft iridescent specular highlight edge', 
+      previewClass: 'bg-white/75 backdrop-blur-md border-2 border-indigo-200/80 text-charcoal shadow-xs' 
+    },
+    { 
+      id: 'claymorphism-soft', 
+      name: 'Soft Claymorphic 3D', 
+      desc: 'Tactile pillowy 3D card with dual inner reflection and soft depth', 
+      previewClass: 'bg-[#EEF2F6] border border-white/60 text-[#1E293B] font-bold shadow-[inset_0_2px_4px_rgba(255,255,255,0.8),0_4px_12px_rgba(0,0,0,0.06)]' 
+    },
+    { 
+      id: 'minimal-pill', 
+      name: 'Floating Capsule Pill', 
+      desc: 'Rounded-full modern capsule with subtle elevation and clean line', 
+      previewClass: 'bg-white border border-black/15 text-charcoal font-semibold rounded-full shadow-2xs' 
     },
   ];
 
@@ -503,7 +563,7 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
                   {/* Live Mini Preview of Link Card */}
                   <div className={`my-3 p-3.5 rounded-2xl flex items-center justify-between text-xs ${cs.previewClass}`}>
                     <div className="flex items-center gap-2 truncate">
-                      <Sparkles className="w-4 h-4 shrink-0" />
+                      <Link2 className="w-4 h-4 shrink-0 text-current" />
                       <span className="truncate">Sample Link Block</span>
                     </div>
                     <span className="text-[10px] font-mono">↗</span>

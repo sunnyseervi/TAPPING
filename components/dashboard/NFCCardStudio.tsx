@@ -22,8 +22,7 @@ import {
   Layers, 
   Copy, 
   ExternalLink,
-  ChevronDown,
-  Sparkles
+  ChevronDown
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import confetti from 'canvas-confetti';
