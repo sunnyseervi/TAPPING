@@ -86,7 +86,7 @@ export default function BentoProgressRing({
       </div>
 
       <p className="text-[11px] text-charcoal/70 font-semibold mt-1">
-        vCard 3.0 export, permanent QR, and 5 link blocks fully active.
+        Contact card export, permanent QR, and 5 link blocks fully active.
       </p>
     </div>
   );

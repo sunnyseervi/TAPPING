@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Home, BarChart2, Plus, CreditCard, UserCheck } from 'lucide-react';
+import { Home, Store, Plus, CreditCard, UserCheck } from 'lucide-react';
 
 interface FloatingBottomDockProps {
   activeTab: string;
@@ -65,17 +65,17 @@ export default function FloatingBottomDock({
           <CreditCard className="w-5 h-5 stroke-[2.2]" />
         </button>
 
-        {/* Metal NFC Hardware */}
+        {/* Store */}
         <button
-          onClick={() => onSelectTab('nfc')}
+          onClick={() => onSelectTab('store')}
           className={`p-2 rounded-full transition-all ${
-            activeTab === 'nfc'
+            activeTab === 'store'
               ? 'text-white scale-110'
               : 'text-white/60 hover:text-white'
           }`}
-          title="NFC Hardware"
+          title="WhatsApp Store"
         >
-          <BarChart2 className="w-5 h-5 stroke-[2.2]" />
+          <Store className="w-5 h-5 stroke-[2.2]" />
         </button>
       </div>
     </div>

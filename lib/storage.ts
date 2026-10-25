@@ -1,15 +1,37 @@
-import { Profile, VCardProfile, LinkBlock, NFCCardDesign, AnalyticsSummary, Subscription } from './types';
-import { initialProfile, initialVCard, initialLinks, initialNFCCard, initialAnalytics, initialSubscription } from './mockData';
+import { Profile, VCardProfile, LinkBlock, NFCCardDesign, AnalyticsSummary, Subscription, StoreConfig } from './types';
+import { initialProfile, initialVCard, initialLinks, initialNFCCard, initialAnalytics, initialSubscription, initialStore } from './mockData';
 
 const KEYS = {
   PROFILE: 'tapping_profile_v3',
   VCARD: 'tapping_vcard_v3',
-  LINKS: 'tapping_links_v3',
+  LINKS: 'tapping_links_v4',
   NFC: 'tapping_nfc_v3',
-  ANALYTICS: 'tapping_analytics_v3',
+  ANALYTICS: 'tapping_analytics_v4',
   SUBSCRIPTION: 'tapping_sub_v3',
   ONBOARDING_DONE: 'tapping_onboarding_completed_v3',
+  STORE: 'tapping_store_v1',
 };
+
+export function getStoredStore(): StoreConfig {
+  if (typeof window === 'undefined') return initialStore;
+  try {
+    const data = localStorage.getItem(KEYS.STORE);
+    if (!data) return initialStore;
+    const parsed = JSON.parse(data);
+    return { ...initialStore, ...parsed, products: Array.isArray(parsed.products) ? parsed.products : initialStore.products };
+  } catch {
+    return initialStore;
+  }
+}
+
+export function saveStoredStore(store: StoreConfig): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(KEYS.STORE, JSON.stringify(store));
+  } catch (e) {
+    console.error('Error saving store', e);
+  }
+}
 
 export function getStoredProfile(): Profile {
   if (typeof window === 'undefined') return initialProfile;
@@ -27,6 +49,7 @@ export function saveStoredProfile(profile: Profile): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(KEYS.PROFILE, JSON.stringify(profile));
+    window.dispatchEvent(new CustomEvent('tapping-profile-updated', { detail: profile }));
   } catch (e) {
     console.error('Error saving profile', e);
   }
@@ -124,9 +147,12 @@ export function incrementLinkClick(linkId: string): void {
     const analytics = getStoredAnalytics();
     analytics.totalClicks += 1;
     analytics.ctr = Number(((analytics.totalClicks / (analytics.totalViews || 1)) * 100).toFixed(1));
-    const target = analytics.topLinks.find((t) => t.title === links.find((l) => l.id === linkId)?.title);
+    const title = links.find((l) => l.id === linkId)?.title;
+    const target = analytics.topLinks.find((t) => t.title === title);
     if (target) {
       target.clicks += 1;
+    } else if (title) {
+      analytics.topLinks.push({ title, clicks: 1 });
     }
     localStorage.setItem(KEYS.ANALYTICS, JSON.stringify(analytics));
   } catch (e) {
@@ -202,4 +228,5 @@ export function resetAllToDefault(): void {
   localStorage.setItem(KEYS.NFC, JSON.stringify(initialNFCCard));
   localStorage.setItem(KEYS.ANALYTICS, JSON.stringify(initialAnalytics));
   localStorage.setItem(KEYS.SUBSCRIPTION, JSON.stringify(initialSubscription));
+  localStorage.setItem(KEYS.STORE, JSON.stringify(initialStore));
 }

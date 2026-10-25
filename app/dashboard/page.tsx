@@ -12,6 +12,8 @@ import {
   getStoredNFCCard, 
   saveStoredNFCCard, 
   getStoredAnalytics, 
+  getStoredStore,
+  saveStoredStore,
   getOnboardingCompleted,
 } from '@/lib/storage';
 import { 
@@ -19,23 +21,25 @@ import {
   initialVCard, 
   initialLinks, 
   initialNFCCard, 
-  initialAnalytics, 
-  initialSubscription 
+  initialAnalytics,
+  initialSubscription,
+  initialStore,
 } from '@/lib/mockData';
-import { Profile, VCardProfile, LinkBlock, NFCCardDesign, AnalyticsSummary, Subscription } from '@/lib/types';
+import { Profile, VCardProfile, LinkBlock, NFCCardDesign, AnalyticsSummary, Subscription, StoreConfig } from '@/lib/types';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import AppSidebar from '@/components/layout/AppSidebar';
-import TeamSpaceBento from '@/components/dashboard/TeamSpaceBento';
+import CreatorDashboard from '@/components/dashboard/CreatorDashboard';
 import EditProfileSection from '@/components/dashboard/EditProfileSection';
 import DigitalCardStudio from '@/components/dashboard/DigitalCardStudio';
 import NFCCardStudio from '@/components/dashboard/NFCCardStudio';
 import ThemesStudio from '@/components/dashboard/ThemesStudio';
-import FloatingBottomDock from '@/components/dashboard/FloatingBottomDock';
 import GoogleAuthModal from '@/components/auth/GoogleAuthModal';
 import AnimatedOnboarding from '@/components/onboarding/AnimatedOnboarding';
 import LivePhonePreview from '@/components/preview/LivePhonePreview';
+import StoreManager from '@/components/dashboard/StoreManager';
+import NFCTagShop from '@/components/dashboard/NFCTagShop';
 import { useToast } from '@/components/ui/Toast';
-import { Check, X, CreditCard, Sparkles } from 'lucide-react';
+import { Check, X, CreditCard, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 function DashboardContent() {
@@ -48,6 +52,7 @@ function DashboardContent() {
   const [nfcCard, setNfcCard] = useState<NFCCardDesign>(initialNFCCard);
   const [analytics, setAnalytics] = useState<AnalyticsSummary>(initialAnalytics);
   const [subscription, setSubscription] = useState<Subscription>(initialSubscription);
+  const [store, setStore] = useState<StoreConfig>(initialStore);
 
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [editSectionTab, setEditSectionTab] = useState<'profile' | 'links' | 'themes'>('profile');
@@ -93,6 +98,8 @@ function DashboardContent() {
       setEditSectionTab('themes');
     } else if (tab === 'digital-card') {
       setActiveTab('digital-card');
+    } else if (tab === 'store') {
+      setActiveTab('store');
     } else if (tab === 'dashboard') {
       setActiveTab('dashboard');
     }
@@ -112,6 +119,7 @@ function DashboardContent() {
     setLinks(getStoredLinks());
     setNfcCard(getStoredNFCCard());
     setAnalytics(getStoredAnalytics());
+    setStore(getStoredStore());
 
     // Show onboarding if first visit
     if (!getOnboardingCompleted()) {
@@ -137,6 +145,11 @@ function DashboardContent() {
   const handleUpdateNFCCard = (newNFC: NFCCardDesign) => {
     setNfcCard(newNFC);
     saveStoredNFCCard(newNFC);
+  };
+
+  const handleUpdateStore = (newStore: StoreConfig) => {
+    setStore(newStore);
+    saveStoredStore(newStore);
   };
 
   const handleActivatePlan = (plan: 'monthly' | 'yearly') => {
@@ -193,7 +206,7 @@ function DashboardContent() {
             <div className="flex items-center justify-between pb-3 border-b border-black/5">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-2xl bg-[#FDF166] flex items-center justify-center text-charcoal shadow-2xs">
-                  <Sparkles className="w-5 h-5 stroke-[2.5]" />
+                  <Zap className="w-5 h-5 stroke-[2.5]" />
                 </div>
                 <div>
                   <h3 className="text-base font-black text-charcoal">Activate TAPPING PRO</h3>
@@ -247,7 +260,7 @@ function DashboardContent() {
               {[
                 'Permanent Dynamic Vector QR (never breaks or expires)',
                 '13 Full-System Themes with authentic typography & custom colors',
-                'vCard 3.0 Direct Export to Apple & Android phonebooks',
+                'Direct Contact Card (.vcf) export to Apple & Android phonebooks',
                 'Visiting card 300 DPI high-resolution PNG & PDF export',
                 'Zero platform branding & full custom domain readiness',
                 upgradePlan === 'yearly' ? '20% exclusive discount on Laser-Engraved Metal NFC Cards' : 'Full access to Metal NFC Hardware Studio'
@@ -288,12 +301,13 @@ function DashboardContent() {
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         profile={profile}
+        linkCount={links.length}
         onOpenAuth={() => setShowAuthModal(true)}
       />
 
       {/* Main Content Layout Container: Full-width responsive with desktop sidebar offset */}
       <div className="w-full lg:pl-72 flex flex-col min-h-screen">
-        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 pt-3 pb-28 lg:pb-12">
+        <div className="w-full max-w-[1720px] mx-auto px-3 sm:px-6 md:px-8 lg:px-10 pt-2 sm:pt-3 pb-10 sm:pb-12">
           {/* Top Header */}
           <DashboardHeader
             profile={profile}
@@ -305,8 +319,10 @@ function DashboardContent() {
           <main className="w-full flex flex-col gap-6 mt-3">
           {/* TAB: DASHBOARD (Matching User's Uploaded Team Space Bento Screen Exactly) */}
           {activeTab === 'dashboard' && (
-            <TeamSpaceBento
+            <CreatorDashboard
               profile={profile}
+              links={links}
+              store={store}
               analytics={analytics}
               onSelectTab={handleSelectTab}
             />
@@ -387,6 +403,14 @@ function DashboardContent() {
             />
           )}
 
+          {activeTab === 'store' && (
+            <StoreManager
+              store={store}
+              onUpdateStore={handleUpdateStore}
+              publicUrl={`/${profile.username}/shop`}
+            />
+          )}
+
           {/* TAB: METAL NFC HARDWARE STUDIO */}
           {activeTab === 'nfc' && (
             <NFCCardStudio
@@ -395,16 +419,19 @@ function DashboardContent() {
               onUpdateCard={handleUpdateNFCCard}
             />
           )}
+
+          {/* TAB: ORDER NFC TAGS & HARDWARE SHOP */}
+          {(activeTab === 'nfc-shop' || activeTab === 'shop') && (
+            <NFCTagShop
+              profile={profile}
+              vcard={vcard}
+              username={profile.username}
+            />
+          )}
         </main>
         </div>
       </div>
 
-      {/* Floating Bottom Pill Dock - Strictly Mobile Viewport (< lg) */}
-      <FloatingBottomDock
-        activeTab={activeTab === 'profile' && editSectionTab === 'themes' ? 'themes' : activeTab}
-        onSelectTab={handleSelectTab}
-        onQuickAdd={() => handleSelectTab('profile')}
-      />
     </div>
   );
 }

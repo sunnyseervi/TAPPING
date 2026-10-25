@@ -40,11 +40,10 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
   const [activeStudioTab, setActiveStudioTab] = useState<'themes' | 'typography' | 'cards' | 'background'>('themes');
   const bannerInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Synchronize draft when incoming profile ID or saved data changes
+  // Synchronize saved data without overwriting an active draft preview.
   React.useEffect(() => {
-    setDraftProfile(profile);
-    setHasUnsavedChanges(false);
-  }, [profile.id]);
+    if (!hasUnsavedChanges) setDraftProfile(profile);
+  }, [profile, hasUnsavedChanges]);
 
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -26,6 +26,7 @@ import { downloadVCardFile } from '@/lib/vcard';
 import QRCode from 'qrcode';
 import { jsPDF } from 'jspdf';
 import { useToast } from '@/components/ui/Toast';
+import { compressImageFile } from '@/lib/imageCompression';
 
 interface DigitalCardStudioProps {
   profile?: Profile;
@@ -44,19 +45,21 @@ export default function DigitalCardStudio({
 }: DigitalCardStudioProps) {
   const { showToast } = useToast();
   const [displayHost, setDisplayHost] = useState('tapping.bio');
-  const [cardShape, setCardShape] = useState<VisitingCardShape>('rounded');
-  const [cardTheme, setCardTheme] = useState<VisitingCardTheme>('executive_dark');
-  const [qrColor, setQrColor] = useState('#141518');
+  const [cardShape, setCardShape] = useState<VisitingCardShape>(vcard.visitingCard?.shape || 'rounded');
+  const [cardTheme, setCardTheme] = useState<VisitingCardTheme>(vcard.visitingCard?.theme || 'executive_dark');
+  const [qrColor, setQrColor] = useState(vcard.visitingCard?.qrColor || '#141518');
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [showSafeGuide, setShowSafeGuide] = useState(true);
-  const [showBrandMark, setShowBrandMark] = useState(true);
-  const [qrSize, setQrSize] = useState<number>(96);
-  const [qrPosX, setQrPosX] = useState<number>(0);
-  const [qrPosY, setQrPosY] = useState<number>(0);
-  const [customBgImage, setCustomBgImage] = useState<string>('');
+  const [showBrandMark, setShowBrandMark] = useState(vcard.visitingCard?.showBrandMark ?? true);
+  const [qrSize, setQrSize] = useState<number>(vcard.visitingCard?.qrSize || 96);
+  const [qrPosX, setQrPosX] = useState<number>(vcard.visitingCard?.qrPosX || 0);
+  const [qrPosY, setQrPosY] = useState<number>(vcard.visitingCard?.qrPosY || 0);
+  const [customBgImage, setCustomBgImage] = useState<string>(vcard.visitingCard?.customBg || '');
+  const [customBgFit, setCustomBgFit] = useState<'cover' | 'contain'>(vcard.visitingCard?.customBgFit || 'cover');
   const [copiedLink, setCopiedLink] = useState(false);
   const [isDraggingQr, setIsDraggingQr] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cardPreviewRef = useRef<HTMLDivElement>(null);
 
   const qrDragRef = useRef<{ isDragging: boolean; startX: number; startY: number; initX: number; initY: number }>({
     isDragging: false,
@@ -146,11 +149,11 @@ export default function DigitalCardStudio({
   }, [targetUrl, qrColor]);
 
   // Card Content Data (Pulled directly from saved profile & vcard)
-  const displayName = profile?.displayName || `${vcard.firstName} ${vcard.lastName}`.trim() || 'Alex Morgan';
-  const jobTitle = profile?.badgeTitle || vcard.jobTitle || 'Founder & Product Designer';
-  const company = vcard.organization || 'Tapping Technologies';
-  const phoneNumber = vcard.workPhone || vcard.mobilePhone || profile?.socialLinks?.phone || '+1 (415) 890-2200';
-  const emailAddress = vcard.workEmail || profile?.socialLinks?.email || 'contact@alexmorgan.design';
+  const displayName = profile?.displayName || `${vcard.firstName} ${vcard.lastName}`.trim() || 'Aarav Sharma';
+  const jobTitle = profile?.badgeTitle || vcard.jobTitle || 'Founder & Architect';
+  const company = vcard.organization || 'Tapping Technologies India';
+  const phoneNumber = vcard.workPhone || vcard.mobilePhone || profile?.socialLinks?.phone || '+91 98765 43210';
+  const emailAddress = vcard.workEmail || profile?.socialLinks?.email || 'contact@aaravsharma.in';
   const websiteUrl = vcard.website || `${displayHost}/${username}`;
 
   // Theme Styles Configuration
@@ -223,8 +226,9 @@ export default function DigitalCardStudio({
   const currentThemeConfig = getThemeConfig(cardTheme);
 
   // Custom Background Upload
-  const handleBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
@@ -232,23 +236,36 @@ export default function DigitalCardStudio({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      setCustomBgImage(dataUrl);
-      showToast('Card Artwork Applied', 'Custom background set on visiting card', 'success');
-    };
-    reader.readAsDataURL(file);
+    try {
+      const result = await compressImageFile(file, { maxWidth: 1600, maxHeight: 1000, quality: 0.82 });
+      setCustomBgImage(result.dataUrl);
+      showToast('Card artwork applied', 'The image was compressed and saved with your visiting-card design.', 'success');
+    } catch (error) {
+      showToast('Artwork upload failed', error instanceof Error ? error.message : 'Please try another image.', 'error');
+    }
   };
+
+  useEffect(() => {
+    if (!onUpdateVCard) return;
+    const timer = window.setTimeout(() => onUpdateVCard({
+      ...vcard,
+      visitingCard: { shape: cardShape, theme: cardTheme, customBg: customBgImage, customBgFit, showBrandMark, qrSize, qrPosX, qrPosY, qrColor },
+    }), 300);
+    return () => window.clearTimeout(timer);
+  }, [cardShape, cardTheme, customBgImage, customBgFit, showBrandMark, qrSize, qrPosX, qrPosY, qrColor]);
 
   // Generate 300 DPI High-Res Canvas
   const generateHighResCanvas = async (): Promise<HTMLCanvasElement> => {
     const canvas = document.createElement('canvas');
-    // 3.5" x 2" at 300 DPI = 1050 x 600 pixels (standard print)
-    canvas.width = 1050;
-    canvas.height = 600;
+    // 85.6 x 54mm at 300 DPI.
+    canvas.width = 1011;
+    canvas.height = 638;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Failed to get 2D canvas context');
+
+    await document.fonts.ready;
+    const width = canvas.width;
+    const height = canvas.height;
 
     // 1. Draw Background
     if (customBgImage) {
@@ -256,56 +273,63 @@ export default function DigitalCardStudio({
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
-          ctx.drawImage(img, 0, 0, 1050, 600);
+          const scale = customBgFit === 'contain'
+            ? Math.min(width / img.width, height / img.height)
+            : Math.max(width / img.width, height / img.height);
+          const drawWidth = img.width * scale;
+          const drawHeight = img.height * scale;
+          ctx.fillStyle = '#141518';
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
           resolve();
         };
         img.src = customBgImage;
       });
       // Add subtle dark gradient overlay for text readability
       ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-      ctx.fillRect(0, 0, 1050, 600);
+      ctx.fillRect(0, 0, width, height);
     } else {
       switch (cardTheme) {
         case 'clean_white':
           ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(0, 0, 1050, 600);
+          ctx.fillRect(0, 0, width, height);
           ctx.strokeStyle = 'rgba(0,0,0,0.12)';
           ctx.lineWidth = 4;
-          ctx.strokeRect(0, 0, 1050, 600);
+          ctx.strokeRect(0, 0, width, height);
           break;
         case 'brushed_gold':
-          const grad = ctx.createLinearGradient(0, 0, 1050, 600);
+          const grad = ctx.createLinearGradient(0, 0, width, height);
           grad.addColorStop(0, '#B28F38');
           grad.addColorStop(0.5, '#C8A44D');
           grad.addColorStop(1, '#E3C56F');
           ctx.fillStyle = grad;
-          ctx.fillRect(0, 0, 1050, 600);
+          ctx.fillRect(0, 0, width, height);
           break;
         case 'neo_brutalist':
           ctx.fillStyle = '#FFFDEB';
-          ctx.fillRect(0, 0, 1050, 600);
+          ctx.fillRect(0, 0, width, height);
           ctx.strokeStyle = '#000000';
           ctx.lineWidth = 12;
-          ctx.strokeRect(0, 0, 1050, 600);
+          ctx.strokeRect(0, 0, width, height);
           break;
         case 'cyber_neon':
           ctx.fillStyle = '#0B0C10';
-          ctx.fillRect(0, 0, 1050, 600);
+          ctx.fillRect(0, 0, width, height);
           ctx.strokeStyle = '#00FF66';
           ctx.lineWidth = 4;
-          ctx.strokeRect(0, 0, 1050, 600);
+          ctx.strokeRect(0, 0, width, height);
           break;
         case 'pastel_bento':
           ctx.fillStyle = '#FDF166';
-          ctx.fillRect(0, 0, 1050, 600);
+          ctx.fillRect(0, 0, width, height);
           break;
         case 'executive_dark':
         default:
           ctx.fillStyle = '#141518';
-          ctx.fillRect(0, 0, 1050, 600);
+          ctx.fillRect(0, 0, width, height);
           ctx.strokeStyle = 'rgba(255,255,255,0.15)';
           ctx.lineWidth = 4;
-          ctx.strokeRect(0, 0, 1050, 600);
+          ctx.strokeRect(0, 0, width, height);
           break;
       }
     }
@@ -315,40 +339,56 @@ export default function DigitalCardStudio({
     const secondaryTextColor = isLightCard ? 'rgba(20,21,24,0.7)' : 'rgba(255,255,255,0.7)';
 
     // 2. Strict 5mm Safe Print Margin: 5mm on 85.6mm is approx 60px on a 1050px canvas
-    const safeMarginX = 60;
-    const safeMarginY = 60;
+    const safeMarginX = 48;
+    const safeMarginY = 48;
+
+    // Verified contact badge shown in the live preview.
+    ctx.fillStyle = isLightCard ? 'rgba(20,21,24,0.1)' : 'rgba(255,255,255,0.18)';
+    ctx.beginPath();
+    ctx.roundRect(safeMarginX, safeMarginY, 38, 38, 10);
+    ctx.fill();
+    ctx.fillStyle = primaryTextColor;
+    ctx.font = '800 20px "Plus Jakarta Sans", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(displayName.charAt(0).toUpperCase(), safeMarginX + 19, safeMarginY + 20);
+    ctx.textAlign = 'left';
+    ctx.font = '800 16px "Plus Jakarta Sans", sans-serif';
+    ctx.fillStyle = secondaryTextColor;
+    ctx.fillText('VERIFIED CONTACT', safeMarginX + 52, safeMarginY + 20);
 
     // 3. Draw Left Side Content
     // Name
     ctx.fillStyle = primaryTextColor;
-    ctx.font = 'bold 44px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '900 42px "Plus Jakarta Sans", sans-serif';
     ctx.textBaseline = 'top';
-    ctx.fillText(displayName.toUpperCase(), safeMarginX, safeMarginY + 20);
+    ctx.fillText(displayName.toUpperCase(), safeMarginX, 145, 500);
 
     // Job Title / Role
     ctx.fillStyle = isLightCard ? '#4F83FF' : '#FDF166';
-    ctx.font = 'bold 22px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(jobTitle.toUpperCase(), safeMarginX, safeMarginY + 80);
+    ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(jobTitle, safeMarginX, 205, 500);
 
     // Organization
     ctx.fillStyle = secondaryTextColor;
-    ctx.font = '600 20px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(company, safeMarginX, safeMarginY + 115);
+    ctx.font = '600 19px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(company, safeMarginX, 244, 500);
 
     // Divider Line
     ctx.strokeStyle = isLightCard ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(safeMarginX, safeMarginY + 160);
-    ctx.lineTo(safeMarginX + 380, safeMarginY + 160);
+    ctx.moveTo(safeMarginX, 402);
+    ctx.lineTo(safeMarginX + 440, 402);
     ctx.stroke();
 
     // Contact Details
     ctx.fillStyle = secondaryTextColor;
-    ctx.font = '600 19px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(`Phone: ${phoneNumber}`, safeMarginX, safeMarginY + 185);
-    ctx.fillText(`Email: ${emailAddress}`, safeMarginX, safeMarginY + 225);
-    ctx.fillText(`Bio: ${websiteUrl.replace(/^https?:\/\//, '')}`, safeMarginX, safeMarginY + 265);
+    ctx.font = '600 18px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(phoneNumber, safeMarginX, 430, 480);
+    ctx.fillText(emailAddress, safeMarginX, 470, 480);
+    ctx.fillStyle = customBgImage ? '#FFFFFF' : currentThemeConfig.accentColor;
+    ctx.fillText(websiteUrl.replace(/^https?:\/\//, ''), safeMarginX, 510, 480);
 
     // 4. Draw Right Side: High-Res Scannable QR Code (with user size and position offsets)
     if (qrDataUrl) {
@@ -356,10 +396,9 @@ export default function DigitalCardStudio({
         const qrImg = new Image();
         qrImg.crossOrigin = 'anonymous';
         qrImg.onload = () => {
-          // Scale base size 230px proportionally to qrSize (default 96px)
-          const baseSize = 230 * (qrSize / 96);
-          const qrX = 1050 - safeMarginX - baseSize + (qrPosX * 2);
-          const qrY = safeMarginY + 20 + (qrPosY * 2);
+          const baseSize = Math.min(250, Math.max(150, qrSize * 1.95));
+          const qrX = Math.max(555, Math.min(width - safeMarginX - baseSize, width - safeMarginX - baseSize + (qrPosX * 1.7)));
+          const qrY = Math.max(safeMarginY, Math.min(height - safeMarginY - baseSize - 55, safeMarginY + (qrPosY * 1.7)));
           
           // White card backing for QR contrast
           ctx.fillStyle = '#FFFFFF';
@@ -377,8 +416,8 @@ export default function DigitalCardStudio({
 
     // 5. Draw Right Side Bottom: TAPPING Brand Mark (Optional, 5mm Margin, never cut off)
     if (showBrandMark) {
-      const brandX = 1050 - safeMarginX;
-      const brandY = 600 - safeMarginY - 10;
+      const brandX = width - safeMarginX;
+      const brandY = height - safeMarginY;
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
       ctx.fillStyle = primaryTextColor;
@@ -468,13 +507,13 @@ export default function DigitalCardStudio({
             type="button"
             onClick={() => {
               downloadVCardFile(vcard, `${username}_contact.vcf`);
-              showToast('vCard Downloaded', 'Direct phonebook import file saved', 'info');
+              showToast('Contact Card Downloaded', 'Direct phonebook import file saved', 'info');
             }}
             className="px-3.5 py-2.5 rounded-full bg-white hover:bg-gray-50 text-charcoal text-xs font-bold border border-black/10 flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-            title="Download vCard .vcf contact file"
+            title="Download contact card .vcf file"
           >
             <FileText className="w-3.5 h-3.5 text-[#4F83FF]" />
-            <span>vCard 3.0</span>
+            <span>Contact Card (.vcf)</span>
           </button>
         </div>
       </div>
@@ -494,42 +533,20 @@ export default function DigitalCardStudio({
               </span>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setShowSafeGuide(!showSafeGuide)}
-              className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-colors cursor-pointer flex items-center gap-1 ${
-                showSafeGuide
-                  ? 'bg-[#EFF4FF] border-[#4F83FF]/30 text-[#4F83FF]'
-                  : 'bg-[#FAF7F2] border-black/10 text-charcoal/60'
-              }`}
-              title="Toggle 5mm safe print margin boundary"
-            >
-              {showSafeGuide ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-              <span>5mm Bleed Margin: {showSafeGuide ? 'ON' : 'OFF'}</span>
-            </button>
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 rounded-xl border border-[#4F83FF]/25 bg-[#EFF4FF] px-3 py-1.5 text-[10px] font-black text-[#4F83FF]"><Upload className="h-3 w-3" /> Upload design image</button>
           </div>
 
           {/* Physical Visiting Card Canvas Mockup */}
           <div
-            className={`w-full max-w-[520px] h-[310px] sm:h-[320px] relative select-none overflow-hidden transition-all duration-300 flex flex-col justify-between p-6 ${
+            ref={cardPreviewRef}
+            className={`w-full max-w-[520px] aspect-[85.6/54] relative select-none overflow-hidden transition-all duration-300 flex flex-col justify-between p-6 ${
               cardShape === 'rounded' ? 'rounded-3xl' : 'rounded-none'
-            } ${customBgImage ? 'bg-cover bg-center text-white border border-black/10 shadow-card' : currentThemeConfig.cardBg}`}
-            style={customBgImage ? { backgroundImage: `url(${customBgImage})` } : undefined}
+            } ${customBgImage ? 'bg-center bg-no-repeat text-white border border-black/10 shadow-card' : currentThemeConfig.cardBg}`}
+            style={customBgImage ? { backgroundImage: `url(${customBgImage})`, backgroundSize: customBgFit } : undefined}
           >
             {/* Custom Background Dark Tint Overlay */}
             {customBgImage && (
               <div className="absolute inset-0 bg-black/45 backdrop-blur-[0.5px] pointer-events-none z-0" />
-            )}
-
-            {/* 5mm Safe Print Area Boundary Line */}
-            {showSafeGuide && (
-              <div className={`absolute inset-[18px] border border-dashed pointer-events-none z-20 ${
-                cardTheme === 'clean_white' || cardTheme === 'neo_brutalist' ? 'border-black/25' : 'border-white/25'
-              } ${cardShape === 'rounded' ? 'rounded-2xl' : 'rounded-none'}`}>
-                <span className="absolute top-1 right-2 text-[8px] font-mono opacity-40 uppercase tracking-widest">
-                  5mm Safe Margin
-                </span>
-              </div>
             )}
 
             {/* Visiting Card Layout Strictly Inside 5mm Safe Print Area */}
@@ -747,6 +764,7 @@ export default function DigitalCardStudio({
                 <span>Upload Custom Card Artwork (PNG/JPG)</span>
               </button>
             </div>
+            {customBgImage && <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setCustomBgFit('cover')} className={`rounded-xl px-3 py-2 text-[10px] font-black ${customBgFit === 'cover' ? 'bg-[#141518] text-white' : 'bg-white text-charcoal'}`}>Fill card</button><button type="button" onClick={() => setCustomBgFit('contain')} className={`rounded-xl px-3 py-2 text-[10px] font-black ${customBgFit === 'contain' ? 'bg-[#141518] text-white' : 'bg-white text-charcoal'}`}>Show full image</button></div>}
           </div>
 
           {/* Section 3: QR Code Size & Drag/Nudge Controls */}

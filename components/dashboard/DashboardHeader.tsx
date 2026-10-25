@@ -23,7 +23,7 @@ export default function DashboardHeader({
   ];
 
   return (
-    <header className="w-full flex items-center justify-between gap-4 pb-4 pt-2">
+    <header className="w-full flex items-center justify-between gap-2 pb-3 pt-1 sm:gap-4 sm:pb-4 sm:pt-2">
       {/* Left: 3-Lines Hamburger Menu Button (mobile only) + User's Name */}
       <div className="flex items-center gap-3.5 min-w-0">
         <button
@@ -34,7 +34,7 @@ export default function DashboardHeader({
           <Menu className="w-5 h-5 text-charcoal stroke-[2.2]" />
         </button>
 
-        <h1 suppressHydrationWarning className="text-xl md:text-2xl font-black tracking-tight text-charcoal truncate">
+        <h1 suppressHydrationWarning className="text-base sm:text-xl md:text-2xl font-black tracking-tight text-charcoal truncate">
           {profile.displayName}
         </h1>
       </div>
@@ -45,7 +45,7 @@ export default function DashboardHeader({
         <div className="relative">
           <button
             onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="w-10 h-10 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal shadow-xs transition-all relative"
+            className="hidden sm:flex w-10 h-10 rounded-full bg-white hover:bg-black/5 border border-black/10 items-center justify-center text-charcoal shadow-xs transition-all relative"
             title="Notifications"
           >
             <Bell className="w-4 h-4 stroke-[2.2]" />
@@ -76,9 +76,9 @@ export default function DashboardHeader({
           href={`/${profile.username}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="px-4 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
+          className="h-10 w-10 sm:h-auto sm:w-auto sm:px-4 sm:py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center sm:gap-1.5 shadow-sm transition-transform active:scale-95"
         >
-          <span>View Public</span>
+          <span className="hidden sm:inline">View Public</span>
           <ExternalLink className="w-3.5 h-3.5 text-[#FDF166] stroke-[2.5]" />
         </a>
       </div>

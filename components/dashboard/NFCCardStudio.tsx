@@ -33,6 +33,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import confetti from 'canvas-confetti';
+import QRCodeGenerator from 'qrcode';
+import { compressImageFile } from '@/lib/imageCompression';
 
 interface NFCCardStudioProps {
   nfcCard: NFCCardDesign;
@@ -50,6 +52,9 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [saveConfirmModalOpen, setSaveConfirmModalOpen] = useState(false);
   const [displayHost, setDisplayHost] = useState('tapping.bio');
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  const baseCardRef = useRef(nfcCard);
+  const updateCardRef = useRef(onUpdateCard);
 
   // Font Popover Dropdown Filter States
   const [isFontDropdownOpen, setIsFontDropdownOpen] = useState(false);
@@ -85,6 +90,10 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
       setDisplayHost(window.location.host);
     }
   }, []);
+
+  React.useEffect(() => {
+    updateCardRef.current = onUpdateCard;
+  }, [onUpdateCard]);
 
   // Front Side Config
   const [frontSide, setFrontSide] = useState<CardSideConfig>({
@@ -238,8 +247,8 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   ) => {
     const currentX = currentConfig[fieldX] ?? 0;
     const currentY = currentConfig[fieldY] ?? 0;
-    const newX = Math.max(-60, Math.min(60, currentX + deltaX));
-    const newY = Math.max(-60, Math.min(60, currentY + deltaY));
+    const newX = Math.max(-32, Math.min(32, currentX + deltaX));
+    const newY = Math.max(-20, Math.min(20, currentY + deltaY));
     updateCurrentConfig({ [fieldX]: newX, [fieldY]: newY });
   };
 
@@ -250,8 +259,9 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     updateCurrentConfig({ [fieldX]: 0, [fieldY]: 0 });
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
@@ -259,18 +269,18 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
+    try {
+      const result = await compressImageFile(file, { maxWidth: 1600, maxHeight: 1600, quality: 0.82 });
       updateCurrentConfig({ 
-        artworkUrl: result, 
+        artworkUrl: result.dataUrl,
         artworkZoom: 100, 
         artworkPosX: 0, 
         artworkPosY: 0 
       });
-      showToast('Custom Artwork Uploaded', `Applied to ${activeSide.toUpperCase()} side. You can drag and zoom it below!`, 'success');
-    };
-    reader.readAsDataURL(file);
+      showToast('Artwork uploaded', `Compressed to ${result.width} by ${result.height} pixels and applied to the ${activeSide} side.`, 'success');
+    } catch (error) {
+      showToast('Artwork upload failed', error instanceof Error ? error.message : 'Please try another image.', 'error');
+    }
   };
 
   // Unified Element & Artwork Drag Handler with Mouse & Touch support
@@ -323,13 +333,12 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
 
       const target = dragSessionRef.current.target;
       if (target === 'artwork') {
-        const artX = Math.max(-100, Math.min(100, dragSessionRef.current.initX + Math.round(dx / 2)));
-        const artY = Math.max(-100, Math.min(100, dragSessionRef.current.initY + Math.round(dy / 2)));
+        const artX = Math.max(-40, Math.min(40, dragSessionRef.current.initX + Math.round(dx / 2)));
+        const artY = Math.max(-30, Math.min(30, dragSessionRef.current.initY + Math.round(dy / 2)));
         updateCurrentConfig({ artworkPosX: artX, artworkPosY: artY });
       } else {
-        // Enforce 5mm print-safe boundaries so elements never get cut off
-        const boundX = Math.max(-75, Math.min(75, dragSessionRef.current.initX + dx));
-        const boundY = Math.max(-45, Math.min(45, dragSessionRef.current.initY + dy));
+        const boundX = Math.max(-32, Math.min(32, dragSessionRef.current.initX + dx));
+        const boundY = Math.max(-20, Math.min(20, dragSessionRef.current.initY + dy));
 
         if (target === 'name') {
           updateCurrentConfig({ nameOffsetX: Math.round(boundX), nameOffsetY: Math.round(boundY) });
@@ -343,6 +352,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
 
     const onMouseMove = (e: MouseEvent) => handleMove(e.clientX, e.clientY);
     const onTouchMove = (e: TouchEvent) => {
+      if (dragSessionRef.current.isDragging) e.preventDefault();
       if (e.touches[0]) handleMove(e.touches[0].clientX, e.touches[0].clientY);
     };
 
@@ -355,7 +365,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
 
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onEnd);
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
     window.addEventListener('touchend', onEnd);
 
     return () => {
@@ -365,6 +375,28 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
       window.removeEventListener('touchend', onEnd);
     };
   }, [currentConfig]);
+
+  React.useEffect(() => {
+    const origin = typeof window === 'undefined' ? `https://${displayHost}` : window.location.origin;
+    const target = redirectMode === 'direct_vcard' ? `${origin}/${username}?download=vcard` : `${origin}/${username}`;
+    QRCodeGenerator.toDataURL(target, { width: 320, margin: 1, errorCorrectionLevel: 'M' }).then(setQrDataUrl).catch(console.error);
+  }, [displayHost, redirectMode, username]);
+
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => {
+      updateCardRef.current({
+        ...baseCardRef.current,
+        material,
+        sideMode,
+        frontSide,
+        backSide,
+        engravedName: frontSide.primaryText || baseCardRef.current.engravedName,
+        engravedTagline: frontSide.secondaryText || baseCardRef.current.engravedTagline,
+        redirectMode,
+      });
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [material, sideMode, frontSide, backSide, redirectMode]);
 
   const handleCardClick = (e: React.MouseEvent) => {
     if (dragSessionRef.current.hasMoved) {
@@ -492,7 +524,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             Custom Hardware & Typography
           </h2>
           <p className="text-xs text-charcoal/60 mt-2 font-medium">
-            Upload custom artwork with drag & zoom positioning, stylized fonts, and 5mm print-safe element placements.
+            Upload custom artwork, adjust typography, and keep every element contained inside the card.
           </p>
         </div>
 
@@ -505,11 +537,11 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             <span>Flip Card ({flipped ? 'Back' : 'Front'})</span>
           </button>
           <button
-            onClick={() => setOrderModalOpen(true)}
+            onClick={handleSaveDesign}
             className="px-5 py-2 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
           >
-            <ShoppingBag className="w-3.5 h-3.5 text-[#FDF166]" />
-            <span>Order Metal Card ($49)</span>
+            <Check className="w-3.5 h-3.5 text-[#FDF166]" />
+            <span>Save Blueprint</span>
           </button>
         </div>
       </div>
@@ -547,18 +579,6 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
               </button>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setShowSafeMarginGuide(!showSafeMarginGuide)}
-              className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-colors cursor-pointer ${
-                showSafeMarginGuide
-                  ? 'bg-[#EFF4FF] border-[#4F83FF]/30 text-[#4F83FF]'
-                  : 'bg-[#FAF7F2] border-black/10 text-charcoal/60'
-              }`}
-              title="Toggle 5mm safe print boundary guide"
-            >
-              5mm Safe Bleed: {showSafeMarginGuide ? 'ON' : 'OFF'}
-            </button>
 
             <div className="flex items-center gap-1 text-[11px] font-bold text-charcoal/70">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -611,13 +631,6 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                 <div className="absolute inset-0 z-1 bg-gradient-to-tr from-white/10 via-transparent to-black/20 pointer-events-none" />
 
                 {/* 5mm Safe Print Area Boundary Guide (18px Margin from Edges) */}
-                {showSafeMarginGuide && (
-                  <div className="absolute inset-[18px] border border-dashed border-white/20 rounded-2xl pointer-events-none z-20">
-                    <span className="absolute top-1 right-2 text-[8px] font-mono opacity-40 uppercase tracking-widest text-white">
-                      5mm Safe Print Zone
-                    </span>
-                  </div>
-                )}
 
                 {/* Content Elements Positioned Strictly within 5mm Safe Print Area */}
                 <div className="absolute inset-[18px] z-10 pointer-events-none">
@@ -729,7 +742,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                       }}
                       title="Drag to reposition QR code"
                     >
-                      <QrCode className="w-full h-full text-black" />
+                      {qrDataUrl ? <img src={qrDataUrl} alt="Scannable profile QR code" className="h-full w-full" draggable={false} /> : <QrCode className="w-full h-full text-black" />}
                     </div>
                   )}
                 </div>
@@ -756,13 +769,6 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                 <div className="absolute inset-0 z-1 bg-gradient-to-bl from-white/10 via-transparent to-black/25 pointer-events-none" />
 
                 {/* 5mm Safe Print Area Boundary Guide (Back) */}
-                {showSafeMarginGuide && (
-                  <div className="absolute inset-[18px] border border-dashed border-white/20 rounded-2xl pointer-events-none z-20">
-                    <span className="absolute top-1 right-2 text-[8px] font-mono opacity-40 uppercase tracking-widest text-white">
-                      5mm Safe Print Zone
-                    </span>
-                  </div>
-                )}
 
                 <div className="absolute inset-[18px] z-10 pointer-events-none">
                   {sideMode === 'single_sided' ? (
@@ -858,7 +864,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                           }}
                           title="Drag to reposition QR code"
                         >
-                          <QrCode className="w-full h-full text-black" />
+                          {qrDataUrl ? <img src={qrDataUrl} alt="Scannable profile QR code" className="h-full w-full" draggable={false} /> : <QrCode className="w-full h-full text-black" />}
                         </div>
                       )}
                     </div>
@@ -875,9 +881,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                 <Move className="w-3.5 h-3.5 text-[#4F83FF]" />
                 <span>Drag any text, QR, or logo directly &bull; Click empty area to flip</span>
               </span>
-              <span className="text-[10px] font-mono font-bold text-charcoal/50">
-                5mm safe bleed
-              </span>
+              <span className="text-[10px] font-mono font-bold text-charcoal/50">Contained layout</span>
             </div>
 
             {activeElement && (
@@ -945,8 +949,8 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                   <span className="text-[10px] font-bold text-charcoal/60 block mb-0.5">Pan X: {currentConfig.artworkPosX ?? 0}px</span>
                   <input
                     type="range"
-                    min="-80"
-                    max="80"
+                    min="-40"
+                    max="40"
                     value={currentConfig.artworkPosX ?? 0}
                     onChange={(e) => updateCurrentConfig({ artworkPosX: Number(e.target.value) })}
                     className="w-full accent-black cursor-pointer"
@@ -956,8 +960,8 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                   <span className="text-[10px] font-bold text-charcoal/60 block mb-0.5">Pan Y: {currentConfig.artworkPosY ?? 0}px</span>
                   <input
                     type="range"
-                    min="-80"
-                    max="80"
+                    min="-30"
+                    max="30"
                     value={currentConfig.artworkPosY ?? 0}
                     onChange={(e) => updateCurrentConfig({ artworkPosY: Number(e.target.value) })}
                     className="w-full accent-black cursor-pointer"
@@ -1038,7 +1042,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                       {currentFontObj.name}
                     </p>
                     <p className="text-[11px] text-charcoal/50 truncate mt-0.5" style={{ fontFamily: currentConfig.fontFamily }}>
-                      {currentConfig.primaryText || 'ALEX MORGAN'} &bull; Aa Bb 123
+                      {currentConfig.primaryText || 'AARAV SHARMA'} &bull; Aa Bb 123
                     </p>
                   </div>
                 </div>
@@ -1125,7 +1129,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                                 className="text-xs text-charcoal/70 truncate mt-0.5"
                                 style={{ fontFamily: font.family }}
                               >
-                                {currentConfig.primaryText || 'ALEX MORGAN'} &bull; Aa Bb 123
+                                {currentConfig.primaryText || 'AARAV SHARMA'} &bull; Aa Bb 123
                               </span>
                             </div>
 
@@ -1150,7 +1154,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             <div className="p-2.5 rounded-xl bg-white border border-black/5 flex items-center justify-between">
               <span className="text-[10px] font-mono text-charcoal/50">Current:</span>
               <span className="text-sm font-black text-charcoal truncate" style={{ fontFamily: currentConfig.fontFamily }}>
-                {currentConfig.primaryText || 'ALEX MORGAN'} &bull; {currentConfig.topLabel || 'TAPPING'}
+                {currentConfig.primaryText || 'AARAV SHARMA'} &bull; {currentConfig.topLabel || 'TAPPING'}
               </span>
             </div>
           </div>
@@ -1162,7 +1166,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                 Element Sizing & Placement ({activeSide.toUpperCase()} Side)
               </label>
               <p className="text-[11px] text-charcoal/60 mt-0.5">
-                Control text sizes, QR dimension, and nudge positions strictly within the 5mm print-safe margin
+                Control text sizes, QR dimensions, and positioning within the card area
               </p>
             </div>
 
@@ -1861,27 +1865,27 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                     {sideMode === 'single_sided' ? 'Single-Sided Precision Print' : 'Dual-Sided Precision Print'}
                   </p>
                 </div>
-                <span className="font-black text-sm text-charcoal">$49.00</span>
+                <span className="font-black text-sm text-charcoal">₹1,499</span>
               </div>
 
               <div className="space-y-1.5 text-charcoal/80 font-medium">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>$49.00</span>
+                  <span>₹1,499</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Worldwide Tracked Shipping</span>
-                  <span className="text-emerald-600 font-bold">Included</span>
+                  <span>Pan-India Express Tracked Shipping</span>
+                  <span className="text-emerald-600 font-bold">Free</span>
                 </div>
                 <div className="flex justify-between font-black text-charcoal text-sm pt-2 border-t border-black/5">
                   <span>Total</span>
-                  <span>$49.00</span>
+                  <span>₹1,499</span>
                 </div>
               </div>
 
               <div className="p-3 rounded-2xl bg-[#EFF4FF] border border-[#4F83FF]/20 flex items-center gap-2 text-[11px] text-charcoal font-medium">
                 <ShieldCheck className="w-4 h-4 text-[#4F83FF] shrink-0" />
-                <span>Protected with Razorpay Secure Checkout and Lifetime NFC Microchip Warranty</span>
+                <span>Protected with Razorpay Secure Checkout &bull; Lifetime NTAG216 Chip Warranty</span>
               </div>
             </div>
 
@@ -1896,7 +1900,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                 onClick={handlePlaceOrder}
                 className="flex-2 py-2.5 px-6 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
               >
-                <span>Pay $49 with Razorpay</span>
+                <span>Pay ₹1,499 with UPI / Razorpay</span>
               </button>
             </div>
           </div>

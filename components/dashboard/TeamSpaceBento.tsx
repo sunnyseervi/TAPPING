@@ -37,7 +37,7 @@ export default function TeamSpaceBento({
 }: TeamSpaceBentoProps) {
   const { showToast } = useToast();
   const [copied, setCopied] = useState(false);
-  const [origin, setOrigin] = useState(() => (typeof window !== 'undefined' ? window.location.origin : ''));
+  const [origin, setOrigin] = useState('');
   const [viewsTimeframe, setViewsTimeframe] = useState<'7d' | '30d' | 'all'>('7d');
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
 
@@ -239,11 +239,11 @@ export default function TeamSpaceBento({
           </div>
         </div>
 
-        {/* RIGHT COLUMN: APP TILES (vCard 3.0 & Vector QR) + AUDIENCE REACH STRIP */}
+        {/* RIGHT COLUMN: APP TILES (Contact Card & Vector QR) + AUDIENCE REACH STRIP */}
         <div className="flex flex-col gap-4">
           {/* Row of 2 White Square App Tiles */}
           <div className="grid grid-cols-2 gap-4">
-            {/* Tile 1: vCard 3.0 Contact Saves -> Navigates to Digital Card Studio */}
+            {/* Tile 1: Contact Card Saves -> Navigates to Digital Card Studio */}
             <div
               onClick={() => onSelectTab('digital-card')}
               className="bg-white rounded-3xl p-5 border border-black/5 shadow-soft hover:shadow-card transition-all cursor-pointer flex flex-col items-center justify-center text-center group min-h-[110px]"
@@ -253,7 +253,7 @@ export default function TeamSpaceBento({
                 <UserCheck className="w-6 h-6 text-[#EA4335] stroke-[2.4]" />
               </div>
               <span className="text-xs font-black text-charcoal">
-                vCard 3.0
+                Contact Card
               </span>
               <span className="text-[10px] font-bold text-charcoal/50 mt-0.5">
                 {analytics.vcardSaves} Contacts Saved

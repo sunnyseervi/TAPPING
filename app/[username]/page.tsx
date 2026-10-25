@@ -9,14 +9,16 @@ import {
   incrementLinkClick, 
   recordPageView,
   recordVCardDownload,
-  recordQRScan
+  recordQRScan,
+  getStoredStore,
 } from '@/lib/storage';
 import { 
   initialProfile, 
   initialVCard, 
-  initialLinks 
+  initialLinks,
+  initialStore,
 } from '@/lib/mockData';
-import { Profile, VCardProfile, LinkBlock } from '@/lib/types';
+import { Profile, VCardProfile, LinkBlock, StoreConfig } from '@/lib/types';
 import { 
   Download, 
   ExternalLink, 
@@ -33,7 +35,8 @@ import {
   MapPin, 
   Building2, 
   X,
-  ArrowUpRight
+  ArrowUpRight,
+  ShoppingBag
 } from 'lucide-react';
 import { downloadVCardFile } from '@/lib/vcard';
 import QRCode from 'qrcode';
@@ -43,12 +46,13 @@ import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses, is
 
 export default function PublicProfilePage() {
   const params = useParams();
-  const usernameParam = (params?.username as string) || 'alex';
+  const usernameParam = (params?.username as string) || 'aarav';
   const { showToast } = useToast();
 
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [vcard, setVcard] = useState<VCardProfile>(initialVCard);
   const [links, setLinks] = useState<LinkBlock[]>(initialLinks);
+  const [store, setStore] = useState<StoreConfig>(initialStore);
 
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrUrl, setQrUrl] = useState('');
@@ -56,23 +60,34 @@ export default function PublicProfilePage() {
 
   useEffect(() => {
     recordPageView();
-    const storedProfile = getStoredProfile();
-    const storedVCard = getStoredVCard();
-    const storedLinks = getStoredLinks();
+    const reloadPublishedData = () => {
+      const storedProfile = getStoredProfile();
+      setProfile({ ...storedProfile, username: usernameParam || storedProfile.username });
+      setVcard(getStoredVCard());
+      setLinks(getStoredLinks());
+      setStore(getStoredStore());
+    };
+    reloadPublishedData();
 
-    if (storedProfile && usernameParam) {
-      storedProfile.username = usernameParam;
-    }
-
-    setProfile(storedProfile);
-    setVcard(storedVCard);
-    setLinks(storedLinks);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') reloadPublishedData();
+    };
+    window.addEventListener('storage', reloadPublishedData);
+    window.addEventListener('focus', reloadPublishedData);
+    window.addEventListener('tapping-profile-updated', reloadPublishedData as EventListener);
+    document.addEventListener('visibilitychange', handleVisibility);
 
     if (typeof window !== 'undefined') {
       QRCode.toDataURL(window.location.href, { width: 360, margin: 2 })
         .then(setQrUrl)
         .catch(console.error);
     }
+    return () => {
+      window.removeEventListener('storage', reloadPublishedData);
+      window.removeEventListener('focus', reloadPublishedData);
+      window.removeEventListener('tapping-profile-updated', reloadPublishedData as EventListener);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [usernameParam]);
 
   const activeLinks = links.filter((l) => l.isActive);
@@ -84,11 +99,11 @@ export default function PublicProfilePage() {
   const patternClass = profile.showHeaderBackground ? getPatternClass(profile.headerBackground) : '';
 
   // Adaptive container styling: never gets stuck in illegible dark box
-  const cardContainerClass = dark 
-    ? 'bg-[#0B0F19]/95 backdrop-blur-md border border-white/10 text-white shadow-2xl'
+  const cardContainerClass = dark
+    ? `${currentTheme.containerBg} backdrop-blur-md border border-white/10 text-white shadow-2xl`
     : (profile.theme === 'comic-pop' || profile.theme === 'neobrutalism')
-      ? 'bg-white border-3 border-black text-black shadow-[8px_8px_0px_#000]'
-      : 'bg-white/95 backdrop-blur-md border border-black/10 text-charcoal shadow-2xl';
+      ? `${currentTheme.containerBg} border-3 border-black text-black shadow-[8px_8px_0px_#000]`
+      : `${currentTheme.containerBg} backdrop-blur-md border border-black/10 text-charcoal shadow-2xl`;
 
   // Dynamic font sizing
   const titleSizeClass = 
@@ -165,11 +180,16 @@ export default function PublicProfilePage() {
   const organizationName = vcard.organization || '';
   const jobTitleText = vcard.jobTitle || profile.badgeTitle || '';
   const fullAddress = [vcard.streetAddress, vcard.city, vcard.country].filter(Boolean).join(', ');
+  const externalUrl = (value: string) => value.startsWith('http://') || value.startsWith('https://') ? value : `https://${value}`;
+  const socialUrl = (value: string, host: string) => {
+    if (value.startsWith('http://') || value.startsWith('https://')) return value;
+    return `https://${host}/${value.replace(/^@/, '')}`;
+  };
 
   return (
     <div 
       className={`min-h-screen ${currentTheme.canvasBg} text-charcoal flex flex-col items-center justify-between p-4 sm:p-6 lg:p-10 selection:bg-[#FDF166] selection:text-charcoal transition-colors duration-200 relative overflow-hidden`}
-      style={{ backgroundColor: currentTheme.canvasBgHex || currentTheme.previewColors[0] || '#FAF7F2' }}
+      style={{ backgroundColor: profile.customBgColor || currentTheme.canvasBgHex || currentTheme.previewColors[0] || '#FAF7F2', backgroundImage: profile.pageBgImage ? `url(${profile.pageBgImage})` : undefined, backgroundSize: profile.pageBgImage ? 'cover' : undefined, backgroundPosition: 'center' }}
     >
       {/* Full-Screen Bio Page Theme Pattern or Custom Uploaded Wallpaper */}
       {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
@@ -219,7 +239,7 @@ export default function PublicProfilePage() {
       </div>
 
       {/* MAIN PROFILE CARD: USER IDENTITY & CONTACT DATA */}
-      <main className={`w-full max-w-xl mx-auto ${cardContainerClass} rounded-[36px] sm:rounded-[44px] flex flex-col overflow-hidden text-center transition-all relative z-10`}>
+      <main className={`w-full max-w-xl mx-auto ${cardContainerClass} ${fontFamilyClass} rounded-[36px] sm:rounded-[44px] flex flex-col overflow-hidden text-center transition-all relative z-10`} style={{ backgroundColor: currentTheme.containerBgHex, color: currentTheme.textBodyHex }}>
         {/* Card Body */}
         <div className="p-6 sm:p-8 flex flex-col gap-6">
           {/* 1. USER IDENTITY (Avatar, Name, Handle, Title, Location, Bio) */}
@@ -229,7 +249,7 @@ export default function PublicProfilePage() {
               <img
                 src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
                 alt={profile.displayName}
-                className="w-full h-full object-cover transition-transform"
+                className={`w-full h-full transition-transform ${profile.avatarFit === 'cover' ? 'object-cover' : 'object-contain'}`}
                 style={{
                   transform: `scale(${(profile.avatarZoom ?? 100) / 100}) translate(${profile.avatarPosX ?? 0}px, ${profile.avatarPosY ?? 0}px)`,
                   transformOrigin: 'center center',
@@ -282,7 +302,7 @@ export default function PublicProfilePage() {
             )}
           </div>
 
-          {/* 2. PRIMARY CONTACT ACTION: SAVE DIRECT VCARD 3.0 TO PHONE */}
+          {/* 2. PRIMARY CONTACT ACTION: SAVE DIRECT CONTACT CARD (.VCF) TO PHONE */}
           <div className="flex flex-col gap-2.5">
             <button
               onClick={handleDownloadVCard}
@@ -327,7 +347,7 @@ export default function PublicProfilePage() {
 
               {vcard.website && (
                 <a
-                  href={vcard.website.startsWith('http') ? vcard.website : `https://${vcard.website}`}
+                  href={externalUrl(vcard.website)}
                   target="_blank"
                   rel="noreferrer"
                   className={`col-span-2 sm:col-span-1 py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors ${
@@ -419,7 +439,7 @@ export default function PublicProfilePage() {
                     <span>Website</span>
                   </span>
                   <a
-                    href={vcard.website.startsWith('http') ? vcard.website : `https://${vcard.website}`}
+                    href={externalUrl(vcard.website)}
                     target="_blank"
                     rel="noreferrer"
                     className={`font-mono font-bold hover:underline truncate max-w-[200px] ${dark ? 'text-[#38BDF8]' : 'text-[#4F83FF]'}`}
@@ -435,7 +455,7 @@ export default function PublicProfilePage() {
           <div className="flex items-center justify-center gap-2 pt-1 pb-1 flex-wrap">
             {profile.socialLinks?.instagram && (
               <a
-                href={`https://instagram.com/${profile.socialLinks.instagram.replace('@', '')}`}
+                href={socialUrl(profile.socialLinks.instagram, 'instagram.com')}
                 target="_blank"
                 rel="noreferrer"
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 ${
@@ -450,7 +470,7 @@ export default function PublicProfilePage() {
             )}
             {profile.socialLinks?.twitter && (
               <a
-                href={`https://x.com/${profile.socialLinks.twitter.replace('@', '')}`}
+                href={socialUrl(profile.socialLinks.twitter, 'x.com')}
                 target="_blank"
                 rel="noreferrer"
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 ${
@@ -465,7 +485,7 @@ export default function PublicProfilePage() {
             )}
             {profile.socialLinks?.github && (
               <a
-                href={`https://github.com/${profile.socialLinks.github.replace('@', '')}`}
+                href={socialUrl(profile.socialLinks.github, 'github.com')}
                 target="_blank"
                 rel="noreferrer"
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 ${
@@ -480,7 +500,7 @@ export default function PublicProfilePage() {
             )}
             {profile.socialLinks?.linkedin && (
               <a
-                href={profile.socialLinks.linkedin.startsWith('http') ? profile.socialLinks.linkedin : `https://${profile.socialLinks.linkedin}`}
+                href={socialUrl(profile.socialLinks.linkedin, 'linkedin.com/in')}
                 target="_blank"
                 rel="noreferrer"
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 ${
@@ -507,6 +527,14 @@ export default function PublicProfilePage() {
               </a>
             )}
           </div>
+
+          {store.enabled && store.products.some((product) => product.isActive) && (
+            <a href={`/${profile.username}/shop`} className={`flex items-center gap-4 rounded-3xl border p-4 text-left transition-transform hover:-translate-y-0.5 ${dark ? 'border-white/10 bg-white/[0.06]' : 'border-black/8 bg-[#FEF0C7]'}`}>
+              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${dark ? 'bg-white/10 text-white' : 'bg-white text-charcoal'}`}><ShoppingBag className="h-5 w-5" /></div>
+              <div className="min-w-0 flex-1"><p className="text-sm font-black">{store.storeName}</p><p className={`mt-1 text-xs font-semibold ${dark ? 'text-white/60' : 'text-charcoal/55'}`}>{store.products.filter((product) => product.isActive).length} products available</p></div>
+              <ArrowUpRight className="h-4 w-4 shrink-0" />
+            </a>
+          )}
 
           {/* 5. USER'S CONTENT & ACTIVE LINKS STACK */}
           <div className="flex flex-col gap-3 pt-2 text-left">

@@ -27,8 +27,8 @@ interface OnboardingProps {
 export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
   const [step, setStep] = useState<number>(1);
   const [cardFlipped, setCardFlipped] = useState(false);
-  const [selectedUsername, setSelectedUsername] = useState('alex');
-  const [fullName, setFullName] = useState('Alex Morgan');
+  const [selectedUsername, setSelectedUsername] = useState('aarav');
+  const [fullName, setFullName] = useState('Aarav Sharma');
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(true);
 
@@ -162,7 +162,7 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
                     Portfolio
                   </div>
                   <div className="px-3 py-1 rounded-full bg-white text-xs font-black text-charcoal border border-black/10">
-                    vCard 3.0
+                    Contact Card
                   </div>
                   <div className="px-3 py-1 rounded-full bg-[#B6F554] text-xs font-black text-charcoal border border-black/10">
                     Vector QR
@@ -229,7 +229,7 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
                     </div>
                     <div>
                       <p className="text-[10px] tracking-wider text-white/50 font-mono">SMART NFC HARDWARE &bull; NTAG216</p>
-                      <p className="font-black text-sm tracking-widest mt-0.5">{selectedUsername.toUpperCase() || 'ALEX MORGAN'}</p>
+                      <p className="font-black text-sm tracking-widest mt-0.5">{selectedUsername.toUpperCase() || 'AARAV SHARMA'}</p>
                     </div>
                   </div>
 
@@ -290,7 +290,7 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
                   <div className="w-7 h-7 rounded-xl bg-[#4F83FF] text-white flex items-center justify-center mb-2 shadow-2xs">
                     <UserCheck className="w-4 h-4 stroke-[2.2]" />
                   </div>
-                  <h4 className="text-xs font-black text-charcoal">vCard 3.0 Export</h4>
+                  <h4 className="text-xs font-black text-charcoal">Contact Card (.vcf)</h4>
                   <p className="text-[10px] text-charcoal/60 mt-0.5 font-bold">Instant phonebook save</p>
                 </div>
 
@@ -424,7 +424,7 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Alex Morgan"
+                    placeholder="Aarav Sharma"
                     className="w-full px-4 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 focus:outline-none focus:ring-2 focus:ring-charcoal/20 text-xs font-bold text-charcoal"
                   />
                 </div>

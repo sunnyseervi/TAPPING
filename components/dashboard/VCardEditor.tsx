@@ -21,7 +21,7 @@ export default function VCardEditor({ vcard, onUpdateVCard }: VCardEditorProps) 
 
   const handleSave = () => {
     onUpdateVCard(formData);
-    showToast('Contact Card Saved!', 'Your vCard 3.0 identity is updated', 'success');
+    showToast('Contact Card Saved!', 'Your contact card identity is updated', 'success');
   };
 
   const handleTestDownload = () => {

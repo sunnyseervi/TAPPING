@@ -37,6 +37,7 @@ import QRCode from 'qrcode';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 import ThemesStudio from '@/components/dashboard/ThemesStudio';
+import { compressImageFile } from '@/lib/imageCompression';
 
 interface EditProfileSectionProps {
   profile: Profile;
@@ -90,16 +91,17 @@ export default function EditProfileSection({
   const [badgeTitle, setBadgeTitle] = useState(profile.badgeTitle || vcard?.jobTitle || 'Product Designer');
   const [bio, setBio] = useState(profile.bio);
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
+  const [avatarFit, setAvatarFit] = useState<'cover' | 'contain'>(profile.avatarFit ?? 'contain');
   const [avatarZoom, setAvatarZoom] = useState(profile.avatarZoom ?? 100);
   const [avatarPosX, setAvatarPosX] = useState(profile.avatarPosX ?? 0);
   const [avatarPosY, setAvatarPosY] = useState(profile.avatarPosY ?? 0);
   
   // Contact Details
-  const [phone, setPhone] = useState(vcard?.workPhone || vcard?.mobilePhone || profile.socialLinks?.phone || '+1 (415) 890-2200');
-  const [organization, setOrganization] = useState(vcard?.organization || 'Tapping Technologies');
-  const [streetAddress, setStreetAddress] = useState(vcard?.streetAddress || '742 Market Street');
-  const [city, setCity] = useState(vcard?.city || 'San Francisco, CA');
-  const [country, setCountry] = useState(vcard?.country || 'United States');
+  const [phone, setPhone] = useState(vcard?.workPhone || vcard?.mobilePhone || profile.socialLinks?.phone || '+91 98765 43210');
+  const [organization, setOrganization] = useState(vcard?.organization || 'Tapping Technologies India');
+  const [streetAddress, setStreetAddress] = useState(vcard?.streetAddress || 'Indiranagar 100ft Road');
+  const [city, setCity] = useState(vcard?.city || 'Bengaluru, Karnataka');
+  const [country, setCountry] = useState(vcard?.country || 'India');
   const [website, setWebsite] = useState(vcard?.website || '');
 
   const [socialLinks, setSocialLinks] = useState({
@@ -107,8 +109,8 @@ export default function EditProfileSection({
     twitter: profile.socialLinks?.twitter || '',
     linkedin: profile.socialLinks?.linkedin || '',
     github: profile.socialLinks?.github || '',
-    email: profile.socialLinks?.email || vcard?.workEmail || 'contact@alexmorgan.design',
-    phone: profile.socialLinks?.phone || vcard?.workPhone || '+1 (415) 890-2200',
+    email: profile.socialLinks?.email || vcard?.workEmail || 'contact@aaravsharma.in',
+    phone: profile.socialLinks?.phone || vcard?.workPhone || '+91 98765 43210',
   });
 
   const notifyLive = (partial: Partial<Profile>) => {
@@ -120,6 +122,7 @@ export default function EditProfileSection({
         badgeTitle,
         bio,
         avatarUrl,
+        avatarFit,
         avatarZoom,
         avatarPosX,
         avatarPosY,
@@ -153,8 +156,9 @@ export default function EditProfileSection({
   const [confirmQrUrl, setConfirmQrUrl] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
@@ -162,14 +166,18 @@ export default function EditProfileSection({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      setAvatarUrl(dataUrl);
-      notifyLive({ avatarUrl: dataUrl });
-      showToast('Profile Photo Uploaded', 'Your photo has been updated', 'success');
-    };
-    reader.readAsDataURL(file);
+    try {
+      const result = await compressImageFile(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.8 });
+      setAvatarUrl(result.dataUrl);
+      setAvatarFit('contain');
+      setAvatarZoom(100);
+      setAvatarPosX(0);
+      setAvatarPosY(0);
+      notifyLive({ avatarUrl: result.dataUrl, avatarFit: 'contain', avatarZoom: 100, avatarPosX: 0, avatarPosY: 0 });
+      showToast('Profile photo uploaded', 'The full photo is visible. Choose Fill frame if you prefer a cropped portrait.', 'success');
+    } catch (error) {
+      showToast('Photo upload failed', error instanceof Error ? error.message : 'Please try another image.', 'error');
+    }
   };
 
   const handleLinkImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -201,6 +209,7 @@ export default function EditProfileSection({
       badgeTitle,
       bio,
       avatarUrl,
+      avatarFit,
       avatarZoom,
       avatarPosX,
       avatarPosY,
@@ -436,7 +445,7 @@ export default function EditProfileSection({
       {/* SECTION 1: PROFILE DETAILS FORM */}
       {currentTab === 'profile' && (
       <form onSubmit={handleSaveProfile} className="bg-white rounded-4xl p-6 md:p-8 border border-black/5 shadow-soft">
-        <div className="flex items-start justify-between pb-6 border-b border-black/5 mb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between pb-6 border-b border-black/5 mb-6">
           <div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-charcoal tracking-tight leading-none">
               Check Your
@@ -448,13 +457,10 @@ export default function EditProfileSection({
               Configure your public creator identity, username, and contact handles
             </p>
           </div>
-          <button
-            type="submit"
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-sm transition-transform active:scale-95 shrink-0"
-          >
-            <Save className="w-3.5 h-3.5" />
-            <span>Save Profile</span>
-          </button>
+          <div className="grid grid-cols-2 gap-2 sm:flex">
+            <button type="button" onClick={() => { handleTabSelect('links'); openAddLinkModal(); }} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-black/10 bg-white text-charcoal text-xs font-black shadow-xs"><Plus className="w-3.5 h-3.5" /><span>Add Link</span></button>
+            <button type="submit" className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-sm transition-transform active:scale-95 shrink-0"><Save className="w-3.5 h-3.5" /><span>Save Profile</span></button>
+          </div>
         </div>
 
         <div className="flex flex-col md:flex-row gap-6">
@@ -465,7 +471,7 @@ export default function EditProfileSection({
                 <img
                   src={avatarUrl}
                   alt={displayName || 'Profile Photo'}
-                  className="w-full h-full object-cover transition-transform"
+                  className={`w-full h-full transition-transform ${avatarFit === 'contain' ? 'object-contain' : 'object-cover'}`}
                   style={{
                     transform: `scale(${avatarZoom / 100}) translate(${avatarPosX}px, ${avatarPosY}px)`,
                     transformOrigin: 'center center',
@@ -515,6 +521,11 @@ export default function EditProfileSection({
                 <span className="text-[10px] font-black uppercase tracking-wider text-charcoal/70 block text-center">
                   Adjust Framing & Crop
                 </span>
+
+                <div className="grid grid-cols-2 gap-1 rounded-xl bg-black/5 p-1">
+                  <button type="button" onClick={() => { setAvatarFit('contain'); setAvatarZoom(100); setAvatarPosX(0); setAvatarPosY(0); notifyLive({ avatarFit: 'contain', avatarZoom: 100, avatarPosX: 0, avatarPosY: 0 }); }} className={`rounded-lg px-2 py-1.5 text-[10px] font-black ${avatarFit === 'contain' ? 'bg-white text-charcoal shadow-xs' : 'text-charcoal/50'}`}>Full photo</button>
+                  <button type="button" onClick={() => { setAvatarFit('cover'); notifyLive({ avatarFit: 'cover' }); }} className={`rounded-lg px-2 py-1.5 text-[10px] font-black ${avatarFit === 'cover' ? 'bg-white text-charcoal shadow-xs' : 'text-charcoal/50'}`}>Fill frame</button>
+                </div>
 
                 {/* Zoom Slider */}
                 <div>
@@ -661,7 +672,7 @@ export default function EditProfileSection({
                   setSocialLinks(updatedSocial);
                   notifyLive({ socialLinks: updatedSocial });
                 }}
-                placeholder="contact@alexmorgan.design"
+                placeholder="contact@aaravsharma.in"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
             </div>
@@ -693,7 +704,7 @@ export default function EditProfileSection({
                   setPhone(e.target.value);
                   notifyLive({ socialLinks: { ...socialLinks, phone: e.target.value } });
                 }}
-                placeholder="+1 (415) 890-2200"
+                placeholder="+91 98765 43210"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
             </div>
@@ -706,7 +717,7 @@ export default function EditProfileSection({
                 type="text"
                 value={organization}
                 onChange={(e) => setOrganization(e.target.value)}
-                placeholder="Tapping Technologies"
+                placeholder="Tapping Technologies India"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
             </div>
@@ -719,7 +730,7 @@ export default function EditProfileSection({
                 type="text"
                 value={streetAddress}
                 onChange={(e) => setStreetAddress(e.target.value)}
-                placeholder="742 Market Street"
+                placeholder="Indiranagar 100ft Road"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
             </div>
@@ -733,14 +744,14 @@ export default function EditProfileSection({
                   type="text"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  placeholder="San Francisco, CA"
+                  placeholder="Bengaluru, Karnataka"
                   className="w-full px-3 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
                 />
                 <input
                   type="text"
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
-                  placeholder="United States"
+                  placeholder="India"
                   className="w-full px-3 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
                 />
               </div>
@@ -754,7 +765,7 @@ export default function EditProfileSection({
                 type="url"
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
-                placeholder="https://alexmorgan.design"
+                placeholder="https://aaravsharma.in"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
             </div>
@@ -991,6 +1002,14 @@ export default function EditProfileSection({
               </div>
             );
           })}
+          {links.length === 0 && (
+            <div className="flex flex-col items-center rounded-3xl border border-dashed border-black/15 bg-[#FAF7F2] px-5 py-10 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E3DFF8]"><Link2 className="h-5 w-5 text-charcoal" /></div>
+              <h4 className="mt-4 text-sm font-black text-charcoal">Add your first link</h4>
+              <p className="mt-1 max-w-sm text-xs font-semibold leading-relaxed text-charcoal/50">Add a website, WhatsApp, Instagram, portfolio, booking page or any custom URL.</p>
+              <button onClick={openAddLinkModal} className="mt-4 flex items-center gap-2 rounded-2xl bg-[#4F83FF] px-5 py-3 text-xs font-black text-white"><Plus className="h-4 w-4" /> Add link</button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1075,7 +1094,7 @@ export default function EditProfileSection({
                     { name: 'LinkedIn', title: 'Connect on LinkedIn', subtitle: 'Professional network & experience', url: socialLinks.linkedin || 'https://linkedin.com/in/username', icon: 'briefcase', style: 'sky' },
                     { name: 'GitHub', title: 'Open Source GitHub', subtitle: 'Code repositories & open projects', url: `https://github.com/${socialLinks.github || 'username'}`, icon: 'globe', style: 'default' },
                     { name: 'WhatsApp', title: 'Chat on WhatsApp', subtitle: 'Direct message for quick inquiries', url: `https://wa.me/${phone.replace(/[^0-9]/g, '')}`, icon: 'globe', style: 'mint' },
-                    { name: 'Portfolio', title: 'Design Portfolio', subtitle: 'Curated projects & client work', url: website || 'https://alexmorgan.design', icon: 'globe', style: 'yellow' },
+                    { name: 'Portfolio', title: 'Design Portfolio', subtitle: 'Curated projects & client work', url: website || 'https://aaravsharma.in', icon: 'globe', style: 'yellow' },
                   ].map((preset) => (
                     <button
                       key={preset.name}

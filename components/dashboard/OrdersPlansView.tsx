@@ -41,7 +41,7 @@ export default function OrdersPlansView({
       period: 'per month',
       desc: 'Complete digital business card with vCard and advanced analytics',
       features: [
-        'Digital business card and vCard 3.0 export',
+        'Digital business card and instant contact card (.vcf) export',
         'Permanent dynamic vector QR codes',
         'Hourly visitor traffic flow analytics',
         '13 Full-System Themes with custom colors',

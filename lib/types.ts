@@ -93,6 +93,7 @@ export interface Profile {
   customBgColor?: string;
 
   // Avatar Frame & Cropping
+  avatarFit?: 'cover' | 'contain';
   avatarZoom?: number; // 50 to 250 (%)
   avatarPosX?: number; // -100 to 100 (px)
   avatarPosY?: number; // -100 to 100 (px)
@@ -105,7 +106,13 @@ export interface VisitingCardConfig {
   shape: VisitingCardShape;
   theme: VisitingCardTheme;
   customBg?: string;
+  customBgFit?: 'cover' | 'contain';
   showBleedMargin?: boolean;
+  showBrandMark?: boolean;
+  qrSize?: number;
+  qrPosX?: number;
+  qrPosY?: number;
+  qrColor?: string;
 }
 
 export interface VCardProfile {
@@ -123,6 +130,7 @@ export interface VCardProfile {
   city: string;
   country: string;
   note: string;
+  visitingCard?: VisitingCardConfig;
 }
 
 export type BlockType = 'link' | 'header' | 'social' | 'vcard_cta' | 'media' | 'highlight';
@@ -233,4 +241,31 @@ export interface Subscription {
   tier: 'free' | 'pro' | 'metal_bundle';
   status: 'active' | 'trialing' | 'canceled';
   expiresAt?: string;
+}
+
+export interface StoreProduct {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  compareAtPrice?: number;
+  imageUrl: string;
+  variants: string[];
+  isActive: boolean;
+  sortOrder: number;
+  viewCount?: number;
+  cartAdds?: number;
+}
+
+export interface StoreConfig {
+  enabled: boolean;
+  storeName: string;
+  description: string;
+  whatsappNumber: string;
+  currency: 'INR';
+  deliveryNote: string;
+  requireAddress: boolean;
+  products: StoreProduct[];
+  storeVisits?: number;
+  whatsappOrders?: number;
 }

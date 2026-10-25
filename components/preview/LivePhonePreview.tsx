@@ -183,7 +183,7 @@ export default function LivePhonePreview({
                 <img
                   src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
                   alt={profile.displayName}
-                  className="w-full h-full object-cover transition-transform"
+                  className={`w-full h-full transition-transform ${profile.avatarFit === 'cover' ? 'object-cover' : 'object-contain'}`}
                   style={{
                     transform: `scale(${(profile.avatarZoom ?? 100) / 100}) translate(${profile.avatarPosX ?? 0}px, ${profile.avatarPosY ?? 0}px)`,
                     transformOrigin: 'center center',

@@ -22,7 +22,7 @@ export default function BentoMenuGrid({ onSelectTab, activeTab }: BentoMenuGridP
     {
       id: 'digital-card',
       title: 'Digital Business Card',
-      subtitle: 'Contact vCard 3.0 export and permanent dynamic vector QR code',
+      subtitle: 'Instant Contact Card (.vcf) and permanent dynamic vector QR code',
       cta: 'Check',
       bgColor: 'bg-pastel-lavender hover:bg-[#D5CEFA]',
       borderColor: 'border-pastel-lavender-border',
