@@ -60,6 +60,7 @@ export interface Profile {
   fontSize?: FontSizeScale;
   headerBackground?: BackgroundPatternType;
   showHeaderBackground?: boolean;
+  customHeaderImage?: string;
   linkCardStyle?: LinkCardStyleType;
   customBgColor?: string;
 }
@@ -97,11 +98,36 @@ export interface LinkBlock {
   isActive: boolean;
   sortOrder: number;
   clickCount: number;
+
+  // Custom link background & design
+  bgImage?: string; // Custom uploaded image (data URL or external URL)
+  bgColor?: string; // Custom hex/rgb background color
+  textColor?: string; // Custom text color for contrast
+  bgPattern?: string; // Custom pattern preset class
+}
+
+export type CardSideMode = 'double_sided' | 'single_sided';
+
+export interface CardSideConfig {
+  artworkUrl?: string; // Custom uploaded image or preset
+  artworkOpacity?: number; // 0 to 100
+  primaryText?: string; // Main title / engraved name
+  secondaryText?: string; // Tagline / role / company
+  topLabel?: string; // Brand header (e.g. 'TAPPING' or custom brand)
+  bottomLabel?: string; // Sub-label (e.g. 'NFC 13.56MHz' or custom UID)
+  showQrCode?: boolean; // QR code on this side
+  showChip?: boolean; // Contactless chip indicator
+  textColor?: string; // Laser etch color
+  textAlign?: 'left' | 'center' | 'right';
+  customNote?: string; // Additional free-form custom etch
 }
 
 export interface NFCCardDesign {
   id: string;
   material: CardMaterial;
+  sideMode?: CardSideMode; // 'double_sided' or 'single_sided'
+  frontSide?: CardSideConfig;
+  backSide?: CardSideConfig;
   engravedName: string;
   engravedTagline: string;
   qrCodeEnabled: boolean;

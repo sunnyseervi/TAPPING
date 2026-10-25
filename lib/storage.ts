@@ -74,7 +74,14 @@ export function getStoredNFCCard(): NFCCardDesign {
   if (typeof window === 'undefined') return initialNFCCard;
   try {
     const data = localStorage.getItem(KEYS.NFC);
-    return data ? JSON.parse(data) : initialNFCCard;
+    if (!data) return initialNFCCard;
+    const parsed = JSON.parse(data);
+    return {
+      ...initialNFCCard,
+      ...parsed,
+      frontSide: { ...initialNFCCard.frontSide, ...(parsed.frontSide || {}) },
+      backSide: { ...initialNFCCard.backSide, ...(parsed.backSide || {}) },
+    };
   } catch {
     return initialNFCCard;
   }

@@ -23,7 +23,9 @@ import {
   Edit2,
   Phone,
   Building2,
-  MapPin
+  MapPin,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
@@ -106,6 +108,29 @@ export default function EditProfileSection({
   const [linkUrl, setLinkUrl] = useState('');
   const [linkIcon, setLinkIcon] = useState('globe');
   const [linkStyle, setLinkStyle] = useState<StyleVariant>('peach');
+  const [linkBgImage, setLinkBgImage] = useState('');
+  const [linkBgColor, setLinkBgColor] = useState('');
+  const [linkTextColor, setLinkTextColor] = useState('#141518');
+  const linkFileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleLinkImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Invalid File', 'Please select a PNG, JPG, or SVG image', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      setLinkBgImage(dataUrl);
+      setLinkTextColor('#FFFFFF');
+      showToast('Link Background Uploaded', 'Custom artwork applied to link card', 'success');
+    };
+    reader.readAsDataURL(file);
+  };
 
   const avatarPresets = [
     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
@@ -168,6 +193,9 @@ export default function EditProfileSection({
     setLinkUrl('https://');
     setLinkIcon('globe');
     setLinkStyle('peach');
+    setLinkBgImage('');
+    setLinkBgColor('');
+    setLinkTextColor('#141518');
     setEditingLinkId(null);
     setIsAddingLink(true);
   };
@@ -178,6 +206,9 @@ export default function EditProfileSection({
     setLinkUrl(link.url);
     setLinkIcon(link.icon || 'globe');
     setLinkStyle(link.styleVariant || 'peach');
+    setLinkBgImage(link.bgImage || '');
+    setLinkBgColor(link.bgColor || '');
+    setLinkTextColor(link.textColor || (link.bgImage ? '#FFFFFF' : '#141518'));
     setEditingLinkId(link.id);
     setIsAddingLink(true);
   };
@@ -191,7 +222,17 @@ export default function EditProfileSection({
     if (editingLinkId) {
       const updated = links.map((l) =>
         l.id === editingLinkId
-          ? { ...l, title: linkTitle, subtitle: linkSubtitle, url: linkUrl, icon: linkIcon, styleVariant: linkStyle }
+          ? { 
+              ...l, 
+              title: linkTitle, 
+              subtitle: linkSubtitle, 
+              url: linkUrl, 
+              icon: linkIcon, 
+              styleVariant: linkStyle,
+              bgImage: linkBgImage,
+              bgColor: linkBgColor,
+              textColor: linkTextColor,
+            }
           : l
       );
       onUpdateLinks(updated);
@@ -206,6 +247,9 @@ export default function EditProfileSection({
         url: linkUrl,
         icon: linkIcon,
         styleVariant: linkStyle,
+        bgImage: linkBgImage,
+        bgColor: linkBgColor,
+        textColor: linkTextColor,
         isActive: true,
         sortOrder: links.length,
         clickCount: 0,
@@ -594,94 +638,121 @@ export default function EditProfileSection({
 
         {/* Link Blocks List */}
         <div className="flex flex-col gap-3">
-          {links.map((link, idx) => (
-            <div
-              key={link.id}
-              className={`p-3.5 sm:p-4 rounded-3xl border transition-all flex items-center justify-between gap-3 ${
-                link.isActive ? getStyleClass(link.styleVariant) : 'bg-gray-50/80 border-black/5 opacity-60'
-              }`}
-            >
-              {/* Left: Reorder buttons + Icon + Info */}
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="flex flex-col gap-0.5 shrink-0">
-                  <button
-                    onClick={() => handleMove(idx, 'up')}
-                    disabled={idx === 0}
-                    className="p-1 rounded-lg hover:bg-white/80 disabled:opacity-20 text-charcoal transition-colors"
-                    title="Move up"
-                  >
-                    <ArrowUp className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleMove(idx, 'down')}
-                    disabled={idx === links.length - 1}
-                    className="p-1 rounded-lg hover:bg-white/80 disabled:opacity-20 text-charcoal transition-colors"
-                    title="Move down"
-                  >
-                    <ArrowDown className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+          {links.map((link, idx) => {
+            const hasCustomBg = !!link.bgImage || !!link.bgColor;
+            return (
+              <div
+                key={link.id}
+                className={`p-3.5 sm:p-4 rounded-3xl border transition-all flex items-center justify-between gap-3 relative overflow-hidden ${
+                  hasCustomBg
+                    ? 'border-black/15 shadow-2xs'
+                    : link.isActive ? getStyleClass(link.styleVariant) : 'bg-gray-50/80 border-black/5 opacity-60'
+                }`}
+                style={{
+                  backgroundImage: link.bgImage ? `url(${link.bgImage})` : undefined,
+                  backgroundSize: link.bgImage ? 'cover' : undefined,
+                  backgroundPosition: link.bgImage ? 'center' : undefined,
+                  backgroundColor: link.bgColor || undefined,
+                  color: link.textColor || (link.bgImage ? '#FFFFFF' : undefined),
+                }}
+              >
+                {link.bgImage && (
+                  <div className="absolute inset-0 bg-black/45 backdrop-blur-[0.5px] pointer-events-none z-0" />
+                )}
 
-                <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-xs border border-white/60">
-                  {renderIcon(link.icon)}
-                </div>
-
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs sm:text-sm font-black text-charcoal truncate">
-                      {link.title}
-                    </p>
-                    <span className="text-[10px] font-mono px-2 py-0.2 rounded-full bg-white/80 text-charcoal/70 border border-black/5 shrink-0">
-                      {link.clickCount} clicks
-                    </span>
+                {/* Left: Reorder buttons + Icon + Info */}
+                <div className="flex items-center gap-3 min-w-0 relative z-10">
+                  <div className="flex flex-col gap-0.5 shrink-0">
+                    <button
+                      onClick={() => handleMove(idx, 'up')}
+                      disabled={idx === 0}
+                      className="p-1 rounded-lg hover:bg-white/80 disabled:opacity-20 text-charcoal transition-colors"
+                      title="Move up"
+                    >
+                      <ArrowUp className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleMove(idx, 'down')}
+                      disabled={idx === links.length - 1}
+                      className="p-1 rounded-lg hover:bg-white/80 disabled:opacity-20 text-charcoal transition-colors"
+                      title="Move down"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-                  {link.subtitle && (
-                    <p className="text-[11px] text-charcoal/70 truncate mt-0.5 font-medium">
-                      {link.subtitle}
+
+                  <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-xs border border-white/60">
+                    {renderIcon(link.icon)}
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p 
+                        className="text-xs sm:text-sm font-black truncate"
+                        style={link.textColor ? { color: link.textColor } : (link.bgImage ? { color: '#FFFFFF' } : undefined)}
+                      >
+                        {link.title}
+                      </p>
+                      {link.bgImage && (
+                        <span className="text-[9px] font-mono px-2 py-0.2 rounded-full bg-white/20 text-white border border-white/20 shrink-0">
+                          Custom Art
+                        </span>
+                      )}
+                      <span className="text-[10px] font-mono px-2 py-0.2 rounded-full bg-white/80 text-charcoal/70 border border-black/5 shrink-0">
+                        {link.clickCount} clicks
+                      </span>
+                    </div>
+                    {link.subtitle && (
+                      <p 
+                        className="text-[11px] opacity-80 truncate mt-0.5 font-medium"
+                        style={link.textColor ? { color: link.textColor } : (link.bgImage ? { color: '#FFFFFF' } : undefined)}
+                      >
+                        {link.subtitle}
+                      </p>
+                    )}
+                    <p className="text-[10px] opacity-60 truncate font-mono mt-0.5">
+                      {link.url}
                     </p>
-                  )}
-                  <p className="text-[10px] text-charcoal/50 truncate font-mono mt-0.5">
-                    {link.url}
-                  </p>
+                  </div>
+                </div>
+
+                {/* Right: Actions */}
+                <div className="flex items-center gap-1.5 shrink-0 relative z-10">
+                  <button
+                    onClick={() => handleToggleLinkActive(link.id)}
+                    className={`p-2 rounded-xl transition-colors ${
+                      link.isActive ? 'hover:bg-white/80 text-charcoal' : 'hover:bg-white text-charcoal/40'
+                    }`}
+                    title={link.isActive ? 'Hide block' : 'Show block'}
+                  >
+                    {link.isActive ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  </button>
+
+                  <button
+                    onClick={() => openEditLinkModal(link)}
+                    className="px-3 py-1.5 rounded-xl bg-white/90 hover:bg-white text-charcoal text-xs font-bold border border-black/5 shadow-xs transition-colors cursor-pointer"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => handleDeleteLink(link.id)}
+                    className="p-2 rounded-xl hover:bg-rose-100 text-charcoal/60 hover:text-rose-600 transition-colors cursor-pointer"
+                    title="Delete block"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-
-              {/* Right: Actions */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  onClick={() => handleToggleLinkActive(link.id)}
-                  className={`p-2 rounded-xl transition-colors ${
-                    link.isActive ? 'hover:bg-white/80 text-charcoal' : 'hover:bg-white text-charcoal/40'
-                  }`}
-                  title={link.isActive ? 'Hide block' : 'Show block'}
-                >
-                  {link.isActive ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                </button>
-
-                <button
-                  onClick={() => openEditLinkModal(link)}
-                  className="px-3 py-1.5 rounded-xl bg-white/90 hover:bg-white text-charcoal text-xs font-bold border border-black/5 shadow-xs transition-colors"
-                >
-                  Edit
-                </button>
-
-                <button
-                  onClick={() => handleDeleteLink(link.id)}
-                  className="p-2 rounded-xl hover:bg-rose-100 text-charcoal/60 hover:text-rose-600 transition-colors"
-                  title="Delete block"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* Add / Edit Block Modal */}
       {isAddingLink && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-4xl p-6 w-full max-w-md shadow-2xl border border-black/10">
+          <div className="bg-white rounded-4xl p-6 w-full max-w-md shadow-2xl border border-black/10 max-h-[90vh] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between pb-3 border-b border-black/5 mb-4">
               <h3 className="text-base font-black text-charcoal">
                 {editingLinkId ? 'Edit Block' : 'Add Link Block'}
@@ -691,10 +762,45 @@ export default function EditProfileSection({
                   setIsAddingLink(false);
                   setEditingLinkId(null);
                 }}
-                className="p-1.5 rounded-xl hover:bg-black/5 text-charcoal/60 hover:text-charcoal"
+                className="p-1.5 rounded-xl hover:bg-black/5 text-charcoal/60 hover:text-charcoal cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
+            </div>
+
+            {/* Live Mini Preview of Link Card */}
+            <div className="mb-4">
+              <p className="text-[10px] font-black uppercase tracking-wider text-charcoal/50 mb-1.5">
+                Live Card Preview
+              </p>
+              <div
+                className="p-3.5 rounded-2xl border border-black/10 shadow-2xs relative overflow-hidden flex items-center justify-between"
+                style={{
+                  backgroundImage: linkBgImage ? `url(${linkBgImage})` : undefined,
+                  backgroundSize: linkBgImage ? 'cover' : undefined,
+                  backgroundPosition: linkBgImage ? 'center' : undefined,
+                  backgroundColor: linkBgColor || (linkStyle === 'sky' ? '#4F83FF' : linkStyle === 'yellow' ? '#FDF166' : linkStyle === 'mint' ? '#B6F554' : linkStyle === 'peach' ? '#EFF4FF' : '#FFFFFF'),
+                  color: linkTextColor,
+                }}
+              >
+                {linkBgImage && (
+                  <div className="absolute inset-0 bg-black/45 backdrop-blur-[0.5px] pointer-events-none z-0" />
+                )}
+                <div className="flex items-center gap-3 min-w-0 relative z-10">
+                  <div className="w-8 h-8 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center shrink-0 shadow-2xs text-charcoal">
+                    {renderIcon(linkIcon)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-black truncate leading-tight" style={{ color: linkTextColor }}>
+                      {linkTitle || 'Your Link Title'}
+                    </p>
+                    <p className="text-[10px] opacity-80 truncate mt-0.5 font-medium" style={{ color: linkTextColor }}>
+                      {linkSubtitle || 'Subtitle or description preview'}
+                    </p>
+                  </div>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-80 relative z-10" style={{ color: linkTextColor }} />
+              </div>
             </div>
 
             <div className="space-y-3.5">
@@ -737,9 +843,100 @@ export default function EditProfileSection({
                 />
               </div>
 
+              {/* Custom Uploaded Link Background Image */}
+              <div className="p-3.5 rounded-2xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-2.5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-[11px] font-black text-charcoal uppercase tracking-wider block">
+                      Custom Link Background
+                    </label>
+                    <p className="text-[10px] text-charcoal/60">
+                      Upload any image or artwork to display behind this block
+                    </p>
+                  </div>
+                  {linkBgImage && (
+                    <button
+                      type="button"
+                      onClick={() => setLinkBgImage('')}
+                      className="px-2 py-0.5 rounded-lg bg-rose-50 text-rose-600 text-[10px] font-bold border border-rose-200 cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  ref={linkFileInputRef}
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleLinkImageUpload}
+                />
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => linkFileInputRef.current?.click()}
+                    className="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-50 border border-black/10 text-xs font-bold text-charcoal flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-[#4F83FF]" />
+                    <span>Upload Image (PNG/JPG)</span>
+                  </button>
+                </div>
+
+                {/* Quick Artwork Background Presets */}
+                <div className="grid grid-cols-3 gap-1 pt-1">
+                  {[
+                    { name: 'Pop Art', url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=500&auto=format&fit=crop&q=80' },
+                    { name: 'Neon Grid', url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500&auto=format&fit=crop&q=80' },
+                    { name: 'Dark Marble', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop&q=80' },
+                  ].map((p) => (
+                    <button
+                      key={p.name}
+                      type="button"
+                      onClick={() => {
+                        setLinkBgImage(p.url);
+                        setLinkTextColor('#FFFFFF');
+                      }}
+                      className="p-1 rounded-lg border border-black/10 bg-white hover:bg-gray-50 text-[10px] font-bold text-charcoal truncate shadow-2xs flex items-center gap-1 cursor-pointer"
+                    >
+                      <span className="w-3.5 h-3.5 rounded-xs bg-cover bg-center shrink-0" style={{ backgroundImage: `url(${p.url})` }} />
+                      <span className="truncate">{p.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Text Contrast Color */}
               <div>
                 <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1.5">
-                  Color Theme Block
+                  Link Text Color
+                </label>
+                <div className="flex items-center gap-2">
+                  {[
+                    { label: 'Dark Text', hex: '#141518', bg: 'bg-[#141518] text-white' },
+                    { label: 'White Text', hex: '#FFFFFF', bg: 'bg-white text-charcoal border border-black/20' },
+                    { label: 'Gold Text', hex: '#FACC15', bg: 'bg-[#FACC15] text-black' },
+                    { label: 'Electric Blue', hex: '#4F83FF', bg: 'bg-[#4F83FF] text-white' },
+                  ].map((c) => (
+                    <button
+                      key={c.hex}
+                      type="button"
+                      onClick={() => setLinkTextColor(c.hex)}
+                      className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${c.bg} ${
+                        linkTextColor === c.hex ? 'ring-2 ring-charcoal scale-105 shadow-xs' : 'opacity-80'
+                      }`}
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Color Theme Block Fallback */}
+              <div>
+                <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1.5">
+                  Color Theme Palette
                 </label>
                 <div className="grid grid-cols-5 gap-2">
                   {[
@@ -752,8 +949,13 @@ export default function EditProfileSection({
                     <button
                       key={v.id}
                       type="button"
-                      onClick={() => setLinkStyle(v.id)}
-                      className={`h-9 rounded-xl border border-black/10 flex items-center justify-center transition-all ${v.bg} ${
+                      onClick={() => {
+                        setLinkStyle(v.id);
+                        if (!linkBgImage) {
+                          setLinkTextColor(v.id === 'sky' ? '#FFFFFF' : '#141518');
+                        }
+                      }}
+                      className={`h-9 rounded-xl border border-black/10 flex items-center justify-center transition-all cursor-pointer ${v.bg} ${
                         linkStyle === v.id ? 'ring-2 ring-charcoal scale-105 shadow-xs' : 'opacity-80 hover:opacity-100'
                       }`}
                       title={v.name}
@@ -773,14 +975,14 @@ export default function EditProfileSection({
                     setIsAddingLink(false);
                     setEditingLinkId(null);
                   }}
-                  className="flex-1 py-2.5 rounded-2xl border border-black/10 text-xs font-bold text-charcoal/70 hover:bg-black/5"
+                  className="flex-1 py-2.5 rounded-2xl border border-black/10 text-xs font-bold text-charcoal/70 hover:bg-black/5 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveLink}
-                  className="flex-1 py-2.5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-xs transition-transform active:scale-95"
+                  className="flex-1 py-2.5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-xs transition-transform active:scale-95 cursor-pointer"
                 >
                   {editingLinkId ? 'Save Changes' : 'Create Block'}
                 </button>

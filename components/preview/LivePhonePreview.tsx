@@ -158,15 +158,20 @@ export default function LivePhonePreview({
             </div>
           )}
 
-          {/* Optional Expressive Header Pattern Banner */}
-          {profile.showHeaderBackground && patternClass && (
-            <div className={`w-full h-24 shrink-0 relative ${patternClass} border-b border-black/10`} />
+          {/* Optional Expressive Header Pattern or Custom Uploaded Banner */}
+          {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
+            <div 
+              className={`w-full h-24 shrink-0 relative border-b border-black/10 overflow-hidden ${
+                profile.customHeaderImage ? 'bg-cover bg-center' : patternClass
+              }`}
+              style={profile.customHeaderImage ? { backgroundImage: `url(${profile.customHeaderImage})` } : undefined}
+            />
           )}
 
           {/* Scrollable Phone Bio Page Content */}
           <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-1 pb-6 flex flex-col items-center">
             {/* Circular Avatar with Clean Border */}
-            <div className={`relative ${profile.showHeaderBackground && patternClass ? '-mt-12' : 'mt-2'}`}>
+            <div className={`relative ${profile.showHeaderBackground && (profile.customHeaderImage || patternClass) ? '-mt-12' : 'mt-2'}`}>
               <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-white shadow-soft bg-white">
                 <img
                   src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
@@ -311,28 +316,50 @@ export default function LivePhonePreview({
                     link.styleVariant,
                     profile.linkCardStyle
                   );
+                  const hasCustomBg = !!link.bgImage || !!link.bgColor;
                   return (
                     <div
                       key={link.id}
                       onClick={() => handleLinkClick(link)}
-                      className={`p-3 transition-all cursor-pointer flex items-center justify-between ${cardClasses}`}
+                      className={`p-3 transition-all cursor-pointer flex items-center justify-between relative overflow-hidden ${
+                        hasCustomBg ? 'rounded-2xl border border-black/10 shadow-2xs' : cardClasses
+                      }`}
+                      style={{
+                        backgroundImage: link.bgImage ? `url(${link.bgImage})` : undefined,
+                        backgroundSize: link.bgImage ? 'cover' : undefined,
+                        backgroundPosition: link.bgImage ? 'center' : undefined,
+                        backgroundColor: link.bgColor || undefined,
+                        color: link.textColor || (link.bgImage ? '#FFFFFF' : undefined),
+                      }}
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-8 h-8 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center shrink-0 shadow-2xs">
+                      {link.bgImage && (
+                        <div className="absolute inset-0 bg-black/45 backdrop-blur-[0.5px] pointer-events-none z-0" />
+                      )}
+                      <div className="flex items-center gap-2.5 min-w-0 relative z-10">
+                        <div className="w-8 h-8 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center shrink-0 shadow-2xs text-charcoal">
                           {renderIcon(link.icon)}
                         </div>
                         <div className="text-left min-w-0">
-                          <p className={`${bodySizeClass} font-black truncate leading-tight ${fontFamilyClass}`}>
+                          <p 
+                            className={`${bodySizeClass} font-black truncate leading-tight ${fontFamilyClass}`}
+                            style={link.textColor ? { color: link.textColor } : (link.bgImage ? { color: '#FFFFFF' } : undefined)}
+                          >
                             {link.title}
                           </p>
                           {link.subtitle && (
-                            <p className="text-[10px] opacity-75 truncate mt-0.5 font-medium">
+                            <p 
+                              className="text-[10px] opacity-80 truncate mt-0.5 font-medium"
+                              style={link.textColor ? { color: link.textColor } : (link.bgImage ? { color: '#FFFFFF' } : undefined)}
+                            >
                               {link.subtitle}
                             </p>
                           )}
                         </div>
                       </div>
-                      <ArrowUpRight className="w-4 h-4 opacity-75 shrink-0 ml-1 stroke-[2.2]" />
+                      <ArrowUpRight 
+                        className="w-4 h-4 opacity-75 shrink-0 ml-1 stroke-[2.2] relative z-10" 
+                        style={link.textColor ? { color: link.textColor } : (link.bgImage ? { color: '#FFFFFF' } : undefined)}
+                      />
                     </div>
                   );
                 })

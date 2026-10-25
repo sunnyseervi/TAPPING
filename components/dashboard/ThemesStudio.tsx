@@ -19,7 +19,9 @@ import {
   Layers, 
   Sun,
   Zap,
-  Flame
+  Flame,
+  Upload,
+  Trash2
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { THEMES } from '@/lib/themes';
@@ -32,6 +34,30 @@ interface ThemesStudioProps {
 export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioProps) {
   const { showToast } = useToast();
   const [activeStudioTab, setActiveStudioTab] = useState<'themes' | 'typography' | 'cards' | 'background'>('themes');
+  const bannerInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Invalid File', 'Please select a PNG, JPG, or SVG image file', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      const updated: Profile = {
+        ...profile,
+        customHeaderImage: dataUrl,
+        showHeaderBackground: true,
+      };
+      onUpdateProfile(updated);
+      showToast('Custom Header Banner Uploaded', 'Applied directly to your profile header', 'success');
+    };
+    reader.readAsDataURL(file);
+  };
 
   const themeList = Object.values(THEMES);
 
@@ -454,7 +480,7 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
             <div>
               <p className="text-xs font-black text-charcoal">Header Background Banner</p>
               <p className="text-[11px] text-charcoal/60 font-medium">
-                Add an expressive comic sunburst, retro grid or doodle art behind your profile avatar & header
+                Add an expressive comic sunburst, retro grid, doodle art or custom photo behind your avatar
               </p>
             </div>
 
@@ -468,6 +494,57 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
             >
               {profile.showHeaderBackground ? 'Active / Shown' : 'Disabled / Hidden'}
             </button>
+          </div>
+
+          {/* Custom Uploaded Header Banner */}
+          <div className="p-5 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-black text-charcoal">Upload Custom Banner Image</p>
+                <p className="text-[11px] text-charcoal/60 font-medium">
+                  Upload your own photography, anime, branded banner, or illustration
+                </p>
+              </div>
+
+              {profile.customHeaderImage && (
+                <button
+                  onClick={() => {
+                    onUpdateProfile({ ...profile, customHeaderImage: undefined });
+                    showToast('Custom Banner Removed', 'Switched back to preset pattern', 'info');
+                  }}
+                  className="px-2.5 py-1 rounded-xl bg-rose-50 text-rose-600 text-[10px] font-bold border border-rose-200 cursor-pointer flex items-center gap-1"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  <span>Remove Custom</span>
+                </button>
+              )}
+            </div>
+
+            <input
+              type="file"
+              ref={bannerInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={handleBannerUpload}
+            />
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => bannerInputRef.current?.click()}
+                className="py-2.5 px-4 rounded-2xl bg-white hover:bg-gray-50 border border-black/10 text-xs font-black text-charcoal flex items-center justify-center gap-2 shadow-2xs cursor-pointer transition-colors"
+              >
+                <Upload className="w-4 h-4 text-[#4F83FF]" />
+                <span>Upload Banner from Device (PNG/JPG)</span>
+              </button>
+            </div>
+
+            {profile.customHeaderImage && (
+              <div 
+                className="w-full h-24 rounded-2xl border border-black/10 bg-cover bg-center shadow-xs"
+                style={{ backgroundImage: `url(${profile.customHeaderImage})` }}
+              />
+            )}
           </div>
 
           {/* Pattern Library */}

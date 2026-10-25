@@ -193,18 +193,23 @@ export default function PublicProfilePage() {
       {/* MAIN PROFILE CARD: USER IDENTITY & CONTACT DATA */}
       <main className={`w-full max-w-xl mx-auto ${currentTheme.containerBg} rounded-[36px] sm:rounded-[44px] shadow-card border border-black/5 flex flex-col overflow-hidden text-center transition-all`}>
         
-        {/* Optional Header Background Pattern Banner */}
-        {profile.showHeaderBackground && patternClass && (
-          <div className={`w-full h-32 sm:h-44 shrink-0 relative ${patternClass} border-b border-black/10`} />
+        {/* Optional Header Background Pattern or Custom Uploaded Banner */}
+        {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
+          <div 
+            className={`w-full h-32 sm:h-44 shrink-0 relative border-b border-black/10 overflow-hidden ${
+              profile.customHeaderImage ? 'bg-cover bg-center' : patternClass
+            }`}
+            style={profile.customHeaderImage ? { backgroundImage: `url(${profile.customHeaderImage})` } : undefined}
+          />
         )}
 
         {/* Card Body */}
-        <div className={`p-6 sm:p-8 flex flex-col gap-6 ${profile.showHeaderBackground && patternClass ? 'pt-0' : ''}`}>
+        <div className={`p-6 sm:p-8 flex flex-col gap-6 ${profile.showHeaderBackground && (profile.customHeaderImage || patternClass) ? 'pt-0' : ''}`}>
           {/* 1. USER IDENTITY (Avatar, Name, Handle, Title, Location, Bio) */}
           <div className="flex flex-col items-center">
             {/* Avatar with Crisp White Ring & Shadow */}
             <div className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden ring-4 ring-white border-2 border-white shadow-soft bg-white relative ${
-              profile.showHeaderBackground && patternClass ? '-mt-12 sm:-mt-14 z-10' : 'mt-1'
+              profile.showHeaderBackground && (profile.customHeaderImage || patternClass) ? '-mt-12 sm:-mt-14 z-10' : 'mt-1'
             }`}>
               <img
                 src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
@@ -462,30 +467,50 @@ export default function PublicProfilePage() {
                   link.styleVariant,
                   profile.linkCardStyle
                 );
+                const hasCustomBg = !!link.bgImage || !!link.bgColor;
                 return (
                   <div
                     key={link.id}
                     onClick={() => handleLinkClick(link)}
-                    className={`w-full p-4 transition-all cursor-pointer flex items-center justify-between group ${cardClasses}`}
+                    className={`w-full p-4 transition-all cursor-pointer flex items-center justify-between group relative overflow-hidden ${
+                      hasCustomBg ? 'rounded-2xl border border-black/10 shadow-2xs' : cardClasses
+                    }`}
+                    style={{
+                      backgroundImage: link.bgImage ? `url(${link.bgImage})` : undefined,
+                      backgroundSize: link.bgImage ? 'cover' : undefined,
+                      backgroundPosition: link.bgImage ? 'center' : undefined,
+                      backgroundColor: link.bgColor || undefined,
+                      color: link.textColor || (link.bgImage ? '#FFFFFF' : undefined),
+                    }}
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="w-9 h-9 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center shrink-0 shadow-2xs">
+                    {link.bgImage && (
+                      <div className="absolute inset-0 bg-black/45 backdrop-blur-[0.5px] pointer-events-none z-0" />
+                    )}
+
+                    <div className="flex items-center gap-3.5 min-w-0 relative z-10">
+                      <div className="w-9 h-9 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center shrink-0 shadow-2xs text-charcoal">
                         {renderIcon(link.icon)}
                       </div>
                       <div className="min-w-0">
-                        <p className={`text-xs sm:text-sm font-black truncate leading-tight ${fontFamilyClass}`}>
+                        <p 
+                          className={`text-xs sm:text-sm font-black truncate leading-tight ${fontFamilyClass}`}
+                          style={link.textColor ? { color: link.textColor } : (link.bgImage ? { color: '#FFFFFF' } : undefined)}
+                        >
                           {link.title}
                         </p>
                         {link.subtitle && (
-                          <p className="text-[11px] opacity-70 truncate font-semibold mt-0.5">
+                          <p 
+                            className="text-[11px] opacity-80 truncate font-semibold mt-0.5"
+                            style={link.textColor ? { color: link.textColor } : (link.bgImage ? { color: '#FFFFFF' } : undefined)}
+                          >
                             {link.subtitle}
                           </p>
                         )}
                       </div>
                     </div>
 
-                    <div className="w-7 h-7 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-[#141518] group-hover:text-white transition-all shrink-0 ml-2">
-                      <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <div className="w-7 h-7 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-[#141518] group-hover:text-white transition-all shrink-0 ml-2 relative z-10">
+                      <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" style={link.textColor ? { color: link.textColor } : (link.bgImage ? { color: '#FFFFFF' } : undefined)} />
                     </div>
                   </div>
                 );
