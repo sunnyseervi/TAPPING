@@ -55,7 +55,7 @@ function DashboardContent() {
   const [store, setStore] = useState<StoreConfig>(initialStore);
 
   const [activeTab, setActiveTab] = useState<string>('dashboard');
-  const [editSectionTab, setEditSectionTab] = useState<'profile' | 'links' | 'themes'>('profile');
+  const [editSectionTab, setEditSectionTab] = useState<'profile' | 'links' | 'products' | 'themes'>('profile');
   const [profileViewMode, setProfileViewMode] = useState<'form' | 'preview'>('form');
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
@@ -368,6 +368,8 @@ function DashboardContent() {
                     profile={profile}
                     vcard={vcard}
                     links={links}
+                    store={store}
+                    onUpdateStore={handleUpdateStore}
                     onUpdateProfile={handleUpdateProfile}
                     onUpdateVCard={handleUpdateVCard}
                     onUpdateLinks={handleUpdateLinks}
@@ -386,6 +388,7 @@ function DashboardContent() {
                     vcard={vcard}
                     links={links}
                     nfcCard={nfcCard}
+                    store={store}
                   />
                 </div>
               </div>

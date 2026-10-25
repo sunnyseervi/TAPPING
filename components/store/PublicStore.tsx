@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Heart, Minus, Plus, ShoppingBag, Tag, Trash2, X } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, ExternalLink, Minus, Plus, ShoppingBag, Tag, Trash2, X } from 'lucide-react';
 import { StoreConfig, StoreProduct } from '@/lib/types';
 import { useToast } from '@/components/ui/Toast';
 import { getStoredStore, saveStoredStore } from '@/lib/storage';
@@ -31,6 +31,13 @@ export default function PublicStore({ store, sellerName, dark }: PublicStoreProp
   const [customerAddress, setCustomerAddress] = useState('');
   const [customerNote, setCustomerNote] = useState('');
   const visitRecorded = useRef(false);
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  const scrollProducts = (dir: 'left' | 'right') => {
+    if (!sliderRef.current) return;
+    const offset = dir === 'left' ? -280 : 280;
+    sliderRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+  };
 
   const products = store.products.filter((product) => product.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
   const itemCount = cart.reduce((sum, line) => sum + line.quantity, 0);
@@ -132,46 +139,142 @@ export default function PublicStore({ store, sellerName, dark }: PublicStoreProp
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        {products.map((product, index) => (
-          <article key={product.id} className={`group overflow-hidden rounded-[2rem] border shadow-[0_16px_50px_rgba(68,45,34,0.08)] transition-all hover:-translate-y-1 hover:shadow-[0_22px_60px_rgba(68,45,34,0.14)] ${panelClass}`}>
-            <div className={`relative aspect-[16/9] sm:aspect-[4/3] w-full overflow-hidden ${dark ? 'bg-white/10' : 'bg-[#EAE1D5]'}`}>
-              {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" /> : <div className="h-full w-full bg-[#E3DFF8]" />}
-              <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-charcoal shadow-sm backdrop-blur">{index === 0 ? 'Studio favourite' : 'Small batch'}</span>
-            </div>
-            <div className="p-4 sm:p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-sm font-black leading-tight sm:text-base">{product.name}</h3>
-                  {product.description && <p className={`mt-1.5 text-xs font-semibold leading-relaxed line-clamp-2 ${dark ? 'text-white/60' : 'text-charcoal/50'}`}>{product.description}</p>}
-                </div>
-                <span className="shrink-0 text-sm font-black">{formatPrice(product.price)}</span>
-              </div>
-              <div className="mt-2 flex items-baseline gap-2">
-                {product.compareAtPrice && product.compareAtPrice > product.price && <span className={`text-[11px] font-bold line-through ${dark ? 'text-white/40' : 'text-charcoal/35'}`}>{formatPrice(product.compareAtPrice)}</span>}
-              </div>
-              {product.variants.length > 0 && (
-                <select
-                  value={selectedVariants[product.id] || product.variants[0]}
-                  onChange={(event) => setSelectedVariants((current) => ({ ...current, [product.id]: event.target.value }))}
-                  className={`mt-3 w-full rounded-2xl border px-3.5 py-2.5 text-xs font-bold outline-none ${dark ? 'border-white/15 bg-white/10 text-white' : 'border-[#D9CFC2] bg-[#FAF7F2] text-charcoal'}`}
-                >
-                  {product.variants.map((variant) => <option key={variant} value={variant}>{variant}</option>)}
-                </select>
-              )}
-              <button 
-                onClick={() => addToCart(product)} 
-                className="mt-3.5 flex w-full items-center justify-between rounded-2xl bg-[#A6462D] px-4 py-3 text-xs font-black text-white transition-all hover:bg-[#873721] active:scale-98 cursor-pointer shadow-sm"
+      <div className="relative w-full">
+        {products.length > 1 && (
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className={`text-[10px] font-bold ${dark ? 'text-white/60' : 'text-charcoal/60'}`}>
+              {products.length} {products.length === 1 ? 'item' : 'items'} &bull; Slide to view
+            </span>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => scrollProducts('left')}
+                className={`w-7 h-7 rounded-full border flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${
+                  dark ? 'bg-white/10 hover:bg-white/20 text-white border-white/15' : 'bg-white hover:bg-black/5 text-charcoal border-black/10'
+                }`}
+                aria-label="Previous product"
               >
-                <span className="flex items-center gap-1.5">
-                  <ShoppingBag className="h-3.5 w-3.5" />
-                  <span>Add to Bag</span>
-                </span>
-                <ArrowRight className="h-4 w-4" />
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollProducts('right')}
+                className={`w-7 h-7 rounded-full border flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${
+                  dark ? 'bg-white/10 hover:bg-white/20 text-white border-white/15' : 'bg-white hover:bg-black/5 text-charcoal border-black/10'
+                }`}
+                aria-label="Next product"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
-          </article>
-        ))}
+          </div>
+        )}
+
+        <div
+          ref={sliderRef}
+          className="flex overflow-x-auto snap-x snap-mandatory gap-3.5 pb-2.5 px-0.5 no-scrollbar scroll-smooth"
+          style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+        >
+          {products.map((product, index) => (
+            <article
+              key={product.id}
+              className={`w-[250px] sm:w-[270px] shrink-0 snap-start rounded-[2rem] border overflow-hidden shadow-[0_12px_40px_rgba(68,45,34,0.08)] transition-all flex flex-col justify-between ${panelClass}`}
+            >
+              <div className={`relative aspect-[4/3] w-full overflow-hidden ${dark ? 'bg-white/10' : 'bg-[#EAE1D5]'}`}>
+                {product.imageUrl ? (
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-[#E3DFF8] flex items-center justify-center text-xs font-bold text-charcoal/40">
+                    No Preview
+                  </div>
+                )}
+                <span className="absolute left-3 top-3 rounded-full bg-white/90 dark:bg-black/80 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-charcoal dark:text-white shadow-2xs backdrop-blur-md">
+                  {index === 0 ? 'Featured' : 'Store'}
+                </span>
+                {product.linkUrl && (
+                  <a
+                    href={product.linkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute right-3 top-3 p-1.5 rounded-full bg-white/90 dark:bg-black/80 text-charcoal dark:text-white shadow-2xs hover:scale-110 transition-transform backdrop-blur-md"
+                    title="Open product link"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
+              </div>
+
+              <div className="p-3.5 sm:p-4 flex flex-col flex-1 justify-between gap-2.5">
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-xs sm:text-sm font-black leading-tight line-clamp-1">{product.name}</h3>
+                    <span className="shrink-0 text-xs sm:text-sm font-black text-[#A6462D]">{formatPrice(product.price)}</span>
+                  </div>
+                  {product.compareAtPrice && product.compareAtPrice > product.price && (
+                    <span className={`text-[10px] font-bold line-through ${dark ? 'text-white/40' : 'text-charcoal/35'}`}>
+                      {formatPrice(product.compareAtPrice)}
+                    </span>
+                  )}
+                  {product.description && (
+                    <p className={`mt-1 text-[11px] font-medium leading-snug line-clamp-2 ${dark ? 'text-white/60' : 'text-charcoal/50'}`}>
+                      {product.description}
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-black/5 dark:border-white/10 flex flex-col gap-2">
+                  {product.variants.length > 0 && (
+                    <select
+                      value={selectedVariants[product.id] || product.variants[0]}
+                      onChange={(event) => setSelectedVariants((current) => ({ ...current, [product.id]: event.target.value }))}
+                      className={`w-full rounded-xl border px-2.5 py-1.5 text-[11px] font-bold outline-none ${
+                        dark ? 'border-white/15 bg-white/10 text-white' : 'border-[#D9CFC2] bg-[#FAF7F2] text-charcoal'
+                      }`}
+                    >
+                      {product.variants.map((variant) => (
+                        <option key={variant} value={variant} className="text-charcoal bg-white">
+                          {variant}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
+                  <div className="flex items-center gap-1.5">
+                    <button 
+                      type="button"
+                      onClick={() => addToCart(product)} 
+                      className="flex-1 flex items-center justify-between rounded-xl bg-[#A6462D] hover:bg-[#873721] px-3.5 py-2.5 text-xs font-black text-white transition-all active:scale-98 cursor-pointer shadow-xs"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <ShoppingBag className="h-3.5 w-3.5" />
+                        <span>Add to Bag</span>
+                      </span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+                    {product.linkUrl && (
+                      <a
+                        href={product.linkUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`p-2.5 rounded-xl border transition-colors ${
+                          dark ? 'border-white/15 hover:bg-white/10 text-white' : 'border-black/10 hover:bg-black/5 text-charcoal'
+                        }`}
+                        title="View product URL"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
 
       {cartOpen && (

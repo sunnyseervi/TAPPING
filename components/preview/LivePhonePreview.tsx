@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Profile, VCardProfile, LinkBlock, NFCCardDesign } from '@/lib/types';
+import { Profile, VCardProfile, LinkBlock, NFCCardDesign, StoreConfig } from '@/lib/types';
 import { 
   Download, 
   Globe, 
@@ -15,7 +15,8 @@ import {
   MapPin,
   ArrowUpRight,
   Wifi,
-  CreditCard
+  CreditCard,
+  ShoppingBag
 } from 'lucide-react';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 import { downloadVCardFile } from '@/lib/vcard';
@@ -28,6 +29,7 @@ interface LivePreviewProps {
   vcard: VCardProfile;
   links: LinkBlock[];
   nfcCard?: NFCCardDesign;
+  store?: StoreConfig;
   onLinkClick?: (linkId: string) => void;
 }
 
@@ -36,6 +38,7 @@ export default function LivePhonePreview({
   vcard,
   links,
   nfcCard,
+  store,
   onLinkClick,
 }: LivePreviewProps) {
   const { showToast } = useToast();
@@ -151,7 +154,13 @@ export default function LivePhonePreview({
         {/* Inner Phone Screen */}
         <div 
           className={`w-full h-full rounded-[38px] overflow-hidden flex flex-col relative transition-colors duration-200 ${currentTheme.canvasBg}`}
-          style={{ backgroundColor: currentTheme.canvasBgHex || currentTheme.previewColors[0] || '#FAF7F2' }}
+          style={{ 
+            backgroundColor: profile.customBgColor || currentTheme.canvasBgHex || currentTheme.previewColors[0] || '#FAF7F2',
+            backgroundImage: profile.pageBgImage ? `url(${profile.pageBgImage})` : undefined,
+            backgroundSize: profile.pageBgImage ? 'cover' : undefined,
+            backgroundPosition: 'center',
+            ...getFontFamilyStyle(profile.fontFamily)
+          }}
         >
           {/* Authentic Dynamic Island & Status Bar */}
           <div className={`w-full pt-3 px-6 pb-2 flex items-center justify-between backdrop-blur-xs z-20 shrink-0 ${isDarkTheme(profile.theme) ? 'bg-white/5 text-white' : 'bg-black/5 text-charcoal'}`}>
@@ -188,7 +197,7 @@ export default function LivePhonePreview({
           )}
 
           {/* Full-Screen Bio Page Theme Pattern or Custom Uploaded Wallpaper */}
-          {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
+          {(Boolean(profile.customHeaderImage) || (profile.showHeaderBackground && patternClass)) && (
             <div 
               className={`absolute inset-0 z-0 pointer-events-none transition-all overflow-hidden ${
                 profile.customHeaderImage ? '' : patternClass
@@ -252,29 +261,43 @@ export default function LivePhonePreview({
                 @{profile.username}
               </p>
 
-            {/* Work & Organization Badge */}
+            {/* Work & Organization Badge (Frosted Blurry Glass) */}
             {(profile.badgeTitle || vcard.organization) && (
-              <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${currentTheme.badgeBg} ${currentTheme.badgeBorder} ${currentTheme.badgeText} shadow-2xs mt-1.5 flex items-center gap-1`}>
-                <span>{profile.badgeTitle || vcard.jobTitle}</span>
-                {vcard.organization && <span>&bull; {vcard.organization}</span>}
-              </span>
-            )}
-
-            {/* Address / Location */}
-            {(vcard.city || vcard.country) && (
-              <div className="flex items-center gap-1 mt-1 text-[9px] font-bold opacity-60">
-                <MapPin className="w-2.5 h-2.5 text-rose-500" />
-                <span>{[vcard.city, vcard.country].filter(Boolean).join(', ')}</span>
+              <div className="mt-1.5 flex items-center justify-center">
+                <span className={`text-[10px] font-black px-3 py-1 rounded-full ${
+                  contentIsDark 
+                    ? 'bg-black/40 text-white border border-white/20' 
+                    : 'bg-white/80 text-charcoal border border-black/10'
+                } backdrop-blur-md shadow-2xs flex items-center gap-1`}>
+                  <span>{profile.badgeTitle || vcard.jobTitle}</span>
+                  {vcard.organization && <span>&bull; {vcard.organization}</span>}
+                </span>
               </div>
             )}
 
+            {/* Address / Location (Frosted Blurry Glass Pill) */}
+            {(vcard.city || vcard.country) && (
+              <div className="mt-1 flex items-center justify-center">
+                <div className={`px-2.5 py-0.5 rounded-full backdrop-blur-md shadow-2xs flex items-center gap-1 text-[9px] font-bold border ${
+                  contentIsDark 
+                    ? 'bg-black/35 text-white/90 border-white/15' 
+                    : 'bg-white/75 text-charcoal/80 border-black/10'
+                }`}>
+                  <MapPin className="w-2.5 h-2.5 text-rose-500" />
+                  <span>{[vcard.city, vcard.country].filter(Boolean).join(', ')}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Bio Description (Frosted Blurry Glass Capsule) */}
             {profile.bio && (
-              <p 
-                className={`${bodySizeClass} opacity-80 text-center mt-2 max-w-[250px] leading-relaxed font-medium`}
-                style={{ color: currentTheme.textBodyHex || (isDarkTheme(profile.theme) ? '#CBD5E1' : '#4A4B50') }}
-              >
+              <div className={`mt-2 max-w-[270px] px-3 py-1.5 rounded-xl backdrop-blur-md border shadow-2xs text-center leading-relaxed font-medium ${bodySizeClass} ${
+                contentIsDark 
+                  ? 'bg-black/30 text-white/95 border-white/15' 
+                  : 'bg-white/75 text-charcoal/85 border-white/60'
+              }`}>
                 {profile.bio}
-              </p>
+              </div>
             )}
 
             {/* Save Contact Card CTA Button */}
@@ -427,6 +450,56 @@ export default function LivePhonePreview({
                 })
               )}
             </div>
+
+            {/* Creator Products & Store (Slidable Carousel) */}
+            {store?.enabled && store.products.some((p) => p.isActive) && (
+              <div className="w-full mt-2 pt-3 border-t border-black/10 flex flex-col gap-2 text-left">
+                <div className="flex items-center justify-between px-0.5">
+                  <span className={`text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${contentIsDark ? 'text-white/70' : 'text-[#A6462D]'}`}>
+                    <ShoppingBag className="w-3 h-3" />
+                    <span>Store Products</span>
+                  </span>
+                  <span className="text-[9px] font-bold opacity-60">
+                    {store.products.filter(p => p.isActive).length} items &bull; Slidable
+                  </span>
+                </div>
+
+                <div 
+                  className="flex overflow-x-auto snap-x snap-mandatory gap-2.5 pb-2 px-0.5 no-scrollbar scroll-smooth"
+                  style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+                >
+                  {store.products.filter(p => p.isActive).map((product) => (
+                    <div
+                      key={product.id}
+                      className={`w-[170px] shrink-0 snap-start rounded-2xl border p-2.5 flex flex-col justify-between shadow-2xs ${
+                        contentIsDark ? 'bg-black/40 border-white/15 text-white' : 'bg-white/90 border-black/10 text-charcoal'
+                      } backdrop-blur-md`}
+                    >
+                      <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-black/5 mb-2">
+                        {product.imageUrl ? (
+                          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-[#E3DFF8] flex items-center justify-center text-[9px] font-bold text-charcoal/40">Item</div>
+                        )}
+                        <span className="absolute left-1.5 top-1.5 rounded-full bg-white/90 dark:bg-black/80 px-1.5 py-0.5 text-[8px] font-black uppercase text-charcoal dark:text-white">
+                          ₹{product.price}
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-black truncate leading-tight">{product.name}</p>
+                      {product.description && (
+                        <p className="text-[9px] opacity-70 truncate mt-0.5">{product.description}</p>
+                      )}
+                      <div className="mt-2 flex items-center justify-between pt-1.5 border-t border-black/5 dark:border-white/10">
+                        <span className="text-[9px] font-bold text-[#A6462D]">Buy &bull; ₹{product.price}</span>
+                        {product.linkUrl && (
+                          <span className="text-[9px] font-mono opacity-60">↗</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Bottom Home Indicator Bar */}

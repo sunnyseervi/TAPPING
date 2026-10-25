@@ -286,7 +286,7 @@ export default function PublicProfilePage() {
         }}
       >
         {/* Full Bio Canvas Theme Pattern or Custom Uploaded Wallpaper (FIXED IN PLACE — NEVER STRETCHES) */}
-        {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
+        {(Boolean(profile.customHeaderImage) || (profile.showHeaderBackground && patternClass)) && (
           <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
             {profile.customHeaderImage ? (
               <div
@@ -386,11 +386,15 @@ export default function PublicProfilePage() {
           @{profile.username}
         </p>
 
-        {/* Professional Work / Title / Company Badge */}
+        {/* Professional Work / Title / Company Badge (Frosted Blurry Glass) */}
         {(jobTitleText || organizationName) && (
-          <div className="mt-2 flex items-center justify-center">
-            <span className={`text-xs font-black px-3.5 py-1 rounded-full ${currentTheme.badgeBg} ${currentTheme.badgeBorder} ${currentTheme.badgeText} shadow-2xs flex items-center gap-1.5`}>
-              <Briefcase className="w-3.5 h-3.5 shrink-0" />
+          <div className="mt-2.5 flex items-center justify-center">
+            <span className={`text-xs font-black px-3.5 py-1.5 rounded-full ${
+              contentIsDark 
+                ? 'bg-black/40 text-white border border-white/20' 
+                : 'bg-white/80 text-charcoal border border-black/10'
+            } backdrop-blur-md shadow-2xs flex items-center gap-1.5`}>
+              <Briefcase className="w-3.5 h-3.5 shrink-0 text-[#4F83FF]" />
               <span>{jobTitleText}</span>
               {organizationName && (
                 <>
@@ -402,19 +406,29 @@ export default function PublicProfilePage() {
           </div>
         )}
 
-        {/* Location / Address */}
+        {/* Location / Address (Frosted Blurry Glass Pill) */}
         {fullAddress && (
-          <div className={`flex items-center justify-center gap-1.5 mt-1.5 text-xs font-semibold ${contentIsDark ? 'text-white/80' : 'text-charcoal/70'}`}>
-            <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-            <span>{fullAddress}</span>
+          <div className="mt-2 flex items-center justify-center">
+            <div className={`px-3.5 py-1 rounded-full backdrop-blur-md shadow-2xs flex items-center justify-center gap-1.5 text-xs font-semibold border ${
+              contentIsDark 
+                ? 'bg-black/35 text-white/90 border-white/15' 
+                : 'bg-white/75 text-charcoal/80 border-black/10'
+            }`}>
+              <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+              <span>{fullAddress}</span>
+            </div>
           </div>
         )}
 
-        {/* Bio Description */}
+        {/* Bio Description (Frosted Blurry Glass Capsule) */}
         {profile.bio && (
-          <p className={`${bodySizeClass} mt-2.5 max-w-md leading-relaxed font-medium ${contentIsDark ? 'text-white/90' : 'text-charcoal/75'}`}>
+          <div className={`mt-3 max-w-sm px-4 py-2.5 rounded-2xl backdrop-blur-md border shadow-2xs text-center leading-relaxed font-medium ${bodySizeClass} ${
+            contentIsDark 
+              ? 'bg-black/30 text-white/95 border-white/15' 
+              : 'bg-white/75 text-charcoal/85 border-white/60'
+          }`}>
             {profile.bio}
-          </p>
+          </div>
         )}
 
         {/* PRIMARY CONTACT ACTION: SAVE DIRECT CONTACT CARD (.VCF) TO PHONE */}

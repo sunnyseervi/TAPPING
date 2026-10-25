@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Printer,
   Sliders,
+  Type,
   Square,
   Circle,
   Eye,
@@ -56,6 +57,10 @@ export default function DigitalCardStudio({
   const [qrPosY, setQrPosY] = useState<number>(vcard.visitingCard?.qrPosY || 0);
   const [customBgImage, setCustomBgImage] = useState<string>(vcard.visitingCard?.customBg || '');
   const [customBgFit, setCustomBgFit] = useState<'cover' | 'contain'>(vcard.visitingCard?.customBgFit || 'cover');
+  const [customBgZoom, setCustomBgZoom] = useState<number>(vcard.visitingCard?.customBgZoom ?? 100);
+  const [customBgPosX, setCustomBgPosX] = useState<number>(vcard.visitingCard?.customBgPosX ?? 0);
+  const [customBgPosY, setCustomBgPosY] = useState<number>(vcard.visitingCard?.customBgPosY ?? 0);
+  const [cardFontColor, setCardFontColor] = useState<string>(vcard.visitingCard?.fontColor || '');
   const [copiedLink, setCopiedLink] = useState(false);
   const [isDraggingQr, setIsDraggingQr] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -249,10 +254,24 @@ export default function DigitalCardStudio({
     if (!onUpdateVCard) return;
     const timer = window.setTimeout(() => onUpdateVCard({
       ...vcard,
-      visitingCard: { shape: cardShape, theme: cardTheme, customBg: customBgImage, customBgFit, showBrandMark, qrSize, qrPosX, qrPosY, qrColor },
+      visitingCard: { 
+        shape: cardShape, 
+        theme: cardTheme, 
+        customBg: customBgImage, 
+        customBgFit, 
+        customBgZoom,
+        customBgPosX,
+        customBgPosY,
+        fontColor: cardFontColor,
+        showBrandMark, 
+        qrSize, 
+        qrPosX, 
+        qrPosY, 
+        qrColor 
+      },
     }), 300);
     return () => window.clearTimeout(timer);
-  }, [cardShape, cardTheme, customBgImage, customBgFit, showBrandMark, qrSize, qrPosX, qrPosY, qrColor]);
+  }, [cardShape, cardTheme, customBgImage, customBgFit, customBgZoom, customBgPosX, customBgPosY, cardFontColor, showBrandMark, qrSize, qrPosX, qrPosY, qrColor]);
 
   // Generate 300 DPI High-Res Canvas
   const generateHighResCanvas = async (): Promise<HTMLCanvasElement> => {
@@ -273,14 +292,18 @@ export default function DigitalCardStudio({
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
-          const scale = customBgFit === 'contain'
+          const zoomFactor = (customBgZoom || 100) / 100;
+          const scale = (customBgFit === 'contain'
             ? Math.min(width / img.width, height / img.height)
-            : Math.max(width / img.width, height / img.height);
+            : Math.max(width / img.width, height / img.height)) * zoomFactor;
           const drawWidth = img.width * scale;
           const drawHeight = img.height * scale;
+          const ratioCanvas = width / 520;
+          const panX = (customBgPosX || 0) * ratioCanvas;
+          const panY = (customBgPosY || 0) * ratioCanvas;
           ctx.fillStyle = '#141518';
           ctx.fillRect(0, 0, width, height);
-          ctx.drawImage(img, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
+          ctx.drawImage(img, (width - drawWidth) / 2 + panX, (height - drawHeight) / 2 + panY, drawWidth, drawHeight);
           resolve();
         };
         img.src = customBgImage;
@@ -335,8 +358,8 @@ export default function DigitalCardStudio({
     }
 
     const isLightCard = cardTheme === 'clean_white' || cardTheme === 'neo_brutalist' || cardTheme === 'pastel_bento' || cardTheme === 'brushed_gold';
-    const primaryTextColor = isLightCard ? '#141518' : '#FFFFFF';
-    const secondaryTextColor = isLightCard ? 'rgba(20,21,24,0.7)' : 'rgba(255,255,255,0.7)';
+    const primaryTextColor = cardFontColor || (customBgImage ? '#FFFFFF' : (isLightCard ? '#141518' : '#FFFFFF'));
+    const secondaryTextColor = cardFontColor ? `${cardFontColor}B3` : (customBgImage ? 'rgba(255,255,255,0.7)' : (isLightCard ? 'rgba(20,21,24,0.7)' : 'rgba(255,255,255,0.7)'));
 
     // 2. Strict 5mm Safe Print Margin: 5mm on 85.6mm is approx 60px on a 1050px canvas
     const safeMarginX = 48;
@@ -541,12 +564,25 @@ export default function DigitalCardStudio({
             ref={cardPreviewRef}
             className={`w-full max-w-[520px] aspect-[85.6/54] relative select-none overflow-hidden transition-all duration-300 flex flex-col justify-between p-6 ${
               cardShape === 'rounded' ? 'rounded-3xl' : 'rounded-none'
-            } ${customBgImage ? 'bg-center bg-no-repeat text-white border border-black/10 shadow-card' : currentThemeConfig.cardBg}`}
-            style={customBgImage ? { backgroundImage: `url(${customBgImage})`, backgroundSize: customBgFit } : undefined}
+            } ${customBgImage ? 'text-white border border-black/10 shadow-card' : currentThemeConfig.cardBg}`}
+            style={{
+              color: cardFontColor || undefined
+            }}
           >
-            {/* Custom Background Dark Tint Overlay */}
+            {/* Custom Background Image with Zoom & Pan Framing */}
             {customBgImage && (
-              <div className="absolute inset-0 bg-black/45 backdrop-blur-[0.5px] pointer-events-none z-0" />
+              <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+                <div
+                  className="absolute inset-0 bg-no-repeat bg-center transition-transform duration-75"
+                  style={{
+                    backgroundImage: `url(${customBgImage})`,
+                    backgroundSize: customBgFit,
+                    transform: `scale(${customBgZoom / 100}) translate(${customBgPosX}px, ${customBgPosY}px)`,
+                    transformOrigin: 'center center',
+                  }}
+                />
+                <div className="absolute inset-0 bg-black/45 backdrop-blur-[0.5px] pointer-events-none" />
+              </div>
             )}
 
             {/* Visiting Card Layout Strictly Inside 5mm Safe Print Area */}
@@ -764,7 +800,167 @@ export default function DigitalCardStudio({
                 <span>Upload Custom Card Artwork (PNG/JPG)</span>
               </button>
             </div>
-            {customBgImage && <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setCustomBgFit('cover')} className={`rounded-xl px-3 py-2 text-[10px] font-black ${customBgFit === 'cover' ? 'bg-[#141518] text-white' : 'bg-white text-charcoal'}`}>Fill card</button><button type="button" onClick={() => setCustomBgFit('contain')} className={`rounded-xl px-3 py-2 text-[10px] font-black ${customBgFit === 'contain' ? 'bg-[#141518] text-white' : 'bg-white text-charcoal'}`}>Show full image</button></div>}
+            {/* When Custom Artwork is active: Zoom, Pan X/Y & Framing Controls */}
+            {customBgImage && (
+              <div className="flex flex-col gap-3 p-3.5 rounded-2xl bg-white border border-black/10 shadow-2xs mt-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black text-charcoal flex items-center gap-1.5">
+                    <Sliders className="w-3.5 h-3.5 text-[#4F83FF]" />
+                    <span>Manage Artwork Zoom &amp; Framing</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCustomBgZoom(100);
+                      setCustomBgPosX(0);
+                      setCustomBgPosY(0);
+                    }}
+                    className="text-[10px] font-bold text-[#4F83FF] hover:underline cursor-pointer"
+                  >
+                    Reset Center
+                  </button>
+                </div>
+
+                {/* Fit Mode */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCustomBgFit('cover')}
+                    className={`rounded-xl px-3 py-2 text-[10px] font-black transition-all cursor-pointer ${
+                      customBgFit === 'cover' ? 'bg-[#141518] text-white' : 'bg-gray-100 text-charcoal hover:bg-gray-200'
+                    }`}
+                  >
+                    Fill Card (Cover)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomBgFit('contain')}
+                    className={`rounded-xl px-3 py-2 text-[10px] font-black transition-all cursor-pointer ${
+                      customBgFit === 'contain' ? 'bg-[#141518] text-white' : 'bg-gray-100 text-charcoal hover:bg-gray-200'
+                    }`}
+                  >
+                    Show Full Image (Fit)
+                  </button>
+                </div>
+
+                {/* Zoom Slider */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-charcoal/70">
+                    <span>Artwork Zoom / Scale</span>
+                    <span className="font-mono text-[#4F83FF]">{customBgZoom}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="50"
+                    max="250"
+                    step="5"
+                    value={customBgZoom}
+                    onChange={(e) => setCustomBgZoom(Number(e.target.value))}
+                    className="w-full accent-[#4F83FF] cursor-pointer"
+                  />
+                  <div className="flex items-center gap-1 mt-0.5">
+                    {[50, 75, 100, 125, 150, 200].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setCustomBgZoom(preset)}
+                        className={`px-2 py-0.5 rounded text-[9px] font-bold transition-colors cursor-pointer ${
+                          customBgZoom === preset ? 'bg-[#4F83FF] text-white' : 'bg-gray-100 text-charcoal hover:bg-gray-200'
+                        }`}
+                      >
+                        {preset}%
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pan Y (Vertical Position) */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-charcoal/70">
+                    <span>Vertical Position (Move Up / Down)</span>
+                    <span className="font-mono text-[#4F83FF]">{customBgPosY > 0 ? `+${customBgPosY}` : customBgPosY}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="-150"
+                    max="150"
+                    step="2"
+                    value={customBgPosY}
+                    onChange={(e) => setCustomBgPosY(Number(e.target.value))}
+                    className="w-full accent-[#4F83FF] cursor-pointer"
+                  />
+                </div>
+
+                {/* Pan X (Horizontal Position) */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-charcoal/70">
+                    <span>Horizontal Position (Move Left / Right)</span>
+                    <span className="font-mono text-[#4F83FF]">{customBgPosX > 0 ? `+${customBgPosX}` : customBgPosX}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="-150"
+                    max="150"
+                    step="2"
+                    value={customBgPosX}
+                    onChange={(e) => setCustomBgPosX(Number(e.target.value))}
+                    className="w-full accent-[#4F83FF] cursor-pointer"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Card Font & Text Color Selector */}
+            <div className="flex flex-col gap-2 pt-2 border-t border-black/5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black text-charcoal flex items-center gap-1.5">
+                  <Type className="w-3.5 h-3.5 text-[#4F83FF]" />
+                  <span>Card Font &amp; Text Color</span>
+                </label>
+                {cardFontColor && (
+                  <button
+                    type="button"
+                    onClick={() => setCardFontColor('')}
+                    className="text-[10px] font-bold text-rose-500 hover:underline cursor-pointer"
+                  >
+                    Reset Auto
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  { name: 'Pure White', hex: '#FFFFFF' },
+                  { name: 'Solid Black', hex: '#141518' },
+                  { name: 'Luxe Gold', hex: '#D4AF37' },
+                  { name: 'Cyber Cyan', hex: '#00F0FF' },
+                  { name: 'Neon Lime', hex: '#B6F554' },
+                  { name: 'Rose Coral', hex: '#FF6B6B' },
+                ].map((c) => (
+                  <button
+                    key={c.hex}
+                    type="button"
+                    onClick={() => setCardFontColor(c.hex)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[10px] font-bold transition-all cursor-pointer ${
+                      cardFontColor === c.hex ? 'border-charcoal bg-black/5 ring-2 ring-charcoal' : 'border-black/10 bg-white hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="w-3.5 h-3.5 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: c.hex }} />
+                    <span>{c.name}</span>
+                  </button>
+                ))}
+                {/* Custom Color Input */}
+                <div className="flex items-center gap-1.5 bg-white border border-black/10 rounded-xl px-2 py-1 shadow-2xs">
+                  <input
+                    type="color"
+                    value={cardFontColor || (customBgImage ? '#FFFFFF' : '#141518')}
+                    onChange={(e) => setCardFontColor(e.target.value)}
+                    className="w-5 h-5 rounded cursor-pointer border-0 p-0"
+                    title="Choose custom font color"
+                  />
+                  <span className="text-[10px] font-mono font-bold">{cardFontColor || 'Auto'}</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Section 3: QR Code Size & Drag/Nudge Controls */}

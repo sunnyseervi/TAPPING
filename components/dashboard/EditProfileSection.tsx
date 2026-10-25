@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Profile, LinkBlock, StyleVariant, VCardProfile, LinkCardStyleType } from '@/lib/types';
+import { Profile, LinkBlock, StyleVariant, VCardProfile, LinkCardStyleType, StoreConfig, StoreProduct } from '@/lib/types';
 import { resolveLinkCardClasses } from '@/lib/themes';
 import { 
   User, 
@@ -31,40 +31,153 @@ import {
   Link2,
   Copy,
   Download,
-  QrCode as QrCodeIcon
+  QrCode as QrCodeIcon,
+  ShoppingBag,
+  Tag
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 import ThemesStudio from '@/components/dashboard/ThemesStudio';
 import { compressImageFile, compressAvatarImage, compressLinkCardImage, formatFileSize } from '@/lib/imageCompression';
+import { getStoredStore, saveStoredStore } from '@/lib/storage';
 
 interface EditProfileSectionProps {
   profile: Profile;
   vcard?: VCardProfile;
   links: LinkBlock[];
+  store?: StoreConfig;
   onUpdateProfile: (updated: Profile) => void;
   onUpdateVCard?: (updated: VCardProfile) => void;
   onUpdateLinks: (newLinks: LinkBlock[]) => void;
+  onUpdateStore?: (updated: StoreConfig) => void;
   onLiveChange?: (updated: Profile) => void;
-  activeSectionTab?: 'profile' | 'links' | 'themes';
-  onSectionTabChange?: (tab: 'profile' | 'links' | 'themes') => void;
+  activeSectionTab?: 'profile' | 'links' | 'products' | 'themes';
+  onSectionTabChange?: (tab: 'profile' | 'links' | 'products' | 'themes') => void;
 }
 
 export default function EditProfileSection({
   profile,
   vcard,
   links,
+  store,
   onUpdateProfile,
   onUpdateVCard,
   onUpdateLinks,
+  onUpdateStore,
   onLiveChange,
   activeSectionTab = 'profile',
   onSectionTabChange,
 }: EditProfileSectionProps) {
   const { showToast } = useToast();
   const [displayHost, setDisplayHost] = useState('tapping.bio');
-  const [currentTab, setCurrentTab] = useState<'profile' | 'links' | 'themes'>(activeSectionTab || 'profile');
+  const [currentTab, setCurrentTab] = useState<'profile' | 'links' | 'products' | 'themes'>(activeSectionTab || 'profile');
+
+  // Store Management State
+  const [localStore, setLocalStore] = useState<StoreConfig>(() => store || getStoredStore());
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [newProdName, setNewProdName] = useState('');
+  const [newProdPrice, setNewProdPrice] = useState<number>(499);
+  const [newProdComparePrice, setNewProdComparePrice] = useState<number | undefined>(undefined);
+  const [newProdLinkUrl, setNewProdLinkUrl] = useState('');
+  const [newProdImageUrl, setNewProdImageUrl] = useState('');
+  const [newProdDescription, setNewProdDescription] = useState('');
+  const [newProdVariants, setNewProdVariants] = useState('');
+  const [compressingProdImage, setCompressingProdImage] = useState(false);
+  const prodImageInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (store) setLocalStore(store);
+  }, [store]);
+
+  const persistStore = (updated: StoreConfig) => {
+    setLocalStore(updated);
+    saveStoredStore(updated);
+    onUpdateStore?.(updated);
+  };
+
+  const handleProductImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Invalid File', 'Please select an image file (PNG, JPG, WebP)', 'error');
+      return;
+    }
+
+    setCompressingProdImage(true);
+    try {
+      const result = await compressImageFile(file, { maxWidth: 1000, maxHeight: 1000, quality: 0.78 });
+      setNewProdImageUrl(result.dataUrl);
+      showToast(
+        'Product Image Compressed',
+        `Reduced from ${formatFileSize(result.originalBytes)} to ${formatFileSize(result.compressedBytes)} (${result.savingsPercent}% data saved)!`,
+        'success'
+      );
+    } catch (err) {
+      showToast('Upload Failed', err instanceof Error ? err.message : 'Could not compress image', 'error');
+    } finally {
+      setCompressingProdImage(false);
+    }
+  };
+
+  const handleSaveProduct = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!newProdName.trim()) {
+      showToast('Product Title Required', 'Please enter a name for your product.', 'error');
+      return;
+    }
+    if (!newProdPrice || newProdPrice <= 0) {
+      showToast('Price Required', 'Please enter a price in ₹ INR.', 'error');
+      return;
+    }
+
+    const newProduct: StoreProduct = {
+      id: `product_${Date.now()}`,
+      name: newProdName.trim(),
+      price: Number(newProdPrice),
+      compareAtPrice: newProdComparePrice ? Number(newProdComparePrice) : undefined,
+      imageUrl: newProdImageUrl || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500',
+      linkUrl: newProdLinkUrl.trim() || undefined,
+      description: newProdDescription.trim(),
+      variants: newProdVariants ? newProdVariants.split(',').map((v) => v.trim()).filter(Boolean) : [],
+      isActive: true,
+      sortOrder: (localStore.products?.length || 0) + 1,
+    };
+
+    const updatedStore: StoreConfig = {
+      ...localStore,
+      enabled: true,
+      products: [newProduct, ...(localStore.products || [])],
+    };
+
+    persistStore(updatedStore);
+
+    // Reset fields
+    setNewProdName('');
+    setNewProdPrice(499);
+    setNewProdComparePrice(undefined);
+    setNewProdLinkUrl('');
+    setNewProdImageUrl('');
+    setNewProdDescription('');
+    setNewProdVariants('');
+    setShowAddProductModal(false);
+    showToast('Product Added', `"${newProduct.name}" is now live on your slidable bio store!`, 'success');
+  };
+
+  const handleToggleProductActive = (productId: string) => {
+    const updatedProducts = (localStore.products || []).map((p) =>
+      p.id === productId ? { ...p, isActive: !p.isActive } : p
+    );
+    persistStore({ ...localStore, products: updatedProducts });
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    const updatedProducts = (localStore.products || []).filter((p) => p.id !== productId);
+    persistStore({ ...localStore, products: updatedProducts });
+    showToast('Product Removed', 'The item has been deleted from your store.', 'info');
+  };
 
   React.useEffect(() => {
     if (activeSectionTab) {
@@ -72,7 +185,7 @@ export default function EditProfileSection({
     }
   }, [activeSectionTab]);
 
-  const handleTabSelect = (tab: 'profile' | 'links' | 'themes') => {
+  const handleTabSelect = (tab: 'profile' | 'links' | 'products' | 'themes') => {
     setCurrentTab(tab);
     if (onSectionTabChange) {
       onSectionTabChange(tab);
@@ -95,6 +208,7 @@ export default function EditProfileSection({
   const [avatarZoom, setAvatarZoom] = useState(profile.avatarZoom ?? 100);
   const [avatarPosX, setAvatarPosX] = useState(profile.avatarPosX ?? 0);
   const [avatarPosY, setAvatarPosY] = useState(profile.avatarPosY ?? 0);
+  const [fontColor, setFontColor] = useState(profile.fontColor || '');
   
   // Contact Details
   const [phone, setPhone] = useState(vcard?.workPhone || vcard?.mobilePhone || profile.socialLinks?.phone || '+91 98765 43210');
@@ -126,6 +240,7 @@ export default function EditProfileSection({
         avatarZoom,
         avatarPosX,
         avatarPosY,
+        fontColor: fontColor || undefined,
         socialLinks: {
           ...socialLinks,
           phone,
@@ -222,6 +337,7 @@ export default function EditProfileSection({
       avatarZoom,
       avatarPosX,
       avatarPosY,
+      fontColor: fontColor || undefined,
       socialLinks: {
         ...socialLinks,
         phone,
@@ -410,11 +526,11 @@ export default function EditProfileSection({
   return (
     <div className="flex flex-col gap-6">
       {/* TOP SUB-NAVIGATION TABS */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white border border-black/10 shadow-2xs w-full max-w-xl mx-auto">
+      <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white border border-black/10 shadow-2xs w-full max-w-2xl mx-auto overflow-x-auto">
         <button
           type="button"
           onClick={() => handleTabSelect('profile')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
             currentTab === 'profile'
               ? 'bg-[#4F83FF] text-white shadow-xs'
               : 'text-charcoal/70 hover:text-black hover:bg-black/5'
@@ -427,27 +543,40 @@ export default function EditProfileSection({
         <button
           type="button"
           onClick={() => handleTabSelect('links')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
             currentTab === 'links'
               ? 'bg-[#4F83FF] text-white shadow-xs'
               : 'text-charcoal/70 hover:text-black hover:bg-black/5'
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>Link Blocks ({links.length})</span>
+          <span>Links ({links.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleTabSelect('products')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+            currentTab === 'products'
+              ? 'bg-[#4F83FF] text-white shadow-xs'
+              : 'text-charcoal/70 hover:text-black hover:bg-black/5'
+          }`}
+        >
+          <ShoppingBag className="w-3.5 h-3.5" />
+          <span>Products ({(localStore.products || []).length})</span>
         </button>
 
         <button
           type="button"
           onClick={() => handleTabSelect('themes')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
             currentTab === 'themes'
               ? 'bg-[#4F83FF] text-white shadow-xs'
               : 'text-charcoal/70 hover:text-black hover:bg-black/5'
           }`}
         >
           <Palette className="w-3.5 h-3.5" />
-          <span>Themes & Styles</span>
+          <span>Themes</span>
         </button>
       </div>
 
@@ -872,6 +1001,74 @@ export default function EditProfileSection({
                     placeholder="https://linkedin.com/in/..."
                     className="w-full px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Bio & Profile Font Color Selector */}
+            <div className="sm:col-span-2 pt-4 border-t border-black/10 mt-2">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h4 className="text-sm font-black text-charcoal tracking-tight flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#4F83FF]" />
+                    <span>Bio Page Font &amp; Text Color</span>
+                  </h4>
+                  <p className="text-[11px] text-charcoal/60 font-medium">
+                    Customize your profile heading and text color with presets or any custom color
+                  </p>
+                </div>
+                {fontColor && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFontColor('');
+                      notifyLive({ fontColor: '' });
+                    }}
+                    className="text-[11px] font-bold text-rose-500 hover:underline cursor-pointer"
+                  >
+                    Reset Auto
+                  </button>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {[
+                  { name: 'Classic Charcoal', hex: '#141518' },
+                  { name: 'Pure White', hex: '#FFFFFF' },
+                  { name: 'Luxe Gold', hex: '#D4AF37' },
+                  { name: 'Cyber Cyan', hex: '#00F0FF' },
+                  { name: 'Neon Lime', hex: '#B6F554' },
+                  { name: 'Rose Coral', hex: '#FF6B6B' },
+                  { name: 'Royal Indigo', hex: '#4F83FF' },
+                ].map((c) => (
+                  <button
+                    key={c.hex}
+                    type="button"
+                    onClick={() => {
+                      setFontColor(c.hex);
+                      notifyLive({ fontColor: c.hex });
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                      fontColor === c.hex ? 'border-charcoal bg-black/5 ring-2 ring-charcoal' : 'border-black/10 bg-[#FAF7F2] hover:bg-white'
+                    }`}
+                  >
+                    <span className="w-3.5 h-3.5 rounded-full border border-black/15 shrink-0" style={{ backgroundColor: c.hex }} />
+                    <span>{c.name}</span>
+                  </button>
+                ))}
+                {/* Custom Color Input */}
+                <div className="flex items-center gap-2 bg-[#FAF7F2] hover:bg-white border border-black/10 rounded-xl px-2.5 py-1 shadow-2xs">
+                  <input
+                    type="color"
+                    value={fontColor || '#141518'}
+                    onChange={(e) => {
+                      setFontColor(e.target.value);
+                      notifyLive({ fontColor: e.target.value });
+                    }}
+                    className="w-5 h-5 rounded cursor-pointer border-0 p-0"
+                    title="Pick custom font color"
+                  />
+                  <span className="text-xs font-mono font-bold text-charcoal">{fontColor || 'Auto'}</span>
                 </div>
               </div>
             </div>
@@ -1401,6 +1598,339 @@ export default function EditProfileSection({
         </div>
       )}
         </>
+      )}
+
+      {/* SECTION: PRODUCTS & STORE (SLIDABLE BIO STORE) */}
+      {currentTab === 'products' && (
+        <div className="bg-white rounded-4xl p-6 md:p-8 border border-black/5 shadow-soft flex flex-col gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between pb-6 border-b border-black/5 gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#FAF7F2] text-[#A6462D] border border-[#D9CFC2] flex items-center gap-1.5">
+                  <ShoppingBag className="w-3 h-3" />
+                  <span>Slidable Bio Store</span>
+                </span>
+                <span className="text-xs font-mono font-bold text-charcoal/50">
+                  {(localStore.products || []).filter(p => p.isActive).length} active items
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-charcoal tracking-tight">
+                Products &amp; Commerce
+              </h1>
+              <p className="text-xs text-charcoal/60 mt-1 font-medium">
+                Add products or paste direct product links (Amazon, Shopify, Etsy, Gumroad) with picture. Shown in a horizontal slidable carousel on your bio page!
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowAddProductModal(true)}
+              className="px-4 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer shrink-0"
+            >
+              <Plus className="w-4 h-4 text-[#FDF166]" />
+              <span>Add Product / Paste Link</span>
+            </button>
+          </div>
+
+          {/* Quick WhatsApp Configuration for Orders */}
+          <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-black text-charcoal flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                <span>WhatsApp Order Destination</span>
+              </p>
+              <p className="text-[11px] text-charcoal/60 mt-0.5">
+                When visitors tap &ldquo;Add to Bag&rdquo;, their order summary is sent to this WhatsApp number
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="e.g. 919876543210"
+                defaultValue={localStore.whatsappNumber}
+                onBlur={(e) => {
+                  const clean = e.target.value.replace(/\D/g, '');
+                  if (clean !== localStore.whatsappNumber) {
+                    persistStore({ ...localStore, whatsappNumber: clean });
+                    showToast('WhatsApp Number Saved', `Orders will route to +${clean}`, 'success');
+                  }
+                }}
+                className="px-3 py-1.5 rounded-xl border border-black/10 bg-white text-xs font-mono font-bold w-44 outline-none focus:border-[#4F83FF]"
+              />
+            </div>
+          </div>
+
+          {/* ADD / PASTE PRODUCT MODAL */}
+          {showAddProductModal && (
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#EFF4FF] border border-[#4F83FF]/30 flex flex-col gap-4">
+              <div className="flex items-center justify-between pb-3 border-b border-[#4F83FF]/20">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-[#4F83FF] text-white flex items-center justify-center shadow-2xs">
+                    <Plus className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-charcoal">Add New Product or Paste Link</h3>
+                    <p className="text-[11px] text-charcoal/60">Product picture is compressed automatically for rapid mobile loading</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAddProductModal(false)}
+                  className="w-7 h-7 rounded-full bg-white/80 hover:bg-white text-charcoal flex items-center justify-center cursor-pointer border border-black/10"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveProduct} className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {/* Title */}
+                  <div className="flex flex-col gap-1 sm:col-span-2">
+                    <label className="text-[11px] font-bold text-charcoal/80">Product Title *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Minimalist Metal Card, Studio Notebook, E-Book..."
+                      value={newProdName}
+                      onChange={(e) => setNewProdName(e.target.value)}
+                      className="px-3.5 py-2.5 rounded-2xl bg-white border border-black/10 text-xs font-bold text-charcoal outline-none focus:border-[#4F83FF]"
+                    />
+                  </div>
+
+                  {/* Price (₹ INR) */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-bold text-charcoal/80">Selling Price (₹ INR) *</label>
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      placeholder="e.g. 499"
+                      value={newProdPrice}
+                      onChange={(e) => setNewProdPrice(Number(e.target.value))}
+                      className="px-3.5 py-2.5 rounded-2xl bg-white border border-black/10 text-xs font-mono font-bold text-charcoal outline-none focus:border-[#4F83FF]"
+                    />
+                  </div>
+
+                  {/* Compare Price */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-bold text-charcoal/80">Original / MRP (₹ Strike-through, Optional)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      placeholder="e.g. 999"
+                      value={newProdComparePrice ?? ''}
+                      onChange={(e) => setNewProdComparePrice(e.target.value ? Number(e.target.value) : undefined)}
+                      className="px-3.5 py-2.5 rounded-2xl bg-white border border-black/10 text-xs font-mono font-bold text-charcoal outline-none focus:border-[#4F83FF]"
+                    />
+                  </div>
+
+                  {/* External Product Link URL */}
+                  <div className="flex flex-col gap-1 sm:col-span-2">
+                    <label className="text-[11px] font-bold text-charcoal/80 flex items-center justify-between">
+                      <span>Direct Product Link / URL (Optional)</span>
+                      <span className="text-[10px] text-charcoal/50 font-normal">Amazon, Shopify, Etsy, Gumroad, or your site</span>
+                    </label>
+                    <div className="relative">
+                      <ExternalLink className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-charcoal/40" />
+                      <input
+                        type="url"
+                        placeholder="https://amazon.in/dp/... or https://yourshop.com/product"
+                        value={newProdLinkUrl}
+                        onChange={(e) => setNewProdLinkUrl(e.target.value)}
+                        className="pl-9 pr-3.5 py-2.5 rounded-2xl bg-white border border-black/10 text-xs font-mono font-bold text-charcoal w-full outline-none focus:border-[#4F83FF]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Product Picture Upload (Universal Auto-Compression) */}
+                  <div className="flex flex-col gap-1.5 sm:col-span-2">
+                    <label className="text-[11px] font-bold text-charcoal/80">
+                      Product Picture (Auto-Compressed for Ultra-Fast Loading)
+                    </label>
+
+                    <input
+                      type="file"
+                      ref={prodImageInputRef}
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleProductImageUpload}
+                    />
+
+                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-white border border-black/10">
+                      <div className="w-16 h-16 rounded-xl bg-black/5 overflow-hidden shrink-0 border border-black/5 flex items-center justify-center">
+                        {newProdImageUrl ? (
+                          <img src={newProdImageUrl} alt="Product Preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <ImageIcon className="w-6 h-6 text-charcoal/30" />
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <button
+                          type="button"
+                          disabled={compressingProdImage}
+                          onClick={() => prodImageInputRef.current?.click()}
+                          className="py-2 px-3.5 rounded-xl bg-[#141518] hover:bg-black text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer transition-all disabled:opacity-50"
+                        >
+                          <Upload className="w-3.5 h-3.5 text-[#FDF166]" />
+                          <span>{compressingProdImage ? 'Compressing...' : newProdImageUrl ? 'Change Picture' : 'Upload Picture'}</span>
+                        </button>
+                        <p className="text-[10px] text-charcoal/50 mt-1">
+                          PNG or JPG. Automatically converted to high-efficiency WebP.
+                        </p>
+                      </div>
+
+                      {newProdImageUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setNewProdImageUrl('')}
+                          className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50"
+                          title="Remove image"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Short Description */}
+                  <div className="flex flex-col gap-1 sm:col-span-2">
+                    <label className="text-[11px] font-bold text-charcoal/80">Short Description</label>
+                    <textarea
+                      rows={2}
+                      placeholder="e.g. Handcrafted matte finish with NFC chip inside. Lifetime guarantee."
+                      value={newProdDescription}
+                      onChange={(e) => setNewProdDescription(e.target.value)}
+                      className="px-3.5 py-2.5 rounded-2xl bg-white border border-black/10 text-xs font-medium text-charcoal outline-none focus:border-[#4F83FF] resize-none"
+                    />
+                  </div>
+
+                  {/* Variants */}
+                  <div className="flex flex-col gap-1 sm:col-span-2">
+                    <label className="text-[11px] font-bold text-charcoal/80">Variants (Comma-Separated, Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Matte Black, Mirror Gold, Gunmetal Steel"
+                      value={newProdVariants}
+                      onChange={(e) => setNewProdVariants(e.target.value)}
+                      className="px-3.5 py-2.5 rounded-2xl bg-white border border-black/10 text-xs font-medium text-charcoal outline-none focus:border-[#4F83FF]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#4F83FF]/20">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddProductModal(false)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-charcoal hover:bg-black/5 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  >
+                    <Check className="w-3.5 h-3.5 text-[#FDF166]" />
+                    <span>Publish Product</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* LIST OF EXISTING PRODUCTS */}
+          <div className="flex flex-col gap-3">
+            <h3 className="text-xs font-black uppercase tracking-wider text-charcoal/60">
+              Published Products ({(localStore.products || []).length})
+            </h3>
+
+            {(localStore.products || []).length === 0 ? (
+              <div className="p-8 rounded-3xl bg-[#FAF7F2] border border-black/10 text-center flex flex-col items-center justify-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-white border border-black/10 flex items-center justify-center text-[#A6462D] shadow-2xs">
+                  <ShoppingBag className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-charcoal">No Products in Your Store Yet</h4>
+                  <p className="text-xs text-charcoal/60 mt-1 max-w-sm">
+                    Add physical merchandise, art, services, or paste any external product link to display in a slidable carousel on your bio page.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAddProductModal(true)}
+                  className="mt-1 px-4 py-2 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5 text-[#FDF166]" />
+                  <span>Add First Product</span>
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {(localStore.products || []).map((product) => (
+                  <div
+                    key={product.id}
+                    className={`p-3.5 rounded-3xl border transition-all flex items-center justify-between gap-3 ${
+                      product.isActive ? 'bg-[#FAF7F2] border-black/10' : 'bg-gray-100 border-gray-200 opacity-60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white border border-black/10 shrink-0">
+                        {product.imageUrl ? (
+                          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-[#E3DFF8] flex items-center justify-center text-[10px] font-bold text-charcoal/40">Item</div>
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-xs font-black text-charcoal truncate">{product.name}</p>
+                          {product.linkUrl && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 font-bold shrink-0">
+                              Link
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-xs font-black text-[#A6462D]">₹{product.price}</span>
+                          {product.compareAtPrice && product.compareAtPrice > product.price && (
+                            <span className="text-[10px] text-charcoal/40 line-through">₹{product.compareAtPrice}</span>
+                          )}
+                        </div>
+                        {product.description && (
+                          <p className="text-[10px] text-charcoal/50 truncate mt-0.5">{product.description}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleProductActive(product.id)}
+                        className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-colors cursor-pointer ${
+                          product.isActive
+                            ? 'bg-emerald-500 text-white border-emerald-600'
+                            : 'bg-white text-charcoal border-black/10'
+                        }`}
+                      >
+                        {product.isActive ? 'Active' : 'Hidden'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteProduct(product.id)}
+                        className="p-1.5 rounded-xl hover:bg-rose-50 text-rose-500 transition-colors cursor-pointer"
+                        title="Delete product"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* SECTION 3: THEMES & DESIGN SYSTEM (Theme Menu Inside Editing Menu) */}

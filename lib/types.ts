@@ -119,6 +119,10 @@ export interface VisitingCardConfig {
   theme: VisitingCardTheme;
   customBg?: string;
   customBgFit?: 'cover' | 'contain';
+  customBgZoom?: number;
+  customBgPosX?: number;
+  customBgPosY?: number;
+  fontColor?: string;
   showBleedMargin?: boolean;
   showBrandMark?: boolean;
   qrSize?: number;
@@ -268,6 +272,7 @@ export interface StoreProduct {
   sortOrder: number;
   viewCount?: number;
   cartAdds?: number;
+  linkUrl?: string; // Product external link or custom URL
 }
 
 export interface StoreConfig {
