@@ -9,11 +9,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        canvas: "#FAF6F0",
+        canvas: "#F7F5EE",
+        cobalt: {
+          DEFAULT: "#4F83FF",
+          dark: "#3B6DE6",
+          light: "#EBF1FF",
+        },
+        butter: {
+          DEFAULT: "#FDF166",
+          dark: "#EBDC36",
+          light: "#FEF9C3",
+        },
+        lime: {
+          DEFAULT: "#B6F554",
+          dark: "#9CE434",
+          light: "#ECFCCB",
+        },
         charcoal: {
-          DEFAULT: "#1A1B1F",
-          soft: "#2E3036",
-          muted: "#71747D",
+          DEFAULT: "#141518",
+          soft: "#23252B",
+          muted: "#757780",
         },
         pastel: {
           peach: {

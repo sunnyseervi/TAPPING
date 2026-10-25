@@ -23,10 +23,7 @@ import {
 import { Profile, VCardProfile, LinkBlock, NFCCardDesign, AnalyticsSummary, Subscription } from '@/lib/types';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import AppSidebar from '@/components/layout/AppSidebar';
-import BentoQuickStats from '@/components/dashboard/BentoQuickStats';
-import BentoProgressRing from '@/components/dashboard/BentoProgressRing';
-import BentoMenuGrid from '@/components/dashboard/BentoMenuGrid';
-import AudienceFlowChart from '@/components/dashboard/AudienceFlowChart';
+import TeamSpaceBento from '@/components/dashboard/TeamSpaceBento';
 import EditProfileSection from '@/components/dashboard/EditProfileSection';
 import DigitalCardStudio from '@/components/dashboard/DigitalCardStudio';
 import NFCCardStudio from '@/components/dashboard/NFCCardStudio';
@@ -111,32 +108,13 @@ export default function DashboardPage() {
 
         {/* User Data Modules Workspace (100% Full Width — No Preview) */}
         <main className="w-full flex flex-col gap-6 mt-3">
-          {/* TAB: DASHBOARD */}
+          {/* TAB: DASHBOARD (Matching User's Uploaded Team Space Bento Screen Exactly) */}
           {activeTab === 'dashboard' && (
-            <div className="flex flex-col gap-5">
-              {/* Top Bento Duo: Macro Stats & Circular Progress Ring */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <BentoQuickStats
-                  analytics={analytics}
-                  onAddBlock={() => setActiveTab('profile')}
-                  onSeeProgress={() => setActiveTab('dashboard')}
-                />
-                <BentoProgressRing
-                  percentage={95}
-                  totalTaps={analytics.totalViews}
-                  onExplore={() => setActiveTab('dashboard')}
-                />
-              </div>
-
-              {/* 2x2 Bento Module Grid directly from user's image */}
-              <BentoMenuGrid
-                activeTab={activeTab}
-                onSelectTab={(tab) => setActiveTab(tab)}
-              />
-
-              {/* Audience Flow Chart */}
-              <AudienceFlowChart analytics={analytics} />
-            </div>
+            <TeamSpaceBento
+              profile={profile}
+              analytics={analytics}
+              onSelectTab={(tab) => setActiveTab(tab)}
+            />
           )}
 
           {/* TAB: EDIT PROFILE (Full Profile Settings + Link Blocks) */}
