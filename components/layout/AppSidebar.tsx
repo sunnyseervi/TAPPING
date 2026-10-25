@@ -20,6 +20,7 @@ interface AppSidebarProps {
   onClose: () => void;
   profile: Profile;
   onOpenAuth?: () => void;
+  onOpenOnboarding?: () => void;
 }
 
 export default function AppSidebar({
@@ -29,6 +30,7 @@ export default function AppSidebar({
   onClose,
   profile,
   onOpenAuth,
+  onOpenOnboarding,
 }: AppSidebarProps) {
   const navItems = [
     { id: 'dashboard', label: 'Creator Space', icon: LayoutGrid, count: null, color: null },
@@ -166,6 +168,27 @@ export default function AppSidebar({
               <span>View Live Bio Space</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
+
+            <div className="flex items-center gap-2 pt-1 border-t border-black/5">
+              {onOpenOnboarding && (
+                <button
+                  onClick={onOpenOnboarding}
+                  className="flex-1 py-1.5 px-2.5 rounded-xl bg-black/5 hover:bg-black/10 text-charcoal text-[11px] font-bold text-center transition-colors cursor-pointer"
+                  title="Watch First-Time Introduction"
+                >
+                  Onboarding Tour
+                </button>
+              )}
+              {onOpenAuth && (
+                <button
+                  onClick={onOpenAuth}
+                  className="flex-1 py-1.5 px-2.5 rounded-xl bg-black/5 hover:bg-black/10 text-charcoal text-[11px] font-bold text-center transition-colors cursor-pointer"
+                  title="Google Authentication"
+                >
+                  Google Auth
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </aside>

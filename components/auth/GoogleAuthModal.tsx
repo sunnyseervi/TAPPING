@@ -40,8 +40,14 @@ export default function GoogleAuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="relative w-full max-w-sm bg-white rounded-4xl p-6 sm:p-8 shadow-card border border-black/10 text-center animate-in fade-in zoom-in-95 duration-200">
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-sm bg-white rounded-4xl p-6 sm:p-8 shadow-card border border-black/10 text-center animate-in fade-in zoom-in-95 duration-200"
+      >
         {/* Close Button */}
         <button
           onClick={onClose}

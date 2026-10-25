@@ -11,6 +11,7 @@ import {
   getStoredNFCCard, 
   saveStoredNFCCard, 
   getStoredAnalytics, 
+  getOnboardingCompleted,
 } from '@/lib/storage';
 import { 
   initialProfile, 
@@ -30,6 +31,7 @@ import NFCCardStudio from '@/components/dashboard/NFCCardStudio';
 import ThemesStudio from '@/components/dashboard/ThemesStudio';
 import FloatingBottomDock from '@/components/dashboard/FloatingBottomDock';
 import GoogleAuthModal from '@/components/auth/GoogleAuthModal';
+import AnimatedOnboarding from '@/components/onboarding/AnimatedOnboarding';
 import { useToast } from '@/components/ui/Toast';
 
 export default function DashboardPage() {
@@ -44,6 +46,7 @@ export default function DashboardPage() {
 
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
   // Sync state on client mount to prevent SSR hydration mismatch
@@ -53,6 +56,11 @@ export default function DashboardPage() {
     setLinks(getStoredLinks());
     setNfcCard(getStoredNFCCard());
     setAnalytics(getStoredAnalytics());
+
+    // Show onboarding if first visit
+    if (!getOnboardingCompleted()) {
+      setShowOnboarding(true);
+    }
   }, []);
 
   const handleUpdateProfile = (newProfile: Profile) => {
@@ -87,6 +95,16 @@ export default function DashboardPage() {
         }}
       />
 
+      {/* First-Time Animated Onboarding Tour */}
+      {showOnboarding && (
+        <AnimatedOnboarding
+          onComplete={() => {
+            setShowOnboarding(false);
+            setProfile(getStoredProfile());
+          }}
+        />
+      )}
+
       {/* Left Collapsible Navigation Sidebar Drawer (toggled via 3-lines header button) */}
       <AppSidebar
         activeTab={activeTab}
@@ -95,6 +113,7 @@ export default function DashboardPage() {
         onClose={() => setIsSidebarOpen(false)}
         profile={profile}
         onOpenAuth={() => setShowAuthModal(true)}
+        onOpenOnboarding={() => setShowOnboarding(true)}
       />
 
       {/* Main Content Layout Container: Full-width responsive with desktop sidebar offset */}
