@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-canvas: #FAF6F0;
+  --fg-charcoal: #1A1B1F;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  color: var(--fg-charcoal);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Typography Helpers */
+.font-serif-italic {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+/* Scallop Badge & Organic Pill Shapes from reference */
+.organic-card {
+  border-radius: 2rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.organic-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Hide scrollbar for tabs and horizontal carousels */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 3D Card flip perspective */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Solid Flat Metal Finishes (Zero Multi-Gradients) */
+.metal-matte-black {
+  background-color: #191B1F;
+  border: 1px solid #2D3036;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+}
+
+.metal-brushed-gold {
+  background-color: #C8A44D;
+  border: 1px solid #B28F38;
+  box-shadow: 0 10px 25px -5px rgba(178, 143, 56, 0.25);
+}
+
+.metal-rose-gold {
+  background-color: #C98A94;
+  border: 1px solid #B57580;
+  box-shadow: 0 10px 25px -5px rgba(181, 117, 128, 0.25);
+}
+
+.metal-titanium-silver {
+  background-color: #E2E5EA;
+  border: 1px solid #CCD2DA;
+  box-shadow: 0 10px 25px -5px rgba(100, 116, 139, 0.2);
+}
