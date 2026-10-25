@@ -24,11 +24,11 @@ export default function DashboardHeader({
 
   return (
     <header className="w-full flex items-center justify-between gap-4 pb-4 pt-2">
-      {/* Left: 3-Lines Hamburger Menu Button + User's Name (No avatar picture, No 'Hello', No copy link) */}
+      {/* Left: 3-Lines Hamburger Menu Button (mobile only) + User's Name */}
       <div className="flex items-center gap-3.5 min-w-0">
         <button
           onClick={onToggleSidebar}
-          className="w-10 h-10 rounded-2xl bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal shadow-xs transition-colors shrink-0"
+          className="lg:hidden w-10 h-10 rounded-2xl bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal shadow-xs transition-colors shrink-0"
           title="Toggle Navigation Menu"
         >
           <Menu className="w-5 h-5 text-charcoal stroke-[2.2]" />

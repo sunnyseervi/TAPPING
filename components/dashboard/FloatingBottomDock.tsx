@@ -15,7 +15,7 @@ export default function FloatingBottomDock({
   onQuickAdd,
 }: FloatingBottomDockProps) {
   return (
-    <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 select-none">
+    <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 select-none">
       <div className="flex items-center gap-3 bg-[#1A1B1F] text-white px-5 py-2.5 rounded-full shadow-float border border-white/10 backdrop-blur-md">
         {/* Dashboard */}
         <button

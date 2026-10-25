@@ -6,7 +6,7 @@ import {
   Bell, 
   ArrowUpRight, 
   MoreVertical, 
-  Sparkles, 
+  Share2, 
   QrCode, 
   CreditCard, 
   Check, 
@@ -111,7 +111,7 @@ export default function TeamSpaceBento({
             title="Click to copy bio link"
           >
             <div className="w-11 h-11 rounded-full bg-[#141518] text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-              <Sparkles className="w-5 h-5 text-white stroke-[2.2]" />
+              <Share2 className="w-5 h-5 text-white stroke-[2.2]" />
             </div>
             <div className="min-w-0 flex-1">
               <span className="block text-xs sm:text-sm font-black text-charcoal leading-tight truncate">
@@ -289,6 +289,77 @@ export default function TeamSpaceBento({
               Links Performing
             </span>
             <span className="w-2.5 h-2.5 rounded-full bg-[#16A34A]" />
+          </div>
+        </div>
+      </div>
+
+      {/* DESKTOP FULL-SCREEN METRICS & TELEMETRY ROW */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* Card 1: Traffic Channels */}
+        <div className="bg-white rounded-4xl p-6 border border-black/5 shadow-soft flex flex-col justify-between">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-charcoal/50">
+              Contact Channels
+            </span>
+            <h3 className="text-base font-black text-charcoal mt-1">Traffic Channels</h3>
+          </div>
+          <div className="space-y-3 mt-4">
+            {analytics.referrers.map((r, i) => (
+              <div key={i} className="flex flex-col gap-1">
+                <div className="flex justify-between text-xs font-bold text-charcoal">
+                  <span>{r.source}</span>
+                  <span className="font-mono text-[11px]">{r.percentage}%</span>
+                </div>
+                <div className="w-full h-2 bg-black/5 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${
+                      i === 0 ? 'bg-[#4F83FF]' : i === 1 ? 'bg-[#FDF166]' : i === 2 ? 'bg-[#B6F554]' : 'bg-[#141518]'
+                    }`}
+                    style={{ width: `${r.percentage}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Card 2: Top Active Links */}
+        <div className="bg-white rounded-4xl p-6 border border-black/5 shadow-soft flex flex-col justify-between">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-charcoal/50">
+              Content Performance
+            </span>
+            <h3 className="text-base font-black text-charcoal mt-1">Top Active Links</h3>
+          </div>
+          <div className="space-y-2 mt-4">
+            {analytics.topLinks.slice(0, 4).map((l, i) => (
+              <div key={i} className="p-2.5 rounded-2xl bg-[#FAF7F2] border border-black/5 flex items-center justify-between text-xs font-bold text-charcoal">
+                <span className="truncate pr-2">{l.title}</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-white font-mono text-[10px] font-black border border-black/10 shrink-0">
+                  {l.clicks} clicks
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Card 3: Visitor Devices */}
+        <div className="bg-white rounded-4xl p-6 border border-black/5 shadow-soft flex flex-col justify-between md:col-span-2 lg:col-span-1">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-charcoal/50">
+              Hardware Telemetry
+            </span>
+            <h3 className="text-base font-black text-charcoal mt-1">Visitor Devices</h3>
+          </div>
+          <div className="space-y-3 mt-4">
+            {analytics.devices.map((d, i) => (
+              <div key={i} className="flex items-center justify-between p-3 rounded-2xl bg-[#FAF7F2] border border-black/5">
+                <span className="text-xs font-bold text-charcoal">{d.device}</span>
+                <span className="text-xs font-black font-mono px-2 py-0.5 rounded-lg bg-white border border-black/5 text-charcoal">
+                  {d.percentage}%
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </div>

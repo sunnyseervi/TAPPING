@@ -12,7 +12,7 @@ import {
   Layers, 
   UserCheck, 
   Bell, 
-  Sparkles, 
+  Share2, 
   MoreVertical, 
   ShieldCheck 
 } from 'lucide-react';
@@ -42,7 +42,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#F7F5EE] text-charcoal selection:bg-[#FDF166] selection:text-charcoal relative overflow-x-hidden">
       {/* TOP NAVIGATION */}
-      <nav className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between relative z-20">
+      <nav className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between relative z-20">
         <div className="flex items-center gap-3 shrink-0">
           <div className="w-10 h-10 rounded-2xl bg-[#141518] text-white flex items-center justify-center font-black text-lg shadow-sm">
             T
@@ -79,17 +79,17 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO SECTION */}
-      <section className="max-w-6xl mx-auto px-6 pt-10 pb-16 flex flex-col items-center text-center relative z-10">
+      <section className="max-w-7xl mx-auto px-6 pt-10 pb-16 flex flex-col items-center text-center relative z-10">
         <div className="w-full flex items-center justify-between text-xs font-bold text-charcoal/60 max-w-4xl mb-4 px-2">
-          <span>Apps challenge</span>
+          <span>Contact & NFC Ecosystem</span>
           <span className="hidden sm:inline-block max-w-xs text-right">
-            An ecosystem that allows you to monitor and connect with your audience
+            An ecosystem that allows you to connect and share your work in 1 contactless tap
           </span>
         </div>
 
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-charcoal leading-[1.05] max-w-4xl">
           Check Your <br />
-          <span className="text-charcoal/35">Team & Bio Space</span>
+          <span className="text-charcoal/35">Creator & Bio Space</span>
         </h1>
 
         <p className="text-sm sm:text-base text-charcoal/70 max-w-xl mt-5 leading-relaxed font-medium">
@@ -160,7 +160,7 @@ export default function LandingPage() {
             <div className="flex items-center justify-between gap-2 pt-1">
               <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-black/10 shadow-xs">
                 <div className="w-7 h-7 rounded-full bg-[#141518] text-white flex items-center justify-center">
-                  <Sparkles className="w-3.5 h-3.5 stroke-[2.2]" />
+                  <Share2 className="w-3.5 h-3.5 stroke-[2.2]" />
                 </div>
                 <div>
                   <span className="block text-[11px] font-black leading-tight">Share Bio</span>
@@ -242,7 +242,7 @@ export default function LandingPage() {
       </section>
 
       {/* CORE 4 MODULES IN THE BENTO AESTHETIC */}
-      <section id="features" className="max-w-6xl mx-auto px-6 py-20">
+      <section id="features" className="max-w-7xl mx-auto px-6 py-20">
         <div className="text-center mb-12">
           <span className="text-xs font-black px-3 py-1 rounded-full bg-[#FDF166] text-charcoal border border-black/10">
             SYSTEM ARCHITECTURE
@@ -339,7 +339,7 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="max-w-6xl mx-auto px-6 py-12 border-t border-black/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-charcoal/60">
+      <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-black/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-charcoal/60">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-lg bg-[#141518] text-white flex items-center justify-center font-black text-xs">
             T

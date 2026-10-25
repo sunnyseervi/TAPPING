@@ -40,18 +40,18 @@ export default function AppSidebar({
 
   return (
     <>
-      {/* Drawer Backdrop Overlay */}
+      {/* Drawer Backdrop Overlay (Mobile only) */}
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs transition-opacity"
+          className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-xs transition-opacity"
         />
       )}
 
-      {/* Slide-out Sidebar Drawer with Warm Stone Theme */}
+      {/* Sidebar: Permanently docked on desktop (lg:translate-x-0 lg:w-72), slide-out drawer on mobile */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen bg-[#F7F5EE] border-r border-black/10 flex flex-col justify-between w-72 sm:w-80 shadow-2xl transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 left-0 z-50 lg:z-30 h-screen bg-[#F7F5EE] border-r border-black/10 flex flex-col justify-between w-72 sm:w-80 lg:w-72 shadow-2xl lg:shadow-none transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Top Header in Sidebar */}
@@ -76,10 +76,10 @@ export default function AppSidebar({
               </div>
             </div>
 
-            {/* Close Button */}
+            {/* Close Button (mobile only) */}
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal transition-colors shadow-xs"
+              className="lg:hidden w-8 h-8 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal transition-colors shadow-xs"
               title="Close Menu"
             >
               <X className="w-4 h-4 text-charcoal stroke-[2.2]" />

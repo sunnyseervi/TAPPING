@@ -97,17 +97,18 @@ export default function DashboardPage() {
         onOpenAuth={() => setShowAuthModal(true)}
       />
 
-      {/* Main Content Layout Container */}
-      <div className="w-full max-w-6xl mx-auto px-4 md:px-8 pt-3 pb-28 md:pb-14">
-        {/* Top Header with 3-lines hamburger menu toggle button */}
-        <DashboardHeader
-          profile={profile}
-          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          onSelectTab={(tab) => setActiveTab(tab)}
-        />
+      {/* Main Content Layout Container: Full-width responsive with desktop sidebar offset */}
+      <div className="w-full lg:pl-72 flex flex-col min-h-screen">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 pt-3 pb-28 lg:pb-12">
+          {/* Top Header */}
+          <DashboardHeader
+            profile={profile}
+            onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            onSelectTab={(tab) => setActiveTab(tab)}
+          />
 
-        {/* User Data Modules Workspace (100% Full Width — No Preview) */}
-        <main className="w-full flex flex-col gap-6 mt-3">
+          {/* User Data Modules Workspace (100% Full Width — Fits Screen) */}
+          <main className="w-full flex flex-col gap-6 mt-3">
           {/* TAB: DASHBOARD (Matching User's Uploaded Team Space Bento Screen Exactly) */}
           {activeTab === 'dashboard' && (
             <TeamSpaceBento
@@ -153,9 +154,10 @@ export default function DashboardPage() {
             />
           )}
         </main>
+        </div>
       </div>
 
-      {/* Floating Bottom Pill Dock - Strictly Mobile Viewport (< md) */}
+      {/* Floating Bottom Pill Dock - Strictly Mobile Viewport (< lg) */}
       <FloatingBottomDock
         activeTab={activeTab}
         onSelectTab={(tab) => setActiveTab(tab)}

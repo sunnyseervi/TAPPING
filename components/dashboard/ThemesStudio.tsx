@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Profile, ThemeType } from '@/lib/types';
-import { Palette, Check, Sparkles } from 'lucide-react';
+import { Palette, Check } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { THEMES } from '@/lib/themes';
 
