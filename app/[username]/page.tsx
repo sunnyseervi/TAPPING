@@ -207,7 +207,7 @@ export default function PublicProfilePage() {
     return `https://${host}/${value.replace(/^@/, '')}`;
   };
 
-  const isCardBehindActive = profile.cardBehindContent ?? Boolean(profile.customHeaderImage);
+  const isCardBehindActive = Boolean(profile.cardBehindContent);
   const cardStyle = profile.cardContainerStyle || 'glass';
 
   let cardContainerClasses = '';
@@ -229,52 +229,79 @@ export default function PublicProfilePage() {
       : 'bg-white/85 text-charcoal backdrop-blur-2xl border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.25)] rounded-[36px] sm:rounded-[40px] p-5 sm:p-7';
   }
 
+  const hasDarkWallpaper = Boolean(profile.customHeaderImage) && (profile.bgImageDim ?? 30) >= 35;
+  const contentIsDark = isCardBehindActive ? insideCardDark : (dark || hasDarkWallpaper);
+
   return (
-    <div 
-      className={`min-h-screen ${currentTheme.canvasBg} text-charcoal flex flex-col items-center justify-start p-0 sm:py-8 sm:px-4 selection:bg-[#FDF166] selection:text-charcoal transition-colors duration-200 relative overflow-x-hidden`}
-      style={{ 
-        backgroundColor: profile.customBgColor || currentTheme.canvasBgHex || currentTheme.previewColors[0] || '#FAF7F2', 
-        backgroundImage: profile.pageBgImage ? `url(${profile.pageBgImage})` : undefined, 
-        backgroundSize: profile.pageBgImage ? 'cover' : undefined, 
-        backgroundPosition: 'center',
-        ...getFontFamilyStyle(profile.fontFamily)
-      }}
-    >
-      {/* Full-Screen Bio Page Theme Pattern or Custom Uploaded Wallpaper */}
-      {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
-        <div 
-          className={`fixed inset-0 z-0 pointer-events-none transition-all overflow-hidden ${
-            profile.customHeaderImage ? '' : patternClass
-          }`}
-        >
-          {profile.customHeaderImage && (
-            <div
-              className="absolute inset-0 bg-no-repeat bg-center transition-all duration-75"
-              style={{
-                backgroundImage: `url(${profile.customHeaderImage})`,
-                backgroundSize: profile.bgImageFit === 'contain' ? 'contain' : profile.bgImageFit === 'auto' ? 'auto' : 'cover',
-                transform: `scale(${(profile.bgImageZoom ?? 100) / 100}) translate(${profile.bgImagePosX ?? 0}px, ${profile.bgImagePosY ?? 0}px)`,
-                transformOrigin: 'center center',
-                filter: (profile.bgImageBlur ?? 0) > 0 ? `blur(${profile.bgImageBlur}px)` : undefined,
-              }}
-            />
-          )}
-          {profile.customHeaderImage && (
-            <div 
-              className="absolute inset-0 transition-colors pointer-events-none"
-              style={{
-                backgroundColor: `rgba(0, 0, 0, ${(profile.bgImageDim ?? 40) / 100})`,
-              }}
-            />
-          )}
-        </div>
-      )}
+    <div className="min-h-screen w-full bg-[#E5E5E7] dark:bg-[#0D0F12] flex items-center justify-center p-0 sm:py-8 sm:px-4 relative overflow-x-hidden selection:bg-[#FDF166] selection:text-charcoal transition-colors">
+      
+      {/* DESKTOP-ONLY FLOATING QR BADGE: Selena Gomez Linktree Reference (Bottom-Right) */}
+      <div 
+        onClick={() => {
+          recordQRScan();
+          setShowQRModal(true);
+        }}
+        className="fixed bottom-6 right-6 hidden md:flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/90 dark:bg-[#1C2028]/90 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-[0_12px_36px_rgba(0,0,0,0.18)] z-40 select-none cursor-pointer hover:scale-105 active:scale-95 transition-all"
+        title="View on mobile"
+      >
+        <span className="text-[10px] font-black tracking-wide text-charcoal/70 dark:text-white/70">
+          View on mobile
+        </span>
+        {qrUrl ? (
+          <img src={qrUrl} alt="View on mobile QR" className="w-20 h-20 rounded-xl border border-black/5" />
+        ) : (
+          <div className="w-20 h-20 bg-black/5 rounded-xl flex items-center justify-center">
+            <QrCode className="w-8 h-8 opacity-40 text-charcoal" />
+          </div>
+        )}
+      </div>
 
-      {/* MOBILE-ONLY CONSTRAINED CONTAINER (MAX-W-[430PX] — DESKTOP RETAINS SIDES FOR WALLPAPER) */}
-      <div className="w-full max-w-[430px] mx-auto min-h-screen sm:min-h-auto relative z-10 flex flex-col items-center px-3 sm:px-0">
+      {/* CENTERED MOBILE VIEW CANVAS (MAX-W-[430PX] WITH AUTHENTIC MOBILE PHONE RATIO) */}
+      <div 
+        className={`w-full max-w-[430px] min-h-screen sm:min-h-[92vh] sm:my-auto sm:rounded-[44px] shadow-[0_25px_80px_rgba(0,0,0,0.25)] relative overflow-hidden flex flex-col items-center transition-all border border-black/10 dark:border-white/10 ${currentTheme.canvasBg}`}
+        style={{
+          backgroundColor: profile.customBgColor || currentTheme.canvasBgHex || currentTheme.previewColors[0] || '#FAF7F2',
+          backgroundImage: profile.pageBgImage ? `url(${profile.pageBgImage})` : undefined,
+          backgroundSize: profile.pageBgImage ? 'cover' : undefined,
+          backgroundPosition: 'center',
+          ...getFontFamilyStyle(profile.fontFamily)
+        }}
+      >
+        {/* Full Bio Canvas Theme Pattern or Custom Uploaded Wallpaper */}
+        {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
+          <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+            {profile.customHeaderImage ? (
+              <div
+                className="absolute inset-0 bg-no-repeat bg-center transition-all duration-75"
+                style={{
+                  backgroundImage: `url(${profile.customHeaderImage})`,
+                  backgroundSize: profile.bgImageFit === 'contain' ? 'contain' : profile.bgImageFit === 'auto' ? 'auto' : 'cover',
+                  transform: `scale(${(profile.bgImageZoom ?? 100) / 100}) translate(${profile.bgImagePosX ?? 0}px, ${profile.bgImagePosY ?? 0}px)`,
+                  transformOrigin: 'center center',
+                  filter: (profile.bgImageBlur ?? 0) > 0 ? `blur(${profile.bgImageBlur}px)` : undefined,
+                }}
+              />
+            ) : (
+              <div className={`absolute inset-0 ${patternClass}`} />
+            )}
+            {profile.customHeaderImage && (
+              <div 
+                className="absolute inset-0 transition-colors pointer-events-none"
+                style={{
+                  backgroundColor: `rgba(0, 0, 0, ${(profile.bgImageDim ?? 30) / 100})`,
+                }}
+              />
+            )}
+          </div>
+        )}
 
-        {/* TOP ACTION BAR: Refined Share & QR Actions (At Top of Mobile View) */}
-        <div className="w-full flex items-center justify-end py-2 mb-1 px-1">
+        {/* TOP ACTION BAR: Integrated at top of mobile canvas */}
+        <div className="w-full flex items-center justify-between py-4 px-5 relative z-20">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+            contentIsDark ? 'bg-white/10 text-white border border-white/15' : 'bg-black/5 text-charcoal border border-black/10'
+          } backdrop-blur-md`}>
+            <Globe className="w-4 h-4 opacity-70" />
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
@@ -282,7 +309,7 @@ export default function PublicProfilePage() {
                 setShowQRModal(true);
               }}
               className={`px-3 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer backdrop-blur-md ${
-                dark 
+                contentIsDark 
                   ? 'bg-[#141A28]/85 hover:bg-[#1C2538] text-white border-white/20' 
                   : 'bg-white/85 hover:bg-white text-charcoal border-black/10'
               }`}
@@ -294,7 +321,7 @@ export default function PublicProfilePage() {
             <button
               onClick={handleShare}
               className={`px-3.5 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer backdrop-blur-md ${
-                dark 
+                contentIsDark 
                   ? 'bg-[#141A28]/85 hover:bg-[#1C2538] text-white border-white/20' 
                   : 'bg-white/85 hover:bg-white text-charcoal border-black/10'
               }`}
@@ -306,9 +333,9 @@ export default function PublicProfilePage() {
           </div>
         </div>
 
-        {/* MAIN BIO PROFILE STACK (WRAPPED IN CARD CONTAINER WHEN ACTIVE) */}
-        <main className={`w-full transition-all flex flex-col items-center text-center ${
-          isCardBehindActive ? cardContainerClasses : 'px-1 pt-1 pb-10'
+        {/* MAIN BIO PROFILE STACK */}
+        <main className={`w-full flex flex-col items-center text-center px-4 sm:px-6 pt-1 pb-10 relative z-10 transition-all ${
+          isCardBehindActive ? cardContainerClasses : ''
         }`}>
         
         {/* Avatar with Crisp White Ring & Shadow */}
@@ -328,7 +355,7 @@ export default function PublicProfilePage() {
         <h1 
           className={`${titleSizeClass} font-black tracking-tight mt-3 leading-tight`}
           style={{ 
-            color: profile.fontColor || (insideCardDark ? '#FFFFFF' : (currentTheme.textHeadingHex || '#141518')),
+            color: profile.fontColor || (contentIsDark ? '#FFFFFF' : (currentTheme.textHeadingHex || '#141518')),
             ...getFontFamilyStyle(profile.fontFamily)
           }}
         >
@@ -336,7 +363,7 @@ export default function PublicProfilePage() {
         </h1>
 
         {/* Handle / Username */}
-        <p className={`text-xs font-bold font-mono mt-0.5 ${insideCardDark ? 'text-white/60' : 'text-charcoal/60'}`}>
+        <p className={`text-xs font-bold font-mono mt-0.5 ${contentIsDark ? 'text-white/70' : 'text-charcoal/60'}`}>
           @{profile.username}
         </p>
 
@@ -358,7 +385,7 @@ export default function PublicProfilePage() {
 
         {/* Location / Address */}
         {fullAddress && (
-          <div className={`flex items-center justify-center gap-1.5 mt-1.5 text-xs font-semibold ${insideCardDark ? 'text-white/70' : 'text-charcoal/70'}`}>
+          <div className={`flex items-center justify-center gap-1.5 mt-1.5 text-xs font-semibold ${contentIsDark ? 'text-white/80' : 'text-charcoal/70'}`}>
             <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
             <span>{fullAddress}</span>
           </div>
@@ -366,7 +393,7 @@ export default function PublicProfilePage() {
 
         {/* Bio Description */}
         {profile.bio && (
-          <p className={`${bodySizeClass} mt-2.5 max-w-md leading-relaxed font-medium ${insideCardDark ? 'text-white/85' : 'text-charcoal/75'}`}>
+          <p className={`${bodySizeClass} mt-2.5 max-w-md leading-relaxed font-medium ${contentIsDark ? 'text-white/90' : 'text-charcoal/75'}`}>
             {profile.bio}
           </p>
         )}
@@ -388,7 +415,7 @@ export default function PublicProfilePage() {
               <a
                 href={`tel:${phoneNumber.replace(/[^0-9+]/g, '')}`}
                 className={`py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors backdrop-blur-md ${
-                  dark 
+                  contentIsDark 
                     ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
                     : 'bg-white/90 hover:bg-white text-charcoal border border-black/10'
                 }`}
@@ -403,7 +430,7 @@ export default function PublicProfilePage() {
               <a
                 href={`mailto:${emailAddress}`}
                 className={`py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors backdrop-blur-md ${
-                  dark 
+                  contentIsDark 
                     ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
                     : 'bg-white/90 hover:bg-white text-charcoal border border-black/10'
                 }`}
@@ -420,7 +447,7 @@ export default function PublicProfilePage() {
                 target="_blank"
                 rel="noreferrer"
                 className={`col-span-2 sm:col-span-1 py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors backdrop-blur-md ${
-                  dark 
+                  contentIsDark 
                     ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
                     : 'bg-white/90 hover:bg-white text-charcoal border border-black/10'
                 }`}
@@ -441,7 +468,7 @@ export default function PublicProfilePage() {
               target="_blank"
               rel="noreferrer"
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 backdrop-blur-md ${
-                dark 
+                contentIsDark 
                   ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
                   : 'bg-white/90 hover:bg-white text-charcoal border border-black/10'
               }`}
@@ -456,7 +483,7 @@ export default function PublicProfilePage() {
               target="_blank"
               rel="noreferrer"
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 backdrop-blur-md ${
-                dark 
+                contentIsDark 
                   ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
                   : 'bg-white/90 hover:bg-white text-charcoal border border-black/10'
               }`}
@@ -471,7 +498,7 @@ export default function PublicProfilePage() {
               target="_blank"
               rel="noreferrer"
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 backdrop-blur-md ${
-                dark 
+                contentIsDark 
                   ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
                   : 'bg-white/90 hover:bg-white text-charcoal border border-black/10'
               }`}
@@ -486,7 +513,7 @@ export default function PublicProfilePage() {
               target="_blank"
               rel="noreferrer"
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 backdrop-blur-md ${
-                dark 
+                contentIsDark 
                   ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
                   : 'bg-white/90 hover:bg-white text-charcoal border border-black/10'
               }`}
@@ -499,7 +526,7 @@ export default function PublicProfilePage() {
             <a
               href={`mailto:${profile.socialLinks.email}`}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 backdrop-blur-md ${
-                dark 
+                contentIsDark 
                   ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
                   : 'bg-white/90 hover:bg-white text-charcoal border border-black/10'
               }`}
@@ -513,7 +540,7 @@ export default function PublicProfilePage() {
         {/* ACTIVE LINK BLOCKS STACK */}
         <div className="w-full flex flex-col gap-3 text-left">
           {activeLinks.length === 0 ? (
-            <div className={`p-5 rounded-3xl text-center text-xs font-bold ${dark ? 'bg-white/5 text-white/50 border border-white/10' : 'bg-white/60 text-charcoal/50 border border-black/5'}`}>
+            <div className={`p-5 rounded-3xl text-center text-xs font-bold ${contentIsDark ? 'bg-white/5 text-white/50 border border-white/10' : 'bg-white/60 text-charcoal/50 border border-black/5'}`}>
               No active links published yet.
             </div>
           ) : (
@@ -566,14 +593,14 @@ export default function PublicProfilePage() {
         {/* CREATOR PRODUCTS & WHATSAPP COMMERCE STORE (SHOWN DIRECTLY BELOW PROFILE LINKS) */}
         {store.enabled && store.products.some((product) => product.isActive) && (
           <div className="w-full mt-8 pt-6 border-t border-black/10 flex flex-col gap-4 text-left">
-            <PublicStore store={store} sellerName={profile.displayName} dark={insideCardDark} />
+            <PublicStore store={store} sellerName={profile.displayName} dark={contentIsDark} />
           </div>
         )}
       </main>
 
       {/* Powered by Tapping Branding Footer */}
-      <footer className="w-full py-4 text-center">
-        <span className={`text-[11px] font-bold tracking-wider ${insideCardDark ? 'text-white/40' : 'text-charcoal/40'}`}>
+      <footer className="w-full py-5 text-center relative z-10 mt-auto">
+        <span className={`text-[11px] font-bold tracking-wider ${contentIsDark ? 'text-white/50' : 'text-charcoal/40'}`}>
           Powered by TAPPING &bull; Digital Cards &amp; Bio Space
         </span>
       </footer>

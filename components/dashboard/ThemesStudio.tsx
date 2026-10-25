@@ -82,7 +82,7 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
         ...draftProfile,
         customHeaderImage: dataUrl,
         showHeaderBackground: true,
-        cardBehindContent: draftProfile.cardBehindContent ?? true,
+        cardBehindContent: draftProfile.cardBehindContent ?? false,
         cardContainerStyle: draftProfile.cardContainerStyle || 'glass',
         bgImageZoom: draftProfile.bgImageZoom ?? 100,
         bgImageFit: draftProfile.bgImageFit || 'cover',
@@ -760,18 +760,18 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
 
               <button
                 type="button"
-                onClick={() => updateDraft({ cardBehindContent: !(draftProfile.cardBehindContent ?? true) })}
+                onClick={() => updateDraft({ cardBehindContent: !draftProfile.cardBehindContent })}
                 className={`px-3 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer ${
-                  (draftProfile.cardBehindContent ?? true)
+                  draftProfile.cardBehindContent
                     ? 'bg-emerald-500 text-white border-emerald-600 shadow-2xs'
                     : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
                 }`}
               >
-                {(draftProfile.cardBehindContent ?? true) ? 'Active' : 'Off'}
+                {draftProfile.cardBehindContent ? 'Active' : 'Off'}
               </button>
             </div>
 
-            {(draftProfile.cardBehindContent ?? true) && (
+            {draftProfile.cardBehindContent && (
               <div className="pt-2 border-t border-black/5 flex flex-col gap-2">
                 <span className="text-[10px] font-bold text-charcoal/70 uppercase tracking-wider">
                   Select Card Container Material:
@@ -1073,19 +1073,19 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
 
                     <button
                       type="button"
-                      onClick={() => updateDraft({ cardBehindContent: !(draftProfile.cardBehindContent ?? true) })}
+                      onClick={() => updateDraft({ cardBehindContent: !draftProfile.cardBehindContent })}
                       className={`px-3 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer ${
-                        (draftProfile.cardBehindContent ?? true)
+                        draftProfile.cardBehindContent
                           ? 'bg-emerald-500 text-white border-emerald-600 shadow-2xs'
                           : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
                       }`}
                     >
-                      {(draftProfile.cardBehindContent ?? true) ? 'Active' : 'Off'}
+                      {draftProfile.cardBehindContent ? 'Active' : 'Off'}
                     </button>
                   </div>
 
                   {/* Card Container Style Selector */}
-                  {(draftProfile.cardBehindContent ?? true) && (
+                  {draftProfile.cardBehindContent && (
                     <div className="pt-2 border-t border-[#4F83FF]/20 flex flex-col gap-2">
                       <span className="text-[10px] font-bold text-charcoal/70 uppercase tracking-wider">
                         Choose Card Container Style:

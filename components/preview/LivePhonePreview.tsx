@@ -55,7 +55,7 @@ export default function LivePhonePreview({
   const fontFamilyClass = getFontFamilyClass(profile.fontFamily);
   const patternClass = profile.showHeaderBackground ? getPatternClass(profile.headerBackground) : '';
 
-  const isCardBehindActive = profile.cardBehindContent ?? Boolean(profile.customHeaderImage);
+  const isCardBehindActive = Boolean(profile.cardBehindContent);
   const cardStyle = profile.cardContainerStyle || 'glass';
   const isDark = isDarkTheme(profile.theme);
 
@@ -77,6 +77,9 @@ export default function LivePhonePreview({
       ? 'bg-[#141A28]/85 text-white backdrop-blur-xl border border-white/20 shadow-md rounded-3xl p-3.5 my-1'
       : 'bg-white/85 text-charcoal backdrop-blur-xl border border-white/50 shadow-sm rounded-3xl p-3.5 my-1';
   }
+
+  const hasDarkWallpaper = Boolean(profile.customHeaderImage) && (profile.bgImageDim ?? 30) >= 35;
+  const contentIsDark = isCardBehindActive ? insideCardDark : (isDark || hasDarkWallpaper);
 
   // Font sizing calculations
   const titleSizeClass = 
@@ -236,7 +239,7 @@ export default function LivePhonePreview({
               <h1 
                 className={`${titleSizeClass} font-black mt-2.5 tracking-tight text-center ${fontFamilyClass}`}
                 style={{ 
-                  color: profile.fontColor || currentTheme.textHeadingHex || (insideCardDark ? '#FFFFFF' : '#141518'),
+                  color: profile.fontColor || currentTheme.textHeadingHex || (contentIsDark ? '#FFFFFF' : '#141518'),
                   ...getFontFamilyStyle(profile.fontFamily)
                 }}
               >
@@ -244,7 +247,7 @@ export default function LivePhonePreview({
               </h1>
 
               <p 
-                className={`text-[11px] font-bold opacity-75 mt-0.5 font-mono ${insideCardDark ? 'text-white/70' : 'text-charcoal/70'}`}
+                className={`text-[11px] font-bold opacity-75 mt-0.5 font-mono ${contentIsDark ? 'text-white/70' : 'text-charcoal/70'}`}
               >
                 @{profile.username}
               </p>

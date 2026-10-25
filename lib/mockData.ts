@@ -14,7 +14,7 @@ export const initialProfile: Profile = {
   headerBackground: 'none',
   showHeaderBackground: false,
   linkCardStyle: 'solid',
-  cardBehindContent: true,
+  cardBehindContent: false,
   cardContainerStyle: 'glass',
   bgImageZoom: 100,
   bgImageFit: 'cover',

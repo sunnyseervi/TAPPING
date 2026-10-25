@@ -132,40 +132,46 @@ export default function PublicStore({ store, sellerName, dark }: PublicStoreProp
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4">
         {products.map((product, index) => (
           <article key={product.id} className={`group overflow-hidden rounded-[2rem] border shadow-[0_16px_50px_rgba(68,45,34,0.08)] transition-all hover:-translate-y-1 hover:shadow-[0_22px_60px_rgba(68,45,34,0.14)] ${panelClass}`}>
-            <div className={`relative aspect-[4/3] w-full overflow-hidden ${dark ? 'bg-white/10' : 'bg-[#EAE1D5]'}`}>
+            <div className={`relative aspect-[16/9] sm:aspect-[4/3] w-full overflow-hidden ${dark ? 'bg-white/10' : 'bg-[#EAE1D5]'}`}>
               {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" /> : <div className="h-full w-full bg-[#E3DFF8]" />}
               <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-charcoal shadow-sm backdrop-blur">{index === 0 ? 'Studio favourite' : 'Small batch'}</span>
-              <button type="button" className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-charcoal shadow-sm backdrop-blur" title="Save item"><Heart className="h-4 w-4" /></button>
             </div>
-            <div className="p-5 sm:p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div><h3 className="text-base font-black leading-tight sm:text-lg">{product.name}</h3>{product.description && <p className={`mt-2 text-xs font-semibold leading-relaxed ${dark ? 'text-white/60' : 'text-charcoal/50'}`}>{product.description}</p>}</div>
-                <span className="shrink-0 text-base font-black">{formatPrice(product.price)}</span>
+            <div className="p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-black leading-tight sm:text-base">{product.name}</h3>
+                  {product.description && <p className={`mt-1.5 text-xs font-semibold leading-relaxed line-clamp-2 ${dark ? 'text-white/60' : 'text-charcoal/50'}`}>{product.description}</p>}
+                </div>
+                <span className="shrink-0 text-sm font-black">{formatPrice(product.price)}</span>
               </div>
-              <div className="mt-3 flex items-baseline gap-2">
+              <div className="mt-2 flex items-baseline gap-2">
                 {product.compareAtPrice && product.compareAtPrice > product.price && <span className={`text-[11px] font-bold line-through ${dark ? 'text-white/40' : 'text-charcoal/35'}`}>{formatPrice(product.compareAtPrice)}</span>}
               </div>
               {product.variants.length > 0 && (
                 <select
                   value={selectedVariants[product.id] || product.variants[0]}
                   onChange={(event) => setSelectedVariants((current) => ({ ...current, [product.id]: event.target.value }))}
-                  className={`mt-4 w-full rounded-2xl border px-4 py-3 text-xs font-bold outline-none ${dark ? 'border-white/15 bg-white/10 text-white' : 'border-[#D9CFC2] bg-[#FAF7F2] text-charcoal'}`}
+                  className={`mt-3 w-full rounded-2xl border px-3.5 py-2.5 text-xs font-bold outline-none ${dark ? 'border-white/15 bg-white/10 text-white' : 'border-[#D9CFC2] bg-[#FAF7F2] text-charcoal'}`}
                 >
                   {product.variants.map((variant) => <option key={variant} value={variant}>{variant}</option>)}
                 </select>
               )}
-              <button onClick={() => addToCart(product)} className="mt-4 flex w-full items-center justify-between rounded-2xl bg-[#A6462D] px-4 py-3 text-xs font-black text-white transition-colors hover:bg-[#873721]"><span>Add to bag</span><ArrowRight className="h-4 w-4" /></button>
+              <button 
+                onClick={() => addToCart(product)} 
+                className="mt-3.5 flex w-full items-center justify-between rounded-2xl bg-[#A6462D] px-4 py-3 text-xs font-black text-white transition-all hover:bg-[#873721] active:scale-98 cursor-pointer shadow-sm"
+              >
+                <span className="flex items-center gap-1.5">
+                  <ShoppingBag className="h-3.5 w-3.5" />
+                  <span>Add to Bag</span>
+                </span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
           </article>
         ))}
-      </div>
-
-      <div className={`flex flex-col gap-3 rounded-[1.75rem] border p-5 sm:flex-row sm:items-center sm:justify-between ${dark ? 'border-white/15 bg-white/10' : 'border-[#D9CFC2] bg-[#F5E3DC]'}`}>
-        <div><p className="text-xs font-black">Personal service, from maker to customer.</p><p className={`mt-1 text-[11px] font-semibold ${dark ? 'text-white/60' : 'text-charcoal/55'}`}>Your order goes straight to {sellerName} on WhatsApp for availability, delivery and payment confirmation.</p></div>
-        <button onClick={() => setCartOpen(true)} className="shrink-0 rounded-full bg-[#25D366] px-4 py-2.5 text-xs font-black text-[#07160D]">Review bag</button>
       </div>
 
       {cartOpen && (
