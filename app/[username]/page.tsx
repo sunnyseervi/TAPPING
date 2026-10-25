@@ -403,17 +403,23 @@ export default function PublicProfilePage() {
             <span 
               className={`text-xs font-black px-4 py-1.5 rounded-full ${
                 contentIsDark 
-                  ? 'bg-black/50 text-white border border-white/25 shadow-sm' 
-                  : 'bg-white/85 text-charcoal border border-white/60 shadow-sm'
+                  ? 'bg-black/50 border border-white/25 shadow-sm' 
+                  : 'bg-white/85 border border-white/60 shadow-sm'
               } backdrop-blur-xl shadow-2xs flex items-center gap-1.5`}
-              style={profile.fontColor ? { color: profile.fontColor } : undefined}
+              style={{
+                color: profile.fontColor || (contentIsDark ? '#FFFFFF' : '#141518'),
+                borderColor: profile.fontColor ? `${profile.fontColor}40` : undefined,
+              }}
             >
-              <Briefcase className="w-3.5 h-3.5 shrink-0 text-[#4F83FF]" />
-              <span>{jobTitleText}</span>
+              <Briefcase 
+                className="w-3.5 h-3.5 shrink-0" 
+                style={{ color: profile.fontColor || (contentIsDark ? '#FFFFFF' : '#4F83FF') }} 
+              />
+              <span style={profile.fontColor ? { color: profile.fontColor } : undefined}>{jobTitleText}</span>
               {organizationName && (
                 <>
-                  <span className="opacity-40">&bull;</span>
-                  <span>{organizationName}</span>
+                  <span className="opacity-40" style={profile.fontColor ? { color: profile.fontColor } : undefined}>&bull;</span>
+                  <span style={profile.fontColor ? { color: profile.fontColor } : undefined}>{organizationName}</span>
                 </>
               )}
             </span>

@@ -275,13 +275,26 @@ export default function LivePhonePreview({
                 <span 
                   className={`text-[10px] font-black px-3.5 py-1 rounded-full ${
                     contentIsDark 
-                      ? 'bg-black/50 text-white border border-white/25 shadow-sm' 
-                      : 'bg-white/85 text-charcoal border border-white/60 shadow-sm'
-                  } backdrop-blur-xl shadow-2xs flex items-center gap-1`}
-                  style={profile.fontColor ? { color: profile.fontColor } : undefined}
+                      ? 'bg-black/50 border border-white/25 shadow-sm' 
+                      : 'bg-white/85 border border-white/60 shadow-sm'
+                  } backdrop-blur-xl shadow-2xs flex items-center gap-1.5`}
+                  style={{
+                    color: profile.fontColor || (contentIsDark ? '#FFFFFF' : '#141518'),
+                    borderColor: profile.fontColor ? `${profile.fontColor}40` : undefined,
+                  }}
                 >
-                  <span>{profile.badgeTitle || vcard.jobTitle}</span>
-                  {vcard.organization && <span>&bull; {vcard.organization}</span>}
+                  <Briefcase 
+                    className="w-3 h-3 shrink-0" 
+                    style={{ color: profile.fontColor || (contentIsDark ? '#FFFFFF' : '#4F83FF') }} 
+                  />
+                  <span style={profile.fontColor ? { color: profile.fontColor } : undefined}>
+                    {profile.badgeTitle || vcard.jobTitle}
+                  </span>
+                  {vcard.organization && (
+                    <span style={profile.fontColor ? { color: profile.fontColor } : undefined}>
+                      &bull; {vcard.organization}
+                    </span>
+                  )}
                 </span>
               </div>
             )}

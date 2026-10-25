@@ -388,7 +388,7 @@ export default function DigitalCardStudio({
     ctx.fillText(displayName.toUpperCase(), safeMarginX, 145, 500);
 
     // Job Title / Role
-    ctx.fillStyle = isLightCard ? '#4F83FF' : '#FDF166';
+    ctx.fillStyle = cardFontColor || (isLightCard ? '#4F83FF' : '#FDF166');
     ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
     ctx.fillText(jobTitle, safeMarginX, 205, 500);
 
@@ -544,8 +544,8 @@ export default function DigitalCardStudio({
       {/* Main Grid: Card Canvas Preview (Left) + Customization Studio (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-6">
         
-        {/* Left Column: Interactive Visiting Card Canvas (Sticky) */}
-        <div className="lg:col-span-7 xl:col-span-7 flex flex-col items-center">
+        {/* Left Column: Interactive Visiting Card Canvas (STICKY ON SCROLL) */}
+        <div className="lg:col-span-7 xl:col-span-7 lg:sticky lg:top-8 self-start flex flex-col items-center">
           
           {/* Card Top Utility Bar */}
           <div className="w-full max-w-[520px] flex items-center justify-between mb-3 text-xs">
@@ -556,7 +556,7 @@ export default function DigitalCardStudio({
               </span>
             </div>
 
-            <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 rounded-xl border border-[#4F83FF]/25 bg-[#EFF4FF] px-3 py-1.5 text-[10px] font-black text-[#4F83FF]"><Upload className="h-3 w-3" /> Upload design image</button>
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 rounded-xl border border-[#4F83FF]/25 bg-[#EFF4FF] px-3 py-1.5 text-[10px] font-black text-[#4F83FF] hover:bg-[#E0EBFF] transition-colors cursor-pointer"><Upload className="h-3 w-3" /> Upload design image</button>
           </div>
 
           {/* Physical Visiting Card Canvas Mockup */}
@@ -593,34 +593,52 @@ export default function DigitalCardStudio({
                 <div>
                   {/* Monogram / Profile Brand Badge */}
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-lg overflow-hidden bg-white/20 border border-white/20 flex items-center justify-center font-black text-xs shrink-0">
+                    <div 
+                      className="w-7 h-7 rounded-lg overflow-hidden bg-white/20 border border-white/20 flex items-center justify-center font-black text-xs shrink-0"
+                      style={cardFontColor ? { color: cardFontColor, borderColor: `${cardFontColor}40` } : undefined}
+                    >
                       {displayName.charAt(0)}
                     </div>
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider opacity-70">
+                    <span 
+                      className="text-[10px] font-mono font-bold uppercase tracking-wider opacity-70"
+                      style={cardFontColor ? { color: cardFontColor } : undefined}
+                    >
                       Verified Contact
                     </span>
                   </div>
 
                   {/* Full Name */}
-                  <h3 className="font-black text-xl sm:text-2xl tracking-tight leading-tight uppercase truncate">
+                  <h3 
+                    className="font-black text-xl sm:text-2xl tracking-tight leading-tight uppercase truncate"
+                    style={cardFontColor ? { color: cardFontColor } : undefined}
+                  >
                     {displayName}
                   </h3>
 
-                  {/* Title / Role */}
-                  <p className="text-xs sm:text-sm font-bold opacity-90 mt-0.5 truncate" style={{ color: currentThemeConfig.accentColor }}>
+                  {/* Title / Role (Professional Tag) */}
+                  <p 
+                    className="text-xs sm:text-sm font-bold opacity-90 mt-0.5 truncate transition-colors" 
+                    style={{ color: cardFontColor || currentThemeConfig.accentColor }}
+                  >
                     {jobTitle}
                   </p>
 
                   {/* Company */}
                   {company && (
-                    <p className="text-[11px] font-semibold opacity-75 truncate mt-0.5">
+                    <p 
+                      className="text-[11px] font-semibold opacity-75 truncate mt-0.5"
+                      style={cardFontColor ? { color: cardFontColor } : undefined}
+                    >
                       {company}
                     </p>
                   )}
                 </div>
 
                 {/* Direct Contact Handles */}
-                <div className="space-y-1 text-[10px] font-semibold opacity-80 pt-2 border-t border-current/15">
+                <div 
+                  className="space-y-1 text-[10px] font-semibold opacity-80 pt-2 border-t border-current/15"
+                  style={cardFontColor ? { color: cardFontColor } : undefined}
+                >
                   {phoneNumber && (
                     <div className="flex items-center gap-1.5 truncate">
                       <Phone className="w-3 h-3 shrink-0 opacity-70" />
@@ -637,7 +655,12 @@ export default function DigitalCardStudio({
 
                   <div className="flex items-center gap-1.5 truncate">
                     <Globe className="w-3 h-3 shrink-0 opacity-70" />
-                    <span className="font-mono font-bold text-[#4F83FF] truncate">{displayHost}/{username}</span>
+                    <span 
+                      className="font-mono font-bold truncate"
+                      style={{ color: cardFontColor || '#4F83FF' }}
+                    >
+                      {displayHost}/{username}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -673,7 +696,10 @@ export default function DigitalCardStudio({
                 {/* Brand Name "TAPPING" at bottom right corner (toggleable) */}
                 {showBrandMark && (
                   <div className="text-right">
-                    <span className={`font-black text-sm sm:text-base tracking-widest uppercase block leading-none ${currentThemeConfig.brandColor}`}>
+                    <span 
+                      className={`font-black text-sm sm:text-base tracking-widest uppercase block leading-none ${currentThemeConfig.brandColor}`}
+                      style={cardFontColor ? { color: cardFontColor } : undefined}
+                    >
                       TAPPING
                     </span>
                   </div>
@@ -698,170 +724,6 @@ export default function DigitalCardStudio({
               </button>
             )}
           </div>
-
-          {/* Custom Artwork Framing & Pan Toolbar directly under the card */}
-          {customBgImage && (
-            <div className="w-full max-w-[520px] p-4 rounded-3xl bg-white border border-black/10 shadow-sm flex flex-col gap-3 mt-3">
-              <div className="flex items-center justify-between pb-2 border-b border-black/5">
-                <span className="text-xs font-black text-charcoal flex items-center gap-1.5">
-                  <Sliders className="w-3.5 h-3.5 text-[#4F83FF]" />
-                  <span>Card Artwork Framing &amp; Positioning</span>
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCustomBgZoom(100);
-                      setCustomBgPosX(0);
-                      setCustomBgPosY(0);
-                    }}
-                    className="text-[10px] font-bold text-[#4F83FF] hover:underline cursor-pointer"
-                  >
-                    Reset Center
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCustomBgImage('')}
-                    className="text-[10px] font-bold text-rose-500 hover:underline cursor-pointer"
-                  >
-                    Remove Image
-                  </button>
-                </div>
-              </div>
-
-              {/* Fit Mode */}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setCustomBgFit('cover')}
-                  className={`rounded-xl px-3 py-1.5 text-xs font-black transition-all cursor-pointer ${
-                    customBgFit === 'cover' ? 'bg-[#141518] text-white' : 'bg-gray-100 text-charcoal hover:bg-gray-200'
-                  }`}
-                >
-                  Fill Card (Cover)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCustomBgFit('contain')}
-                  className={`rounded-xl px-3 py-1.5 text-xs font-black transition-all cursor-pointer ${
-                    customBgFit === 'contain' ? 'bg-[#141518] text-white' : 'bg-gray-100 text-charcoal hover:bg-gray-200'
-                  }`}
-                >
-                  Show Full Image (Fit)
-                </button>
-              </div>
-
-              {/* Zoom Slider */}
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between text-[11px] font-bold text-charcoal/70">
-                  <span>Zoom / Scale Image</span>
-                  <span className="font-mono text-[#4F83FF] font-black">{customBgZoom}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="50"
-                  max="250"
-                  step="5"
-                  value={customBgZoom}
-                  onChange={(e) => setCustomBgZoom(Number(e.target.value))}
-                  className="w-full accent-[#4F83FF] cursor-pointer"
-                />
-                <div className="flex items-center gap-1 mt-0.5">
-                  {[50, 75, 100, 125, 150, 200].map((preset) => (
-                    <button
-                      key={preset}
-                      type="button"
-                      onClick={() => setCustomBgZoom(preset)}
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer ${
-                        customBgZoom === preset ? 'bg-[#4F83FF] text-white' : 'bg-gray-100 text-charcoal hover:bg-gray-200'
-                      }`}
-                    >
-                      {preset}%
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Pan Position Controls (X and Y) */}
-              <div className="grid grid-cols-2 gap-3 pt-1 border-t border-black/5">
-                <div>
-                  <div className="flex items-center justify-between text-[10px] font-bold text-charcoal/70 mb-0.5">
-                    <span>Move Up / Down</span>
-                    <span className="font-mono">{customBgPosY > 0 ? `+${customBgPosY}` : customBgPosY}px</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="-150"
-                    max="150"
-                    step="2"
-                    value={customBgPosY}
-                    onChange={(e) => setCustomBgPosY(Number(e.target.value))}
-                    className="w-full accent-[#141518] cursor-pointer"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-[10px] font-bold text-charcoal/70 mb-0.5">
-                    <span>Move Left / Right</span>
-                    <span className="font-mono">{customBgPosX > 0 ? `+${customBgPosX}` : customBgPosX}px</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="-150"
-                    max="150"
-                    step="2"
-                    value={customBgPosX}
-                    onChange={(e) => setCustomBgPosX(Number(e.target.value))}
-                    className="w-full accent-[#141518] cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              {/* Card Text & Font Color Picker */}
-              <div className="pt-2 border-t border-black/5 flex flex-col gap-1.5">
-                <div className="flex items-center justify-between text-[11px] font-bold text-charcoal/70">
-                  <span>Card Font &amp; Text Color</span>
-                  {cardFontColor && (
-                    <button
-                      type="button"
-                      onClick={() => setCardFontColor('')}
-                      className="text-[10px] text-rose-500 hover:underline cursor-pointer"
-                    >
-                      Reset Auto
-                    </button>
-                  )}
-                </div>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {[
-                    { name: 'White', hex: '#FFFFFF' },
-                    { name: 'Black', hex: '#141518' },
-                    { name: 'Luxe Gold', hex: '#FDF166' },
-                    { name: 'Cyber Cyan', hex: '#38BDF8' },
-                    { name: 'Neon Lime', hex: '#22C55E' },
-                    { name: 'Rose Coral', hex: '#F43F5E' },
-                  ].map((c) => (
-                    <button
-                      key={c.hex}
-                      type="button"
-                      onClick={() => setCardFontColor(c.hex)}
-                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border flex items-center gap-1 transition-all cursor-pointer ${
-                        cardFontColor === c.hex ? 'bg-[#141518] text-white border-black ring-1 ring-black' : 'bg-gray-100 text-charcoal border-black/10'
-                      }`}
-                    >
-                      <span className="w-2 h-2 rounded-full border border-black/20" style={{ backgroundColor: c.hex }} />
-                      <span>{c.name}</span>
-                    </button>
-                  ))}
-                  <input
-                    type="color"
-                    value={cardFontColor || '#FFFFFF'}
-                    onChange={(e) => setCardFontColor(e.target.value)}
-                    className="w-6 h-6 rounded border border-black/10 cursor-pointer p-0"
-                    title="Pick custom color"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Right Column: Customization & Design Controls */}
