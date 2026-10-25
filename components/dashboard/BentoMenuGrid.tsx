@@ -11,31 +11,22 @@ interface BentoMenuGridProps {
 export default function BentoMenuGrid({ onSelectTab, activeTab }: BentoMenuGridProps) {
   const cards = [
     {
-      id: 'links',
-      title: 'Links and Blocks',
-      subtitle: 'Organize cards, portfolios, and live social links',
+      id: 'profile',
+      title: 'Edit Profile',
+      subtitle: 'Customize identity, bio description, handles, and link blocks',
       cta: 'Check',
       bgColor: 'bg-pastel-peach hover:bg-[#FDBFA7]',
       borderColor: 'border-pastel-peach-border',
       badge: '5 Active',
     },
     {
-      id: 'vcard',
+      id: 'digital-card',
       title: 'Digital Business Card',
-      subtitle: 'Export contact directly to smartphone phonebooks',
+      subtitle: 'Contact vCard 3.0 export and permanent dynamic vector QR code',
       cta: 'Check',
       bgColor: 'bg-pastel-lavender hover:bg-[#D5CEFA]',
       borderColor: 'border-pastel-lavender-border',
-      badge: 'vCard 3.0',
-    },
-    {
-      id: 'qr',
-      title: 'Permanent QR Studio',
-      subtitle: 'Dynamic vector QR code generator with live routing',
-      cta: 'Check',
-      bgColor: 'bg-pastel-mint hover:bg-[#C2E4BF]',
-      borderColor: 'border-pastel-mint-border',
-      badge: 'Vector',
+      badge: 'vCard & QR',
     },
     {
       id: 'nfc',
@@ -45,6 +36,15 @@ export default function BentoMenuGrid({ onSelectTab, activeTab }: BentoMenuGridP
       bgColor: 'bg-pastel-rose hover:bg-[#F9BFCC]',
       borderColor: 'border-pastel-rose-border',
       badge: '4 Finishes',
+    },
+    {
+      id: 'themes',
+      title: 'Themes & Aesthetics',
+      subtitle: 'Curated pastel bento design systems, paper textures, and palettes',
+      cta: 'Check',
+      bgColor: 'bg-pastel-mint hover:bg-[#C2E4BF]',
+      borderColor: 'border-pastel-mint-border',
+      badge: '5 Palettes',
     },
   ];
 

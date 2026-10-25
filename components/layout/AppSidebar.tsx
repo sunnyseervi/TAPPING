@@ -34,14 +34,11 @@ export default function AppSidebar({
   onOpenAuth,
 }: AppSidebarProps) {
   const navItems = [
-    { id: 'overview', label: 'Bento Overview', icon: LayoutGrid, count: null },
-    { id: 'links', label: 'Links and Content', icon: Layers, count: '5' },
-    { id: 'vcard', label: 'Digital vCard', icon: UserCheck, count: 'v3.0' },
-    { id: 'qr', label: 'Permanent QR', icon: QrCode, count: null },
-    { id: 'nfc', label: 'Metal NFC Studio', icon: CreditCard, count: 'NFC' },
-    { id: 'analytics', label: 'Traffic Flow', icon: BarChart3, count: 'Live' },
-    { id: 'themes', label: 'Pastel Themes', icon: Palette, count: null },
-    { id: 'plans', label: 'Plans and Hardware', icon: ShoppingBag, count: null },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid, count: null },
+    { id: 'profile', label: 'Edit Profile', icon: UserCheck, count: '5' },
+    { id: 'digital-card', label: 'Digital Card', icon: CreditCard, count: 'v3.0' },
+    { id: 'nfc', label: 'Metal NFC Studio', icon: Layers, count: 'NFC' },
+    { id: 'themes', label: 'Themes', icon: Palette, count: null },
   ];
 
   return (
@@ -131,21 +128,10 @@ export default function AppSidebar({
           </nav>
         </div>
 
-        {/* Bottom User Section */}
-        <div className="p-3 border-t border-black/5 space-y-2">
-          {/* Active Google Authentication Status */}
-          <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-pastel-mint/50 border border-pastel-mint-border">
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-              <span className="text-[11px] font-bold text-charcoal">
-                Google Account Active
-              </span>
-            </div>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          </div>
-
+        {/* Bottom User Section with Plan Name */}
+        <div className="p-3 border-t border-black/5">
           <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-[#FAF7F2] border border-black/5">
-            <div className="w-9 h-9 rounded-xl overflow-hidden bg-pastel-peach shrink-0 border border-white shadow-xs">
+            <div className="w-10 h-10 rounded-xl overflow-hidden bg-pastel-peach shrink-0 border border-white shadow-xs">
               <img
                 src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
                 alt={profile.displayName}
@@ -153,19 +139,24 @@ export default function AppSidebar({
               />
             </div>
             <div className="min-w-0 text-left flex-1">
-              <p className="text-xs font-bold text-charcoal truncate leading-tight">
-                {profile.displayName}
-              </p>
-              <p className="text-[10px] text-charcoal-muted truncate">
-                @{profile.username}
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs font-black text-charcoal truncate leading-tight">
+                  {profile.displayName}
+                </p>
+                <span className="text-[9px] font-black tracking-wide px-1.5 py-0.2 rounded-md bg-pastel-yellow border border-pastel-yellow-border text-charcoal shrink-0">
+                  PRO
+                </span>
+              </div>
+              <p className="text-[10px] text-charcoal/70 truncate mt-0.5 font-bold">
+                @{profile.username} &middot; Pro Plan
               </p>
             </div>
             <a
               href={`/${profile.username}`}
               target="_blank"
               rel="noreferrer"
-              className="p-1.5 rounded-lg hover:bg-white text-charcoal/60 hover:text-charcoal transition-colors"
-              title="View Public Bio"
+              className="p-1.5 rounded-lg hover:bg-white text-charcoal/60 hover:text-charcoal transition-colors shrink-0"
+              title="View Public Profile"
             >
               <ExternalLink className="w-4 h-4" />
             </a>

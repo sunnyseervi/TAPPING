@@ -27,13 +27,10 @@ import BentoQuickStats from '@/components/dashboard/BentoQuickStats';
 import BentoProgressRing from '@/components/dashboard/BentoProgressRing';
 import BentoMenuGrid from '@/components/dashboard/BentoMenuGrid';
 import AudienceFlowChart from '@/components/dashboard/AudienceFlowChart';
-import LinksManager from '@/components/dashboard/LinksManager';
-import VCardEditor from '@/components/dashboard/VCardEditor';
-import QRStudio from '@/components/dashboard/QRStudio';
+import EditProfileSection from '@/components/dashboard/EditProfileSection';
+import DigitalCardStudio from '@/components/dashboard/DigitalCardStudio';
 import NFCCardStudio from '@/components/dashboard/NFCCardStudio';
-import AnalyticsView from '@/components/dashboard/AnalyticsView';
 import ThemesStudio from '@/components/dashboard/ThemesStudio';
-import OrdersPlansView from '@/components/dashboard/OrdersPlansView';
 import FloatingBottomDock from '@/components/dashboard/FloatingBottomDock';
 import GoogleAuthModal from '@/components/auth/GoogleAuthModal';
 import { useToast } from '@/components/ui/Toast';
@@ -48,7 +45,7 @@ export default function DashboardPage() {
   const [analytics, setAnalytics] = useState<AnalyticsSummary>(initialAnalytics);
   const [subscription, setSubscription] = useState<Subscription>(initialSubscription);
 
-  const [activeTab, setActiveTab] = useState<string>('overview');
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
@@ -114,20 +111,20 @@ export default function DashboardPage() {
 
         {/* User Data Modules Workspace (100% Full Width — No Preview) */}
         <main className="w-full flex flex-col gap-6 mt-3">
-          {/* TAB: BENTO OVERVIEW (Directly matching User Screenshot Layout) */}
-          {activeTab === 'overview' && (
+          {/* TAB: DASHBOARD */}
+          {activeTab === 'dashboard' && (
             <div className="flex flex-col gap-5">
               {/* Top Bento Duo: Macro Stats & Circular Progress Ring */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <BentoQuickStats
                   analytics={analytics}
-                  onAddBlock={() => setActiveTab('links')}
-                  onSeeProgress={() => setActiveTab('analytics')}
+                  onAddBlock={() => setActiveTab('profile')}
+                  onSeeProgress={() => setActiveTab('dashboard')}
                 />
                 <BentoProgressRing
                   percentage={95}
                   totalTaps={analytics.totalViews}
-                  onExplore={() => setActiveTab('analytics')}
+                  onExplore={() => setActiveTab('dashboard')}
                 />
               </div>
 
@@ -137,47 +134,37 @@ export default function DashboardPage() {
                 onSelectTab={(tab) => setActiveTab(tab)}
               />
 
-              {/* Audience Flow Chart from Screen 3 of user's image */}
+              {/* Audience Flow Chart */}
               <AudienceFlowChart analytics={analytics} />
             </div>
           )}
 
-          {/* TAB: LINKS & BLOCKS */}
-          {activeTab === 'links' && (
-            <LinksManager
+          {/* TAB: EDIT PROFILE (Full Profile Settings + Link Blocks) */}
+          {activeTab === 'profile' && (
+            <EditProfileSection
+              profile={profile}
               links={links}
+              onUpdateProfile={handleUpdateProfile}
               onUpdateLinks={handleUpdateLinks}
             />
           )}
 
-          {/* TAB: DIGITAL CARD & VCARD */}
-          {activeTab === 'vcard' && (
-            <VCardEditor
+          {/* TAB: DIGITAL BUSINESS CARD & PERMANENT QR */}
+          {activeTab === 'digital-card' && (
+            <DigitalCardStudio
               vcard={vcard}
+              username={profile.username}
               onUpdateVCard={handleUpdateVCard}
             />
           )}
 
-          {/* TAB: PERMANENT QR STUDIO */}
-          {activeTab === 'qr' && (
-            <QRStudio username={profile.username} />
-          )}
-
-          {/* TAB: METAL NFC STUDIO */}
+          {/* TAB: METAL NFC HARDWARE STUDIO */}
           {activeTab === 'nfc' && (
             <NFCCardStudio
               nfcCard={nfcCard}
               username={profile.username}
               onUpdateCard={handleUpdateNFCCard}
             />
-          )}
-
-          {/* TAB: AUDIENCE FLOW & ANALYTICS */}
-          {activeTab === 'analytics' && (
-            <div className="flex flex-col gap-5">
-              <AudienceFlowChart analytics={analytics} />
-              <AnalyticsView analytics={analytics} links={links} />
-            </div>
           )}
 
           {/* TAB: PASTEL THEMES STUDIO */}
@@ -187,15 +174,6 @@ export default function DashboardPage() {
               onUpdateProfile={handleUpdateProfile}
             />
           )}
-
-          {/* TAB: PLANS & ORDERS */}
-          {activeTab === 'plans' && (
-            <OrdersPlansView
-              nfcCard={nfcCard}
-              subscription={subscription}
-              onUpdateSubscription={setSubscription}
-            />
-          )}
         </main>
       </div>
 
@@ -203,7 +181,7 @@ export default function DashboardPage() {
       <FloatingBottomDock
         activeTab={activeTab}
         onSelectTab={(tab) => setActiveTab(tab)}
-        onQuickAdd={() => setActiveTab('links')}
+        onQuickAdd={() => setActiveTab('profile')}
       />
     </div>
   );

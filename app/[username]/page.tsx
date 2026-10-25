@@ -39,6 +39,7 @@ import { downloadVCardFile } from '@/lib/vcard';
 import QRCode from 'qrcode';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
+import { THEMES } from '@/lib/themes';
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -114,25 +115,14 @@ export default function PublicProfilePage() {
     }
   };
 
+  const currentTheme = THEMES[profile.theme] || THEMES['pastel-bento'];
+
   const getStyleClasses = (variant: string) => {
-    switch (variant) {
-      case 'peach':
-        return 'bg-pastel-peach hover:bg-[#FDBFA7] border-pastel-peach-border text-charcoal';
-      case 'lavender':
-        return 'bg-pastel-lavender hover:bg-[#D5CEFA] border-pastel-lavender-border text-charcoal';
-      case 'yellow':
-        return 'bg-pastel-yellow hover:bg-[#FDE25D] border-pastel-yellow-border text-charcoal';
-      case 'mint':
-        return 'bg-pastel-mint hover:bg-[#C2E4BF] border-pastel-mint-border text-charcoal';
-      case 'sky':
-        return 'bg-pastel-sky hover:bg-[#C2DCFE] border-pastel-sky-border text-charcoal';
-      default:
-        return 'bg-white hover:bg-gray-50 border-black/10 text-charcoal';
-    }
+    return currentTheme.linkVariantClass(variant);
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-charcoal flex flex-col items-center justify-start p-4 selection:bg-pastel-peach">
+    <div className={`min-h-screen ${currentTheme.canvasBg} ${currentTheme.textHeading} flex flex-col items-center justify-start p-4 transition-colors duration-300`}>
       {/* Top Floating Controls */}
       <div className="w-full max-w-md flex items-center justify-between py-2 mb-2">
         <a
@@ -170,9 +160,9 @@ export default function PublicProfilePage() {
       </div>
 
       {/* Main Profile Card */}
-      <div className="w-full max-w-md bg-white rounded-4xl p-6 md:p-8 shadow-card border border-black/5 flex flex-col items-center text-center relative overflow-hidden">
-        <div className="w-28 h-4 bg-pastel-mint rounded-b-2xl mb-4 shadow-xs border-b border-pastel-mint-border flex items-center justify-center">
-          <span className="text-[9px] font-bold text-charcoal tracking-widest uppercase">TAPPING</span>
+      <div className={`w-full max-w-md ${currentTheme.containerBg} rounded-4xl p-6 md:p-8 shadow-card border border-black/5 flex flex-col items-center text-center relative overflow-hidden transition-colors`}>
+        <div className={`w-28 h-4 ${currentTheme.badgeBg} ${currentTheme.badgeBorder} rounded-b-2xl mb-4 shadow-xs border-b flex items-center justify-center`}>
+          <span className={`text-[9px] font-bold ${currentTheme.badgeText} tracking-widest uppercase`}>TAPPING</span>
         </div>
 
         {/* NFC Alert Banner */}
@@ -228,7 +218,7 @@ export default function PublicProfilePage() {
             downloadVCardFile(vcard, `${profile.username}_contact.vcf`);
             showToast('Contact Saved', 'Directly imported into phonebook', 'success');
           }}
-          className="mt-4 w-full py-3 px-6 rounded-full bg-[#1F2024] hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-transform active:scale-95"
+          className={`mt-4 w-full py-3 px-6 rounded-full ${currentTheme.accentBtn} ${currentTheme.accentBtnText} text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-transform active:scale-95`}
         >
           <Download className="w-4 h-4 text-pastel-yellow" />
           <span>Save Contact to Phone</span>

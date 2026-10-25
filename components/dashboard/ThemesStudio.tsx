@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { Profile, ThemeType } from '@/lib/types';
-import { Palette, Check } from 'lucide-react';
+import { Palette, Check, Sparkles } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
+import { THEMES } from '@/lib/themes';
 
 interface ThemesStudioProps {
   profile: Profile;
@@ -13,45 +14,7 @@ interface ThemesStudioProps {
 export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioProps) {
   const { showToast } = useToast();
 
-  const themes: {
-    id: ThemeType;
-    name: string;
-    description: string;
-    colors: string[];
-    isDefault?: boolean;
-  }[] = [
-    {
-      id: 'pastel-bento',
-      name: 'Pastel Bento Canvas',
-      description: 'Warm cream canvas with soft peach, lavender, mint and butter cards',
-      colors: ['#FAF7F2', '#FED5C3', '#E4E0FA', '#D8ECD7', '#1F2024'],
-      isDefault: true,
-    },
-    {
-      id: 'warm-editorial',
-      name: 'Warm Editorial Paper',
-      description: 'Terracotta accents with off-white warm paper styling',
-      colors: ['#FAF7F2', '#C0512F', '#2F5B4F', '#8A817A', '#1C1A17'],
-    },
-    {
-      id: 'sage-cream',
-      name: 'Sage and Botanical',
-      description: 'Organic botanical greens with soft ivory and matcha pills',
-      colors: ['#F6F8F5', '#D8ECD7', '#A3CFAB', '#3B6846', '#223326'],
-    },
-    {
-      id: 'minimal-mono',
-      name: 'Minimal Monochrome',
-      description: 'Crisp high-contrast monochrome with subtle borders',
-      colors: ['#FFFFFF', '#F4F4F5', '#71717A', '#18181B', '#09090B'],
-    },
-    {
-      id: 'tokyo-night',
-      name: 'Tokyo Neon Canvas',
-      description: 'Dark indigo canvas with vibrant pastel highlights',
-      colors: ['#1A1B26', '#7AA2F7', '#BB9AF7', '#7DCFFF', '#C0CAF5'],
-    },
-  ];
+  const themeList = Object.values(THEMES);
 
   const handleSelectTheme = (themeId: ThemeType) => {
     const updated: Profile = {
@@ -59,66 +22,68 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
       theme: themeId,
     };
     onUpdateProfile(updated);
-    showToast('Theme Applied', `Switched theme`, 'success');
+    showToast('Theme Applied', `Switched theme to ${THEMES[themeId].name}`, 'success');
   };
 
   return (
-    <div className="bg-white rounded-4xl p-5 md:p-6 border border-black/5 shadow-soft">
+    <div className="bg-white rounded-4xl p-5 md:p-7 border border-black/5 shadow-soft">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-black/5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-black/5 gap-3">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-pastel-yellow flex items-center justify-center">
-              <Palette className="w-4 h-4 text-charcoal" />
-            </div>
-            <h2 className="text-lg font-extrabold text-charcoal">Themes and Visual Design</h2>
-          </div>
-          <p className="text-xs text-charcoal-muted mt-0.5">
-            Curated palettes engineered for mobile legibility, soft pastels, and restrained contrast
+          <h2 className="text-lg font-black text-charcoal tracking-tight">Themes & Visual Design</h2>
+          <p className="text-xs text-charcoal/60 mt-0.5">
+            Select a design system for your public profile, bento cards, and identity
           </p>
+        </div>
+
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <span className="text-[11px] font-bold text-charcoal/60">Active Theme:</span>
+          <span className="px-3 py-1 rounded-full bg-pastel-yellow text-charcoal text-xs font-black border border-pastel-yellow-border">
+            {THEMES[profile.theme]?.name || 'Pastel Bento Canvas'}
+          </span>
         </div>
       </div>
 
       {/* Theme Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
-        {themes.map((t) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+        {themeList.map((t) => {
           const isSelected = profile.theme === t.id;
           return (
             <div
               key={t.id}
               onClick={() => handleSelectTheme(t.id)}
-              className={`p-4 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between text-left relative ${
+              className={`p-5 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between text-left relative ${
                 isSelected
-                  ? 'border-charcoal bg-black/[0.02] ring-2 ring-charcoal shadow-md'
+                  ? 'border-charcoal bg-black/[0.03] ring-2 ring-charcoal shadow-card'
                   : 'border-black/10 bg-[#FAF7F2] hover:bg-white hover:border-black/20'
               }`}
             >
               {isSelected && (
-                <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-charcoal text-white flex items-center justify-center">
-                  <Check className="w-3 h-3" />
+                <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-[#1A1B1F] text-white flex items-center justify-center shadow-xs">
+                  <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                 </div>
               )}
 
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-extrabold text-sm text-charcoal">{t.name}</h3>
-                  {t.isDefault && (
-                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-pastel-peach text-charcoal border border-pastel-peach-border">
+                <div className="flex items-center gap-2 mb-2 pr-6">
+                  <h3 className="font-black text-sm text-charcoal">{t.name}</h3>
+                  {t.id === 'pastel-bento' && (
+                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-pastel-peach text-charcoal border border-pastel-peach-border">
                       Default
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-charcoal-muted leading-relaxed line-clamp-2">
+                <p className="text-xs text-charcoal/70 leading-relaxed">
                   {t.description}
                 </p>
               </div>
 
               {/* Color Swatches */}
-              <div className="flex items-center gap-1.5 mt-4 pt-2 border-t border-black/5">
-                {t.colors.map((c, i) => (
+              <div className="flex items-center gap-2 mt-5 pt-3 border-t border-black/5">
+                {t.previewColors.map((c, i) => (
                   <div
                     key={i}
-                    className="w-6 h-6 rounded-full border border-black/10 shadow-xs"
+                    className="w-7 h-7 rounded-full border border-black/10 shadow-xs"
                     style={{ backgroundColor: c }}
                   />
                 ))}
