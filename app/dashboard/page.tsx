@@ -203,9 +203,11 @@ export default function DashboardPage() {
           {/* TAB: DIGITAL BUSINESS CARD & PERMANENT QR */}
           {activeTab === 'digital-card' && (
             <DigitalCardStudio
+              profile={profile}
               vcard={vcard}
               username={profile.username}
               onUpdateVCard={handleUpdateVCard}
+              onSelectTab={(tab) => setActiveTab(tab)}
             />
           )}
 

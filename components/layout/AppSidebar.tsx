@@ -106,7 +106,7 @@ export default function AppSidebar({
                   }}
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-black transition-all ${
                     isActive
-                      ? 'bg-[#141518] text-white shadow-sm'
+                      ? 'bg-[#4F83FF] text-white shadow-sm'
                       : 'bg-white/80 hover:bg-white text-charcoal border border-black/5 shadow-2xs hover:shadow-xs'
                   }`}
                   title={item.label}

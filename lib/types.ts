@@ -74,9 +74,26 @@ export interface Profile {
   fontSize?: FontSizeScale;
   headerBackground?: BackgroundPatternType;
   showHeaderBackground?: boolean;
+  fullPageBackground?: boolean;
+  pageBgImage?: string;
   customHeaderImage?: string;
   linkCardStyle?: LinkCardStyleType;
   customBgColor?: string;
+
+  // Avatar Frame & Cropping
+  avatarZoom?: number; // 50 to 250 (%)
+  avatarPosX?: number; // -100 to 100 (px)
+  avatarPosY?: number; // -100 to 100 (px)
+}
+
+export type VisitingCardShape = 'rounded' | 'square';
+export type VisitingCardTheme = 'executive_dark' | 'clean_white' | 'gold_luxury' | 'neo_brutalist' | 'cyber_neon' | 'pastel_bento';
+
+export interface VisitingCardConfig {
+  shape: VisitingCardShape;
+  theme: VisitingCardTheme;
+  customBg?: string;
+  showBleedMargin?: boolean;
 }
 
 export interface VCardProfile {

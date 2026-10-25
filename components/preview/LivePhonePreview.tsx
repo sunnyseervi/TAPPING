@@ -158,25 +158,33 @@ export default function LivePhonePreview({
             </div>
           )}
 
-          {/* Optional Expressive Header Pattern or Custom Uploaded Banner */}
+          {/* Full-Screen Bio Page Theme Pattern or Custom Uploaded Wallpaper */}
           {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
             <div 
-              className={`w-full h-24 shrink-0 relative border-b border-black/10 overflow-hidden ${
+              className={`absolute inset-0 z-0 pointer-events-none transition-all ${
                 profile.customHeaderImage ? 'bg-cover bg-center' : patternClass
               }`}
               style={profile.customHeaderImage ? { backgroundImage: `url(${profile.customHeaderImage})` } : undefined}
-            />
+            >
+              {profile.customHeaderImage && (
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+              )}
+            </div>
           )}
 
           {/* Scrollable Phone Bio Page Content */}
-          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-1 pb-6 flex flex-col items-center">
-            {/* Circular Avatar with Clean Border */}
-            <div className={`relative ${profile.showHeaderBackground && (profile.customHeaderImage || patternClass) ? '-mt-12' : 'mt-2'}`}>
-              <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-white shadow-soft bg-white">
+          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-1 pb-6 flex flex-col items-center relative z-10">
+            {/* Circular Avatar with Clean Border & Custom Zoom/Framing */}
+            <div className="relative mt-3">
+              <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-white shadow-soft bg-white relative flex items-center justify-center">
                 <img
                   src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
                   alt={profile.displayName}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform"
+                  style={{
+                    transform: `scale(${(profile.avatarZoom ?? 100) / 100}) translate(${profile.avatarPosX ?? 0}px, ${profile.avatarPosY ?? 0}px)`,
+                    transformOrigin: 'center center',
+                  }}
                 />
               </div>
             </div>
@@ -221,7 +229,7 @@ export default function LivePhonePreview({
                 downloadVCardFile(vcard, `${profile.username}_contact.vcf`);
                 showToast('Contact Saved', 'Downloaded contact card to phonebook', 'success');
               }}
-              className={`mt-3 w-full py-2 px-3 rounded-full ${currentTheme.accentBtn} ${currentTheme.accentBtnText} text-[11px] font-black flex items-center justify-center gap-1.5 shadow-xs transition-transform active:scale-95 cursor-pointer`}
+              className="mt-3 w-full py-2 px-3 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-[11px] font-black flex items-center justify-center gap-1.5 shadow-xs transition-transform active:scale-95 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Save Contact Card</span>

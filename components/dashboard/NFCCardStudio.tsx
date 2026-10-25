@@ -43,8 +43,6 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   const [redirectMode, setRedirectMode] = useState<'profile' | 'direct_vcard' | 'custom_url'>(nfcCard.redirectMode || 'profile');
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [saveConfirmModalOpen, setSaveConfirmModalOpen] = useState(false);
-  const [fontModalOpen, setFontModalOpen] = useState(false);
-  const [selectedFontCategory, setSelectedFontCategory] = useState<string>('All');
   const [displayHost, setDisplayHost] = useState('tapping.bio');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -248,10 +246,6 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     setFlipped(side === 'back');
   };
 
-  const filteredFonts = selectedFontCategory === 'All' 
-    ? CARD_FONTS 
-    : CARD_FONTS.filter((f) => f.category === selectedFontCategory);
-
   const categories = [
     'All',
     'Modern Sans',
@@ -264,37 +258,51 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     'Brutalist & Urban',
   ];
 
-  // Helper for brand position classes
+  // Helper for brand "TAPPING" placement within 5mm safe boundary
   const getBrandPositionClass = (pos?: string) => {
     switch (pos) {
-      case 'top-right': return 'top-5 right-5 text-right';
-      case 'top-center': return 'top-5 left-1/2 -translate-x-1/2 text-center';
-      case 'bottom-left': return 'bottom-5 left-5 text-left';
-      case 'bottom-right': return 'bottom-5 right-5 text-right';
-      default: return 'top-5 left-5 text-left';
+      case 'top-center': return 'top-0 left-1/2 -translate-x-1/2 text-center';
+      case 'top-right': return 'top-0 right-0 text-right';
+      case 'bottom-left': return 'bottom-0 left-0 text-left';
+      case 'bottom-right': return 'bottom-0 right-0 text-right';
+      default: return 'top-0 left-0 text-left';
     }
   };
 
-  // Helper for chip position classes
+  // Helper for chip position classes within 5mm safe boundary
   const getChipPositionClass = (pos?: string) => {
     switch (pos) {
-      case 'top-left': return 'top-5 left-5';
-      case 'bottom-right': return 'bottom-5 right-5';
+      case 'top-left': return 'top-0 left-0';
+      case 'bottom-right': return 'bottom-0 right-0';
+      case 'bottom-left': return 'bottom-0 left-0';
       case 'hidden': return 'hidden';
-      default: return 'top-5 right-5';
+      default: return 'top-0 right-0';
     }
   };
 
-  // Helper for name & identity position classes
+  // Helper for name & identity position classes within 5mm safe boundary
   const getNamePositionClass = (pos?: string) => {
     switch (pos) {
-      case 'top-left': return 'top-14 left-5 text-left';
-      case 'center': return 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-[85%]';
-      case 'bottom-center': return 'bottom-5 left-1/2 -translate-x-1/2 text-center w-[85%]';
-      case 'bottom-right': return 'bottom-5 right-5 text-right';
-      default: return 'bottom-5 left-5 text-left';
+      case 'top-left': return 'top-7 left-0 text-left';
+      case 'center': return 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-[90%]';
+      case 'bottom-center': return 'bottom-0 left-1/2 -translate-x-1/2 text-center w-[90%]';
+      case 'bottom-right': return 'bottom-0 right-0 text-right';
+      default: return 'bottom-0 left-0 text-left';
     }
   };
+
+  // Helper for QR code placement within 5mm safe boundary
+  const getQrPositionClass = (pos?: string) => {
+    switch (pos) {
+      case 'top-right': return 'top-0 right-0';
+      case 'top-left': return 'top-0 left-0';
+      case 'bottom-left': return 'bottom-0 left-0';
+      case 'center': return 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2';
+      default: return 'bottom-0 right-0';
+    }
+  };
+
+  const [showSafeMarginGuide, setShowSafeMarginGuide] = useState(true);
 
   return (
     <div className="bg-white rounded-4xl p-6 md:p-8 border border-black/5 shadow-soft">
@@ -308,7 +316,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             Custom Hardware & Typography
           </h2>
           <p className="text-xs text-charcoal/60 mt-2 font-medium">
-            Upload custom artwork with drag & zoom positioning, 100+ styled fonts, and draggable card element placements.
+            Upload custom artwork with drag & zoom positioning, stylized fonts, and 5mm print-safe element placements.
           </p>
         </div>
 
@@ -336,15 +344,15 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
         {/* Left Column: 3D Interactive Card Preview (STICKY ON SCROLL) */}
         <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-8 self-start flex flex-col items-center">
           
-          {/* Side Mode Selector & Active Side Pills */}
-          <div className="w-full max-w-[390px] flex items-center justify-between mb-3 text-xs">
+          {/* Side Mode Selector, Active Side Pills & Safe Margin Toggle */}
+          <div className="w-full max-w-[390px] flex items-center justify-between mb-3 text-xs flex-wrap gap-2">
             <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#FAF7F2] border border-black/10">
               <button
                 type="button"
                 onClick={() => selectSide('front')}
                 className={`px-3 py-1 rounded-xl text-xs font-black transition-all cursor-pointer ${
                   activeSide === 'front'
-                    ? 'bg-[#141518] text-white shadow-2xs'
+                    ? 'bg-[#4F83FF] text-white shadow-2xs'
                     : 'text-charcoal/70 hover:text-black'
                 }`}
               >
@@ -355,13 +363,26 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                 onClick={() => selectSide('back')}
                 className={`px-3 py-1 rounded-xl text-xs font-black transition-all cursor-pointer ${
                   activeSide === 'back'
-                    ? 'bg-[#141518] text-white shadow-2xs'
+                    ? 'bg-[#4F83FF] text-white shadow-2xs'
                     : 'text-charcoal/70 hover:text-black'
                 }`}
               >
                 Back Side
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setShowSafeMarginGuide(!showSafeMarginGuide)}
+              className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-colors cursor-pointer ${
+                showSafeMarginGuide
+                  ? 'bg-[#EFF4FF] border-[#4F83FF]/30 text-[#4F83FF]'
+                  : 'bg-[#FAF7F2] border-black/10 text-charcoal/60'
+              }`}
+              title="Toggle 5mm safe print boundary guide"
+            >
+              5mm Safe Bleed: {showSafeMarginGuide ? 'ON' : 'OFF'}
+            </button>
 
             <div className="flex items-center gap-1 text-[11px] font-bold text-charcoal/70">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -406,101 +427,63 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                 {/* Subtle Metallic Specular Sheen */}
                 <div className="absolute inset-0 z-1 bg-gradient-to-tr from-white/10 via-transparent to-black/20 pointer-events-none" />
 
-                {/* Content Elements Positioned on Card */}
-                {sideMode === 'single_sided' ? (
-                  /* SINGLE-SIDED MODE (All Data Placed on Front) */
-                  <div className="relative z-10 flex flex-col justify-between h-full pointer-events-none">
-                    {/* Top Row: Brand & Chip */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span 
-                          className="font-extrabold text-xs tracking-widest uppercase"
-                          style={{ color: frontSide.textColor || '#FFFFFF' }}
-                        >
-                          {frontSide.topLabel || 'TAPPING'}
-                        </span>
-                        <span className="text-[9px] font-mono opacity-70">NFC 13.56MHz</span>
-                      </div>
+                {/* 5mm Safe Print Area Boundary Guide (18px Margin from Edges) */}
+                {showSafeMarginGuide && (
+                  <div className="absolute inset-[18px] border border-dashed border-white/20 rounded-2xl pointer-events-none z-20">
+                    <span className="absolute top-1 right-2 text-[8px] font-mono opacity-40 uppercase tracking-widest text-white">
+                      5mm Safe Print Zone
+                    </span>
+                  </div>
+                )}
+
+                {/* Content Elements Positioned Strictly within 5mm Safe Print Area */}
+                <div className="absolute inset-[18px] z-10 pointer-events-none">
+                  {/* Brand Label (TAPPING) */}
+                  <div className={`absolute z-10 ${getBrandPositionClass(frontSide.brandPosition)}`}>
+                    <span 
+                      className="font-extrabold text-xs sm:text-sm tracking-widest uppercase block"
+                      style={{ color: frontSide.textColor || '#FFFFFF' }}
+                    >
+                      {frontSide.topLabel || 'TAPPING'}
+                    </span>
+                    <span className="text-[9px] font-mono opacity-70 block">
+                      {frontSide.bottomLabel || 'NFC 13.56MHz'}
+                    </span>
+                  </div>
+
+                  {/* Chip Indicator */}
+                  {frontSide.showChip !== false && (
+                    <div className={`absolute z-10 ${getChipPositionClass(frontSide.chipPosition)}`}>
                       <div className="w-9 h-6 rounded-md bg-amber-400/90 border border-amber-600/50 flex flex-col justify-around p-1 shadow-2xs">
                         <div className="w-full h-0.5 bg-amber-800/40" />
                         <div className="w-full h-0.5 bg-amber-800/40" />
                       </div>
                     </div>
+                  )}
 
-                    {/* Bottom Row: Full Identity + Integrated QR */}
-                    <div className="flex items-end justify-between gap-3 mt-auto">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[9px] tracking-widest uppercase opacity-80 truncate">
-                          {frontSide.secondaryText || 'DIGITAL CREATOR & FOUNDER'}
-                        </p>
-                        <h3 
-                          className="font-bold text-base md:text-lg tracking-widest mt-0.5 uppercase truncate"
-                          style={{ color: frontSide.textColor || '#FFFFFF' }}
-                        >
-                          {frontSide.primaryText || username.toUpperCase()}
-                        </h3>
-                        <p className="text-[9px] opacity-80 mt-1 truncate">
-                          {displayHost}/{username}
-                        </p>
-                      </div>
-
-                      <div className="w-16 h-16 bg-white p-1 rounded-xl flex items-center justify-center shrink-0 shadow-md">
-                        <QrCode className="w-full h-full text-black" />
-                      </div>
-                    </div>
+                  {/* Primary Name & Tagline */}
+                  <div className={`absolute z-10 ${getNamePositionClass(frontSide.namePosition)} max-w-[210px]`}>
+                    <p className="text-[9px] tracking-widest uppercase opacity-80 truncate">
+                      {frontSide.secondaryText || 'DIGITAL CREATOR & FOUNDER'}
+                    </p>
+                    <h3 
+                      className="font-bold text-base md:text-lg tracking-widest mt-0.5 uppercase truncate"
+                      style={{ color: frontSide.textColor || '#FFFFFF' }}
+                    >
+                      {frontSide.primaryText || username.toUpperCase()}
+                    </h3>
+                    <p className="text-[9px] opacity-80 mt-0.5 truncate">
+                      {displayHost}/{username}
+                    </p>
                   </div>
-                ) : (
-                  /* DUAL-SIDED MODE: Front Side with Customizable Element Positions */
-                  <div className="relative z-10 w-full h-full pointer-events-none">
-                    {/* Brand Label (TAPPING) */}
-                    <div className={`absolute z-10 ${getBrandPositionClass(frontSide.brandPosition)}`}>
-                      <span 
-                        className="font-extrabold text-sm tracking-widest uppercase"
-                        style={{ color: frontSide.textColor || '#FFFFFF' }}
-                      >
-                        {frontSide.topLabel || 'TAPPING'}
-                      </span>
-                      <span className="text-[9px] font-mono opacity-70 block">
-                        {frontSide.bottomLabel || 'NFC 13.56MHz'}
-                      </span>
+
+                  {/* Dynamic QR Code */}
+                  {(sideMode === 'single_sided' || frontSide.showQrCode) && (
+                    <div className={`absolute z-10 ${getQrPositionClass(frontSide.qrPosition)} w-14 h-14 bg-white p-1 rounded-xl shadow-md flex items-center justify-center`}>
+                      <QrCode className="w-full h-full text-black" />
                     </div>
-
-                    {/* Chip Indicator */}
-                    {frontSide.showChip && (
-                      <div className={`absolute z-10 ${getChipPositionClass(frontSide.chipPosition)}`}>
-                        <div className="w-10 h-7 rounded-md bg-amber-400/90 border border-amber-600/50 flex flex-col justify-around p-1 shadow-2xs">
-                          <div className="w-full h-0.5 bg-amber-800/40" />
-                          <div className="w-full h-0.5 bg-amber-800/40" />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Primary Name & Tagline */}
-                    <div className={`absolute z-10 ${getNamePositionClass(frontSide.namePosition)}`}>
-                      <p className="text-[10px] tracking-widest uppercase opacity-80 truncate">
-                        {frontSide.secondaryText || 'DIGITAL CREATOR & FOUNDER'}
-                      </p>
-                      <h3 
-                        className="font-bold text-lg md:text-xl tracking-widest mt-0.5 uppercase truncate"
-                        style={{ color: frontSide.textColor || '#FFFFFF' }}
-                      >
-                        {frontSide.primaryText || username.toUpperCase()}
-                      </h3>
-                      {frontSide.customNote && (
-                        <p className="text-[9px] opacity-75 mt-1 uppercase">
-                          {frontSide.customNote}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Optional QR on Front if enabled */}
-                    {frontSide.showQrCode && (
-                      <div className={`absolute z-10 ${getBrandPositionClass(frontSide.qrPosition)} w-16 h-16 bg-white p-1 rounded-xl shadow-md`}>
-                        <QrCode className="w-full h-full text-black" />
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               {/* ===================== BACK SIDE ===================== */}
@@ -523,52 +506,63 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
 
                 <div className="absolute inset-0 z-1 bg-gradient-to-bl from-white/10 via-transparent to-black/25 pointer-events-none" />
 
-                {sideMode === 'single_sided' ? (
-                  /* Single-Sided: Pristine Minimalist Reverse */
-                  <div className="relative z-10 flex flex-col items-center justify-center h-full text-center pointer-events-none">
-                    <span 
-                      className="font-extrabold text-sm tracking-widest uppercase"
-                      style={{ color: backSide.textColor || '#FFFFFF' }}
-                    >
-                      {backSide.topLabel || 'TAPPING'}
+                {/* 5mm Safe Print Area Boundary Guide (Back) */}
+                {showSafeMarginGuide && (
+                  <div className="absolute inset-[18px] border border-dashed border-white/20 rounded-2xl pointer-events-none z-20">
+                    <span className="absolute top-1 right-2 text-[8px] font-mono opacity-40 uppercase tracking-widest text-white">
+                      5mm Safe Print Zone
                     </span>
-                    <p className="text-[10px] font-mono opacity-70 mt-1">
-                      PRECISION MILLED CONTACTLESS HARDWARE
-                    </p>
-                    <div className="mt-3 text-[9px] font-mono opacity-50">
-                      UID: {nfcCard.cardUid || 'TAP-9482-BLK'} &bull; NTAG216
-                    </div>
-                  </div>
-                ) : (
-                  /* Dual-Sided Back with QR & Connection details */
-                  <div className="relative z-10 flex items-center justify-between h-full pointer-events-none">
-                    <div className="flex flex-col justify-between h-full min-w-0 pr-4">
-                      <div>
-                        <span 
-                          className="font-bold text-xs uppercase tracking-wider block"
-                          style={{ color: backSide.textColor || '#FFFFFF' }}
-                        >
-                          {backSide.primaryText || 'TAP ANY PHONE TO CONNECT'}
-                        </span>
-                        <p className="text-xs mt-1.5 opacity-90 truncate">
-                          {backSide.secondaryText || `${displayHost}/${username}`}
-                        </p>
-                      </div>
-
-                      <div className="text-[10px] font-mono opacity-70">
-                        {backSide.bottomLabel || `UID: ${nfcCard.cardUid || 'TAP-9482-BLK'}`}
-                        <br />
-                        {backSide.customNote || 'Encrypted NTAG216 Chip'}
-                      </div>
-                    </div>
-
-                    {backSide.showQrCode && (
-                      <div className="w-20 h-20 bg-white p-1.5 rounded-2xl flex items-center justify-center shrink-0 shadow-md">
-                        <QrCode className="w-full h-full text-black" />
-                      </div>
-                    )}
                   </div>
                 )}
+
+                <div className="absolute inset-[18px] z-10 pointer-events-none">
+                  {sideMode === 'single_sided' ? (
+                    /* Single-Sided: Pristine Minimalist Reverse */
+                    <div className="flex flex-col items-center justify-center h-full text-center">
+                      <span 
+                        className="font-extrabold text-sm tracking-widest uppercase"
+                        style={{ color: backSide.textColor || '#FFFFFF' }}
+                      >
+                        {backSide.topLabel || 'TAPPING'}
+                      </span>
+                      <p className="text-[10px] font-mono opacity-70 mt-1">
+                        PRECISION MILLED CONTACTLESS HARDWARE
+                      </p>
+                      <div className="mt-3 text-[9px] font-mono opacity-50">
+                        UID: {nfcCard.cardUid || 'TAP-9482-BLK'} &bull; NTAG216
+                      </div>
+                    </div>
+                  ) : (
+                    /* Dual-Sided Back with QR & Connection details strictly within 5mm zone */
+                    <div className="flex items-center justify-between h-full">
+                      <div className="flex flex-col justify-between h-full min-w-0 pr-4">
+                        <div>
+                          <span 
+                            className="font-bold text-xs uppercase tracking-wider block"
+                            style={{ color: backSide.textColor || '#FFFFFF' }}
+                          >
+                            {backSide.primaryText || 'TAP ANY PHONE TO CONNECT'}
+                          </span>
+                          <p className="text-xs mt-1.5 opacity-90 truncate">
+                            {backSide.secondaryText || `${displayHost}/${username}`}
+                          </p>
+                        </div>
+
+                        <div className="text-[10px] font-mono opacity-70">
+                          {backSide.bottomLabel || `UID: ${nfcCard.cardUid || 'TAP-9482-BLK'}`}
+                          <br />
+                          {backSide.customNote || 'Encrypted NTAG216 Chip'}
+                        </div>
+                      </div>
+
+                      {backSide.showQrCode && (
+                        <div className="w-16 h-16 bg-white p-1 rounded-xl flex items-center justify-center shrink-0 shadow-md">
+                          <QrCode className="w-full h-full text-black" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -709,34 +703,45 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
               </span>
             </div>
 
-            {/* Current Selected Font Preview Button */}
-            <button
-              type="button"
-              onClick={() => setFontModalOpen(true)}
-              className="w-full p-3 rounded-2xl bg-white border border-black/10 hover:border-black flex items-center justify-between shadow-2xs cursor-pointer transition-all text-left"
-            >
-              <div>
-                <p className="text-[10px] text-charcoal/50 font-bold uppercase tracking-wider">
-                  Active Font: {currentFontObj.name}
-                </p>
-                <p 
-                  className="text-base font-bold text-charcoal mt-0.5 truncate tracking-wide"
-                  style={{ fontFamily: currentFontObj.family }}
-                >
-                  {frontSide.primaryText || 'ALEX MORGAN'} &bull; {frontSide.topLabel || 'TAPPING'}
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#4F83FF] bg-[#EFF4FF] px-3 py-1.5 rounded-xl">
-                <span>Browse 100 Fonts</span>
-                <ChevronDown className="w-3.5 h-3.5" />
-              </div>
-            </button>
+            {/* In-Page Dropdown Selector (No Screen-Covering Modal) */}
+            <div className="relative">
+              <select
+                value={currentConfig.fontFamily || "'Plus Jakarta Sans', sans-serif"}
+                onChange={(e) => {
+                  updateCurrentConfig({ fontFamily: e.target.value });
+                  const selectedFont = CARD_FONTS.find(f => f.family === e.target.value);
+                  if (selectedFont) {
+                    showToast('Font Applied', `${selectedFont.name} applied to card`, 'success');
+                  }
+                }}
+                className="w-full px-4 py-3 rounded-2xl bg-white border border-black/10 font-bold text-xs text-charcoal appearance-none focus:outline-none focus:ring-2 focus:ring-[#4F83FF]/30 cursor-pointer shadow-2xs pr-10"
+              >
+                {categories.filter(c => c !== 'All').map(cat => (
+                  <optgroup key={cat} label={`── ${cat} ──`}>
+                    {CARD_FONTS.filter(f => f.category === cat).map(font => (
+                      <option key={font.id} value={font.family}>
+                        {font.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-charcoal/50 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+
+            {/* Live Typography Preview Strip */}
+            <div className="p-2.5 rounded-xl bg-white border border-black/5 flex items-center justify-between">
+              <span className="text-[10px] font-mono text-charcoal/50">Current:</span>
+              <span className="text-sm font-black text-charcoal truncate" style={{ fontFamily: currentConfig.fontFamily }}>
+                {currentConfig.primaryText || 'ALEX MORGAN'} &bull; {currentConfig.topLabel || 'TAPPING'}
+              </span>
+            </div>
           </div>
 
-          {/* Section 3: Element Positions (Brand "TAPPING", Name, Chip Placement) */}
+          {/* Section 3: Element Positions (Brand "TAPPING", Name, QR, Chip Placement) */}
           <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
             <label className="font-black text-charcoal uppercase tracking-wider block">
-              Element Placement on Card
+              Element Placement on Card (5mm Safe Zone)
             </label>
 
             {/* Brand "TAPPING" Position */}
@@ -758,7 +763,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                     onClick={() => updateCurrentConfig({ brandPosition: pos.id as any })}
                     className={`py-1.5 px-2 rounded-xl border text-[10px] font-bold transition-all cursor-pointer ${
                       currentConfig.brandPosition === pos.id
-                        ? 'bg-[#141518] text-white border-black shadow-2xs'
+                        ? 'bg-[#4F83FF] text-white border-[#4F83FF] shadow-2xs'
                         : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
                     }`}
                   >
@@ -786,7 +791,35 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                     onClick={() => updateCurrentConfig({ namePosition: pos.id as any })}
                     className={`py-1.5 px-2 rounded-xl border text-[10px] font-bold transition-all cursor-pointer ${
                       currentConfig.namePosition === pos.id
-                        ? 'bg-[#141518] text-white border-black shadow-2xs'
+                        ? 'bg-[#4F83FF] text-white border-[#4F83FF] shadow-2xs'
+                        : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                    }`}
+                  >
+                    {pos.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Dynamic QR Code Position */}
+            <div>
+              <span className="text-[11px] font-bold text-charcoal/70 block mb-1">
+                Dynamic QR Code Position
+              </span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                {[
+                  { id: 'bottom-right', label: 'Bottom Right' },
+                  { id: 'top-right', label: 'Top Right' },
+                  { id: 'bottom-left', label: 'Bottom Left' },
+                  { id: 'center', label: 'Center Card' },
+                ].map((pos) => (
+                  <button
+                    key={pos.id}
+                    type="button"
+                    onClick={() => updateCurrentConfig({ qrPosition: pos.id as any })}
+                    className={`py-1.5 px-2 rounded-xl border text-[10px] font-bold transition-all cursor-pointer ${
+                      currentConfig.qrPosition === pos.id
+                        ? 'bg-[#4F83FF] text-white border-[#4F83FF] shadow-2xs'
                         : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
                     }`}
                   >
@@ -952,102 +985,13 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
           {/* Save Blueprint Action */}
           <button
             onClick={handleSaveDesign}
-            className="w-full py-3.5 px-4 rounded-full bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-sm transition-transform active:scale-95 mt-2 cursor-pointer"
+            className="w-full py-3.5 px-4 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-sm transition-transform active:scale-95 mt-2 cursor-pointer"
           >
             <Check className="w-4 h-4 text-[#FDF166]" />
             <span>Save Custom Card Blueprint</span>
           </button>
         </div>
       </div>
-
-      {/* 100+ FONTS MODAL (Each rendered in its own font style) */}
-      {fontModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-4xl p-6 max-w-2xl w-full border border-black/10 shadow-2xl flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-black/5">
-              <div>
-                <h3 className="font-black text-base text-charcoal">
-                  100 Typography Font Styles
-                </h3>
-                <p className="text-[11px] text-charcoal/60">
-                  Select any font style &mdash; each option renders in its authentic typeface
-                </p>
-              </div>
-              <button
-                onClick={() => setFontModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center text-charcoal cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Category Filter Pills */}
-            <div className="flex items-center gap-1.5 py-3 overflow-x-auto no-scrollbar shrink-0">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedFontCategory(cat)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
-                    selectedFontCategory === cat
-                      ? 'bg-[#141518] text-white shadow-2xs'
-                      : 'bg-[#FAF7F2] text-charcoal/70 hover:text-black border border-black/5'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-
-            {/* Scrollable Font Grid */}
-            <div className="flex-1 overflow-y-auto no-scrollbar grid grid-cols-1 sm:grid-cols-2 gap-2.5 pr-1 py-2">
-              {filteredFonts.map((font) => {
-                const isSelected = currentConfig.fontFamily === font.family;
-                return (
-                  <button
-                    key={font.id}
-                    type="button"
-                    onClick={() => {
-                      updateCurrentConfig({ fontFamily: font.family });
-                      setFontModalOpen(false);
-                      showToast('Font Applied', `${font.name} applied to card`, 'success');
-                    }}
-                    className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                      isSelected
-                        ? 'border-charcoal ring-2 ring-charcoal bg-black/5 shadow-xs'
-                        : 'border-black/10 bg-white hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold text-charcoal/50">
-                        {font.category}
-                      </span>
-                      {isSelected && (
-                        <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs">
-                          <Check className="w-3 h-3 stroke-[3]" />
-                        </span>
-                      )}
-                    </div>
-
-                    <p 
-                      className="text-lg font-bold text-charcoal my-2 truncate tracking-wide"
-                      style={{ fontFamily: font.family }}
-                    >
-                      {frontSide.primaryText || 'ALEX MORGAN'}
-                    </p>
-
-                    <div className="flex items-center justify-between text-[11px] pt-1 border-t border-black/5">
-                      <span className="font-black text-charcoal/80">{font.name}</span>
-                      <span className="font-mono text-[9px] text-[#4F83FF]" style={{ fontFamily: font.family }}>
-                        TAPPING
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* THEME-BASED SAVE CONFIRMATION POPUP */}
       {saveConfirmModalOpen && (

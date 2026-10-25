@@ -159,9 +159,23 @@ export default function PublicProfilePage() {
   const fullAddress = [vcard.streetAddress, vcard.city, vcard.country].filter(Boolean).join(', ');
 
   return (
-    <div className={`min-h-screen ${currentTheme.canvasBg} text-charcoal flex flex-col items-center justify-between p-4 sm:p-6 lg:p-10 selection:bg-[#FDF166] selection:text-charcoal transition-colors duration-200`}>
+    <div className={`min-h-screen ${currentTheme.canvasBg} text-charcoal flex flex-col items-center justify-between p-4 sm:p-6 lg:p-10 selection:bg-[#FDF166] selection:text-charcoal transition-colors duration-200 relative overflow-hidden`}>
+      {/* Full-Screen Bio Page Theme Pattern or Custom Uploaded Wallpaper */}
+      {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
+        <div 
+          className={`fixed inset-0 z-0 pointer-events-none transition-all ${
+            profile.customHeaderImage ? 'bg-cover bg-center' : patternClass
+          }`}
+          style={profile.customHeaderImage ? { backgroundImage: `url(${profile.customHeaderImage})` } : undefined}
+        >
+          {profile.customHeaderImage && (
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+          )}
+        </div>
+      )}
+
       {/* TOP FLOATING ACTION BAR: Pure Contact Sharing */}
-      <div className="w-full max-w-xl mx-auto flex items-center justify-between py-2 mb-2">
+      <div className="w-full max-w-xl mx-auto flex items-center justify-between py-2 mb-2 relative z-10">
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-black/10 shadow-2xs">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span className="text-[11px] font-mono font-bold text-charcoal/70">
@@ -191,30 +205,21 @@ export default function PublicProfilePage() {
       </div>
 
       {/* MAIN PROFILE CARD: USER IDENTITY & CONTACT DATA */}
-      <main className={`w-full max-w-xl mx-auto ${currentTheme.containerBg} rounded-[36px] sm:rounded-[44px] shadow-card border border-black/5 flex flex-col overflow-hidden text-center transition-all`}>
-        
-        {/* Optional Header Background Pattern or Custom Uploaded Banner */}
-        {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
-          <div 
-            className={`w-full h-32 sm:h-44 shrink-0 relative border-b border-black/10 overflow-hidden ${
-              profile.customHeaderImage ? 'bg-cover bg-center' : patternClass
-            }`}
-            style={profile.customHeaderImage ? { backgroundImage: `url(${profile.customHeaderImage})` } : undefined}
-          />
-        )}
-
+      <main className={`w-full max-w-xl mx-auto ${currentTheme.containerBg} rounded-[36px] sm:rounded-[44px] shadow-card border border-black/5 flex flex-col overflow-hidden text-center transition-all relative z-10`}>
         {/* Card Body */}
-        <div className={`p-6 sm:p-8 flex flex-col gap-6 ${profile.showHeaderBackground && (profile.customHeaderImage || patternClass) ? 'pt-0' : ''}`}>
+        <div className="p-6 sm:p-8 flex flex-col gap-6">
           {/* 1. USER IDENTITY (Avatar, Name, Handle, Title, Location, Bio) */}
           <div className="flex flex-col items-center">
-            {/* Avatar with Crisp White Ring & Shadow */}
-            <div className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden ring-4 ring-white border-2 border-white shadow-soft bg-white relative ${
-              profile.showHeaderBackground && (profile.customHeaderImage || patternClass) ? '-mt-12 sm:-mt-14 z-10' : 'mt-1'
-            }`}>
+            {/* Avatar with Crisp White Ring, Shadow, & Custom Zoom/Framing */}
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden ring-4 ring-white border-2 border-white shadow-soft bg-white relative flex items-center justify-center mt-1">
               <img
                 src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
                 alt={profile.displayName}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform"
+                style={{
+                  transform: `scale(${(profile.avatarZoom ?? 100) / 100}) translate(${profile.avatarPosX ?? 0}px, ${profile.avatarPosY ?? 0}px)`,
+                  transformOrigin: 'center center',
+                }}
               />
             </div>
 

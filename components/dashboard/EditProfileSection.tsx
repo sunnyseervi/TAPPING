@@ -70,6 +70,9 @@ export default function EditProfileSection({
   const [badgeTitle, setBadgeTitle] = useState(profile.badgeTitle || vcard?.jobTitle || 'Product Designer');
   const [bio, setBio] = useState(profile.bio);
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
+  const [avatarZoom, setAvatarZoom] = useState(profile.avatarZoom ?? 100);
+  const [avatarPosX, setAvatarPosX] = useState(profile.avatarPosX ?? 0);
+  const [avatarPosY, setAvatarPosY] = useState(profile.avatarPosY ?? 0);
   
   // Contact Details
   const [phone, setPhone] = useState(vcard?.workPhone || vcard?.mobilePhone || profile.socialLinks?.phone || '+1 (415) 890-2200');
@@ -97,6 +100,9 @@ export default function EditProfileSection({
         badgeTitle,
         bio,
         avatarUrl,
+        avatarZoom,
+        avatarPosX,
+        avatarPosY,
         socialLinks: {
           ...socialLinks,
           phone,
@@ -175,6 +181,9 @@ export default function EditProfileSection({
       badgeTitle,
       bio,
       avatarUrl,
+      avatarZoom,
+      avatarPosX,
+      avatarPosY,
       socialLinks: {
         ...socialLinks,
         phone,
@@ -386,14 +395,18 @@ export default function EditProfileSection({
         </div>
 
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Avatar Photo Upload Column (Self Photo Upload - No Forced Demo) */}
-          <div className="flex flex-col items-center gap-2.5 shrink-0">
+          {/* Avatar Photo Upload Column (Self Photo Upload with Zoom & Framing Controls) */}
+          <div className="flex flex-col items-center gap-2.5 shrink-0 w-full sm:w-44">
             <div className="w-24 h-24 rounded-3xl overflow-hidden bg-[#FAF7F2] border-2 border-black/10 shadow-soft relative flex items-center justify-center">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
                   alt={displayName || 'Profile Photo'}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform"
+                  style={{
+                    transform: `scale(${avatarZoom / 100}) translate(${avatarPosX}px, ${avatarPosY}px)`,
+                    transformOrigin: 'center center',
+                  }}
                 />
               ) : (
                 <User className="w-10 h-10 text-charcoal/30 stroke-[1.5]" />
@@ -408,27 +421,115 @@ export default function EditProfileSection({
               onChange={handleAvatarUpload}
             />
 
-            <button
-              type="button"
-              onClick={() => avatarFileInputRef.current?.click()}
-              className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-gray-50 border border-black/10 text-xs font-black text-charcoal flex items-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
-            >
-              <Upload className="w-3.5 h-3.5 text-[#4F83FF]" />
-              <span>Upload Photo</span>
-            </button>
-
-            {avatarUrl && (
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  setAvatarUrl('');
-                  notifyLive({ avatarUrl: '' });
-                  showToast('Photo Cleared', 'Avatar removed from profile', 'info');
-                }}
-                className="text-[10px] font-bold text-rose-600 hover:text-rose-700 cursor-pointer"
+                onClick={() => avatarFileInputRef.current?.click()}
+                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-gray-50 border border-black/10 text-xs font-black text-charcoal flex items-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
               >
-                Remove Photo
+                <Upload className="w-3.5 h-3.5 text-[#4F83FF]" />
+                <span>Upload Photo</span>
               </button>
+
+              {avatarUrl && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAvatarUrl('');
+                    notifyLive({ avatarUrl: '' });
+                    showToast('Photo Cleared', 'Avatar removed from profile', 'info');
+                  }}
+                  className="text-[10px] font-bold text-rose-600 hover:text-rose-700 cursor-pointer"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+
+            {/* Avatar Framing & Zoom Controls (Fixes Awkward Cropping) */}
+            {avatarUrl && (
+              <div className="w-full p-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-2 mt-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-charcoal/70 block text-center">
+                  Adjust Framing & Crop
+                </span>
+
+                {/* Zoom Slider */}
+                <div>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-charcoal/70 mb-0.5">
+                    <span>Zoom</span>
+                    <span>{avatarZoom}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={50}
+                    max={250}
+                    step={5}
+                    value={avatarZoom}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setAvatarZoom(val);
+                      notifyLive({ avatarZoom: val });
+                    }}
+                    className="w-full h-1.5 bg-black/10 rounded-lg appearance-none cursor-pointer accent-[#4F83FF]"
+                  />
+                </div>
+
+                {/* Vertical Pan Slider (Up/Down) */}
+                <div>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-charcoal/70 mb-0.5">
+                    <span>Vertical (Up/Down)</span>
+                    <span>{avatarPosY > 0 ? `+${avatarPosY}` : avatarPosY}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={-60}
+                    max={60}
+                    step={1}
+                    value={avatarPosY}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setAvatarPosY(val);
+                      notifyLive({ avatarPosY: val });
+                    }}
+                    className="w-full h-1.5 bg-black/10 rounded-lg appearance-none cursor-pointer accent-[#4F83FF]"
+                  />
+                </div>
+
+                {/* Horizontal Pan Slider (Left/Right) */}
+                <div>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-charcoal/70 mb-0.5">
+                    <span>Horizontal</span>
+                    <span>{avatarPosX > 0 ? `+${avatarPosX}` : avatarPosX}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={-60}
+                    max={60}
+                    step={1}
+                    value={avatarPosX}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setAvatarPosX(val);
+                      notifyLive({ avatarPosX: val });
+                    }}
+                    className="w-full h-1.5 bg-black/10 rounded-lg appearance-none cursor-pointer accent-[#4F83FF]"
+                  />
+                </div>
+
+                {/* Reset Framing Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAvatarZoom(100);
+                    setAvatarPosX(0);
+                    setAvatarPosY(0);
+                    notifyLive({ avatarZoom: 100, avatarPosX: 0, avatarPosY: 0 });
+                  }}
+                  className="w-full py-1 text-[10px] font-bold text-charcoal/60 hover:text-black border border-black/10 rounded-lg bg-white cursor-pointer"
+                >
+                  Reset Framing
+                </button>
+              </div>
             )}
           </div>
 

@@ -41,10 +41,16 @@ export default function LandingPage() {
   const [cardFlipped, setCardFlipped] = useState(false);
   const [nfcTapped, setNfcTapped] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setDisplayHost(window.location.host);
+      const p = getStoredProfile();
+      if (p && p.username && p.username !== 'alex' && p.username !== 'creator') {
+        setIsSignedIn(true);
+      }
     }
   }, []);
 
@@ -135,24 +141,37 @@ export default function LandingPage() {
         <div className="hidden lg:flex items-center gap-6 text-xs font-bold text-charcoal/70">
           <a href="#hardware" className="hover:text-black transition-colors">Metal NFC</a>
           <a href="#features" className="hover:text-black transition-colors">Features</a>
+          <a href="#pricing" className="hover:text-black transition-colors">Pricing (&#8377;299)</a>
           <Link href="/alex" className="hover:text-black transition-colors">Sample Bio Link</Link>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <Link
-            href="/dashboard"
-            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-black/10 bg-white hover:bg-gray-50 text-xs font-bold text-charcoal shadow-xs transition-colors"
-          >
-            <span>Sign In</span>
-          </Link>
+          {isSignedIn ? (
+            <Link
+              href="/dashboard"
+              className="px-5 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
+            >
+              <span>Dashboard</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/dashboard"
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-black/10 bg-white hover:bg-gray-50 text-xs font-bold text-charcoal shadow-xs transition-colors"
+              >
+                <span>Sign In</span>
+              </Link>
 
-          <Link
-            href="/dashboard"
-            className="px-5 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
-          >
-            <span>Creator Dashboard</span>
-            <ArrowRight className="w-3.5 h-3.5 text-[#FDF166]" />
-          </Link>
+              <Link
+                href="/dashboard"
+                className="px-5 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
+              >
+                <span>Get Started</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -646,6 +665,167 @@ export default function LandingPage() {
             >
               <span>Generate QR</span>
               <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* TRANSPARENT INDIAN RUPEE PRICING SECTION */}
+      <section id="pricing" className="max-w-7xl mx-auto px-6 py-20 border-t border-black/5">
+        <div className="text-center mb-10">
+          <span className="text-xs font-black px-3.5 py-1 rounded-full bg-[#EFF4FF] text-[#4F83FF] border border-[#4F83FF]/20">
+            TRANSPARENT CREATOR PRICING
+          </span>
+          <h2 className="text-3xl sm:text-5xl font-black text-charcoal mt-3 tracking-tight">
+            Activate Your Bio Space &amp; Dynamic QR
+          </h2>
+          <p className="text-xs sm:text-sm text-charcoal/65 mt-2 max-w-lg mx-auto font-medium">
+            Everything you need to publish your link-in-bio, generate permanent dynamic QR codes, print visiting cards, and connect with NFC hardware.
+          </p>
+
+          {/* Monthly / Yearly Billing Toggle */}
+          <div className="inline-flex items-center p-1 rounded-full bg-[#FAF7F2] border border-black/10 mt-6 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setBillingCycle('monthly')}
+              className={`px-5 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${
+                billingCycle === 'monthly'
+                  ? 'bg-[#141518] text-white shadow-xs'
+                  : 'text-charcoal/70 hover:text-black'
+              }`}
+            >
+              Monthly Billing
+            </button>
+            <button
+              type="button"
+              onClick={() => setBillingCycle('yearly')}
+              className={`px-5 py-2 rounded-full text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                billingCycle === 'yearly'
+                  ? 'bg-[#141518] text-white shadow-xs'
+                  : 'text-charcoal/70 hover:text-black'
+              }`}
+            >
+              <span>Yearly Billing</span>
+              <span className="px-2 py-0.5 rounded-full bg-[#B6F554] text-charcoal text-[9px] font-black">
+                Save 16%
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Pricing Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
+          
+          {/* Monthly Plan: ₹299 / month */}
+          <div className={`p-8 rounded-4xl border flex flex-col justify-between transition-all ${
+            billingCycle === 'monthly'
+              ? 'bg-white border-2 border-[#4F83FF] shadow-card ring-2 ring-[#4F83FF]/20'
+              : 'bg-[#FAF7F2] border-black/10 opacity-90'
+          }`}>
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase tracking-wider text-charcoal/60">
+                  Monthly Membership
+                </span>
+                {billingCycle === 'monthly' && (
+                  <span className="px-3 py-1 rounded-full bg-[#EFF4FF] text-[#4F83FF] text-[10px] font-black border border-[#4F83FF]/20">
+                    Active Selection
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-baseline gap-1 mt-4">
+                <span className="text-4xl sm:text-5xl font-black text-charcoal tracking-tight">&#8377;299</span>
+                <span className="text-xs font-bold text-charcoal/60">/ month</span>
+              </div>
+              <p className="text-xs text-charcoal/70 mt-2 font-medium">
+                Perfect for independent creators, designers, and consultants building their professional bio space.
+              </p>
+
+              <div className="space-y-3 mt-6 pt-6 border-t border-black/5 text-xs font-bold text-charcoal/80">
+                {[
+                  'Custom Link-in-Bio space (tapping.bio/yourname)',
+                  '13 Full-System Themes & authentic typography styles',
+                  'Permanent Dynamic QR Code (never breaks)',
+                  'Digital Visiting Card with 300 DPI PNG & PDF export',
+                  'vCard 3.0 Instant Phonebook Contact Save',
+                  'Unlimited active link blocks & zero image cropping',
+                  'Real-time visitor and click analytics',
+                ].map((feat, idx) => (
+                  <div key={idx} className="flex items-center gap-2.5">
+                    <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 stroke-[3]" />
+                    </div>
+                    <span>{feat}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Link
+              href="/dashboard"
+              className="mt-8 w-full py-3.5 px-4 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
+            >
+              <span>Activate Monthly (&#8377;299)</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Yearly Plan: ₹2,999 / year */}
+          <div className={`p-8 rounded-4xl border flex flex-col justify-between transition-all relative overflow-hidden ${
+            billingCycle === 'yearly'
+              ? 'bg-[#141518] text-white border-2 border-amber-400 shadow-2xl ring-2 ring-amber-400/20'
+              : 'bg-white border-black/10'
+          }`}>
+            <div className="absolute top-4 right-4">
+              <span className="px-3 py-1 rounded-full bg-[#FDF166] text-charcoal text-[10px] font-black uppercase tracking-wider shadow-2xs">
+                Best Value
+              </span>
+            </div>
+
+            <div>
+              <span className={`text-xs font-black uppercase tracking-wider block ${billingCycle === 'yearly' ? 'text-amber-400' : 'text-charcoal/60'}`}>
+                Annual Membership (Save 16%)
+              </span>
+
+              <div className="flex items-baseline gap-1 mt-4">
+                <span className={`text-4xl sm:text-5xl font-black tracking-tight ${billingCycle === 'yearly' ? 'text-white' : 'text-charcoal'}`}>
+                  &#8377;2,999
+                </span>
+                <span className={`text-xs font-bold ${billingCycle === 'yearly' ? 'text-white/60' : 'text-charcoal/60'}`}>
+                  / year (&#8377;250/mo)
+                </span>
+              </div>
+              <p className={`text-xs mt-2 font-medium ${billingCycle === 'yearly' ? 'text-white/70' : 'text-charcoal/70'}`}>
+                Everything you need for the entire year plus hardware discounts and priority custom domain access.
+              </p>
+
+              <div className={`space-y-3 mt-6 pt-6 border-t text-xs font-bold ${billingCycle === 'yearly' ? 'border-white/10 text-white/85' : 'border-black/5 text-charcoal/80'}`}>
+                {[
+                  'Everything in Monthly Plan included',
+                  'Save 16% with full 12-month account activation',
+                  'Custom domain mapping (yourbrand.com)',
+                  '20% exclusive discount on Physical Metal NFC Cards',
+                  'Priority verified badge & zero platform branding',
+                  '300 DPI Vector PDF Visiting Card exporter',
+                  'Priority creator support & fast fulfillment',
+                ].map((feat, idx) => (
+                  <div key={idx} className="flex items-center gap-2.5">
+                    <div className="w-5 h-5 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 stroke-[3]" />
+                    </div>
+                    <span>{feat}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Link
+              href="/dashboard"
+              className="mt-8 w-full py-3.5 px-4 rounded-2xl bg-[#FDF166] hover:bg-[#FBE849] text-charcoal font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
+            >
+              <span>Activate Yearly (&#8377;2,999)</span>
+              <ArrowRight className="w-4 h-4 text-charcoal" />
             </Link>
           </div>
         </div>
