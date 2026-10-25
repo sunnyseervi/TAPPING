@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Profile, LinkBlock, StyleVariant, VCardProfile, LinkCardStyleType, StoreConfig, StoreProduct } from '@/lib/types';
-import { resolveLinkCardClasses } from '@/lib/themes';
+import { resolveLinkCardClasses, isColorDark } from '@/lib/themes';
 import { 
   User, 
   Plus, 
@@ -43,6 +43,7 @@ import ThemesStudio from '@/components/dashboard/ThemesStudio';
 import { compressImageFile, compressAvatarImage, compressLinkCardImage, formatFileSize } from '@/lib/imageCompression';
 import { getStoredStore, saveStoredStore } from '@/lib/storage';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import ColorChartPicker from '@/components/ui/ColorChartPicker';
 
 interface EditProfileSectionProps {
   profile: Profile;
@@ -1323,6 +1324,7 @@ export default function EditProfileSection({
             }
 
             const hasCustomBg = !!link.bgImage || !!link.bgColor;
+            const effectiveTextColor = link.textColor || (link.bgImage ? '#FFFFFF' : (link.bgColor ? (isColorDark(link.bgColor) ? '#FFFFFF' : '#141518') : undefined));
             return (
               <div
                 key={link.id}
@@ -1337,7 +1339,7 @@ export default function EditProfileSection({
                   backgroundRepeat: link.bgImage ? 'no-repeat' : undefined,
                   backgroundPosition: link.bgImage ? 'center' : undefined,
                   backgroundColor: link.bgColor || undefined,
-                  color: link.textColor || (link.bgImage ? '#FFFFFF' : undefined),
+                  color: effectiveTextColor,
                 }}
               >
                 {link.bgImage && (
@@ -1373,10 +1375,17 @@ export default function EditProfileSection({
                     <div className="flex items-center gap-2">
                       <p 
                         className="text-xs sm:text-sm font-black truncate"
-                        style={link.textColor ? { color: link.textColor } : (link.bgImage ? { color: '#FFFFFF' } : undefined)}
+                        style={effectiveTextColor ? { color: effectiveTextColor } : undefined}
                       >
                         {link.title}
                       </p>
+                      {link.bgColor && (
+                        <span
+                          className="w-3 h-3 rounded-full border border-black/20 shrink-0 shadow-2xs"
+                          style={{ backgroundColor: link.bgColor }}
+                          title={`Custom color: ${link.bgColor}`}
+                        />
+                      )}
                       {link.bgImage && (
                         <span className="text-[9px] font-mono px-2 py-0.2 rounded-full bg-white/20 text-white border border-white/20 shrink-0">
                           Custom Art
@@ -1389,7 +1398,7 @@ export default function EditProfileSection({
                     {link.subtitle && (
                       <p 
                         className="text-[11px] opacity-80 truncate mt-0.5 font-medium"
-                        style={link.textColor ? { color: link.textColor } : (link.bgImage ? { color: '#FFFFFF' } : undefined)}
+                        style={effectiveTextColor ? { color: effectiveTextColor } : undefined}
                       >
                         {link.subtitle}
                       </p>
@@ -1763,7 +1772,6 @@ export default function EditProfileSection({
                   {[
                     { id: undefined, name: 'Theme Default', tag: 'Global' },
                     { id: 'comic-brutalist', name: 'Comic Brutalist', tag: 'Marvel' },
-                    { id: 'comic-halftone', name: 'Comic Halftone', tag: 'Pop Dots' },
                     { id: 'retro-pixel', name: 'Retro 8-Bit Pixel', tag: 'Arcade' },
                     { id: 'cyber-terminal', name: 'Cyber Terminal', tag: 'Neon Green' },
                     { id: 'vaporwave-gradient', name: 'Vaporwave Sunset', tag: 'Gradient' },
@@ -1903,66 +1911,31 @@ export default function EditProfileSection({
                 )}
               </div>
 
-              {/* Text Contrast Color */}
-              <div>
-                <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1.5">
-                  Link Text Color
-                </label>
-                <div className="flex items-center gap-2">
-                  {[
-                    { label: 'Dark Text', hex: '#141518', bg: 'bg-[#141518] text-white' },
-                    { label: 'White Text', hex: '#FFFFFF', bg: 'bg-white text-charcoal border border-black/20' },
-                    { label: 'Gold Text', hex: '#FACC15', bg: 'bg-[#FACC15] text-black' },
-                    { label: 'Electric Blue', hex: '#4F83FF', bg: 'bg-[#4F83FF] text-white' },
-                  ].map((c) => (
-                    <button
-                      key={c.hex}
-                      type="button"
-                      onClick={() => setLinkTextColor(c.hex)}
-                      className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${c.bg} ${
-                        linkTextColor === c.hex ? 'ring-2 ring-charcoal scale-105 shadow-xs' : 'opacity-80'
-                      }`}
-                    >
-                      {c.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Individual Card Background Color Theme Spectrum */}
+              <ColorChartPicker
+                label="Card Background Color Theme"
+                description="Pick any color from the spectrum or full color wheel. Style each link card individually (e.g. blue, yellow, red, etc.)!"
+                value={linkBgColor || '#FFFFFF'}
+                onChange={(hex) => setLinkBgColor(hex)}
+                allowAutoContrast={true}
+                showTextAutoSuggestion={true}
+                onAutoContrast={(suggestedTextHex) => setLinkTextColor(suggestedTextHex)}
+                onReset={() => {
+                  setLinkBgColor('');
+                  setLinkTextColor('#141518');
+                }}
+                resetLabel="Use Theme Default"
+              />
 
-              {/* Color Theme Block Fallback */}
-              <div>
-                <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1.5">
-                  Color Theme Palette
-                </label>
-                <div className="grid grid-cols-5 gap-2">
-                  {[
-                    { id: 'sky' as StyleVariant, name: 'Cobalt', bg: 'bg-[#4F83FF]' },
-                    { id: 'yellow' as StyleVariant, name: 'Butter', bg: 'bg-[#FDF166]' },
-                    { id: 'mint' as StyleVariant, name: 'Lime', bg: 'bg-[#B6F554]' },
-                    { id: 'peach' as StyleVariant, name: 'Soft Blue', bg: 'bg-[#EFF4FF]' },
-                    { id: 'lavender' as StyleVariant, name: 'White', bg: 'bg-white' },
-                  ].map((v) => (
-                    <button
-                      key={v.id}
-                      type="button"
-                      onClick={() => {
-                        setLinkStyle(v.id);
-                        if (!linkBgImage) {
-                          setLinkTextColor(v.id === 'sky' ? '#FFFFFF' : '#141518');
-                        }
-                      }}
-                      className={`h-9 rounded-xl border border-black/10 flex items-center justify-center transition-all cursor-pointer ${v.bg} ${
-                        linkStyle === v.id ? 'ring-2 ring-charcoal scale-105 shadow-xs' : 'opacity-80 hover:opacity-100'
-                      }`}
-                      title={v.name}
-                    >
-                      {linkStyle === v.id && (
-                        <Check className={`w-4 h-4 ${v.id === 'sky' ? 'text-white' : 'text-charcoal'}`} />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Individual Card Text & Font Color Spectrum */}
+              <ColorChartPicker
+                label="Card Typography & Text Color"
+                description="Choose any text and icon color for this card from the full spectrum or color wheel"
+                value={linkTextColor || '#141518'}
+                onChange={(hex) => setLinkTextColor(hex)}
+                onReset={() => setLinkTextColor(isColorDark(linkBgColor || '#FFFFFF') ? '#FFFFFF' : '#141518')}
+                resetLabel="Auto Contrast"
+              />
 
               <div className="flex items-center gap-2 pt-3">
                 <button

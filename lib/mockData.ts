@@ -54,7 +54,53 @@ export const initialVCard: VCardProfile = {
   note: 'Connected via Tapping Smart Contact Card. Save directly to contacts.',
 };
 
-export const initialLinks: LinkBlock[] = [];
+export const initialLinks: LinkBlock[] = [
+  {
+    id: 'lnk_1',
+    userId: 'usr_creator_01',
+    type: 'link',
+    title: 'Design Portfolio & Works',
+    subtitle: 'Selected case studies and design systems',
+    url: 'https://github.com',
+    icon: 'briefcase',
+    styleVariant: 'sky',
+    bgColor: '#3B82F6',
+    textColor: '#FFFFFF',
+    isActive: true,
+    sortOrder: 0,
+    clickCount: 1420,
+  },
+  {
+    id: 'lnk_2',
+    userId: 'usr_creator_01',
+    type: 'link',
+    title: 'Book 1:1 Product Advisory',
+    subtitle: '30-minute high-impact strategy consultation',
+    url: 'https://cal.com',
+    icon: 'phone',
+    styleVariant: 'yellow',
+    bgColor: '#FDF166',
+    textColor: '#141518',
+    isActive: true,
+    sortOrder: 1,
+    clickCount: 890,
+  },
+  {
+    id: 'lnk_3',
+    userId: 'usr_creator_01',
+    type: 'link',
+    title: 'Bengaluru Tech Keynote RSVP',
+    subtitle: 'Annual contactless hardware and web symposium',
+    url: 'https://tapping.bio/aarav',
+    icon: 'calendar',
+    styleVariant: 'peach',
+    bgColor: '#EF4444',
+    textColor: '#FFFFFF',
+    isActive: true,
+    sortOrder: 2,
+    clickCount: 650,
+  },
+];
 
 export const initialNFCCard: NFCCardDesign = {
   id: 'nfc_001',

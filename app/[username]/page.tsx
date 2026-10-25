@@ -735,8 +735,14 @@ export default function PublicProfilePage() {
                 cardStyle
               );
               // Clean anti-slop: Ensure link buttons are sleek modern rounded rectangles (never bulky distorted pills)
-              const cardClasses = rawCardClasses.replace(/rounded-full/g, 'rounded-2xl').replace(/rounded-none/g, 'rounded-2xl');
-              const effectiveTextColor = link.textColor || (link.bgImage ? '#FFFFFF' : profile.fontColor || '#141518');
+              let cardClasses = rawCardClasses.replace(/rounded-full/g, 'rounded-2xl').replace(/rounded-none/g, 'rounded-2xl');
+              if (link.bgColor) {
+                cardClasses = cardClasses
+                  .replace(/\bbg-\[[^\]]+\]/g, '')
+                  .replace(/\bbg-[a-z0-9\/-]+/g, '')
+                  .replace(/\bpattern-[a-z0-9-]+/g, '');
+              }
+              const effectiveTextColor = link.textColor || (link.bgImage ? '#FFFFFF' : (link.bgColor ? (isColorDark(link.bgColor) ? '#FFFFFF' : '#141518') : profile.fontColor || '#141518'));
 
               return (
                 <div

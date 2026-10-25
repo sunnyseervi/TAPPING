@@ -192,6 +192,8 @@ export default function AdminUsersTab({
     updateUserLink(editingLink.userId, editingLink.link.id, {
       title: editingLink.link.title,
       url: editingLink.link.url,
+      bgColor: editingLink.link.bgColor,
+      textColor: editingLink.link.textColor,
     });
     if (selectedUserForDetails && selectedUserForDetails.id === editingLink.userId) {
       const updatedLinks = (selectedUserForDetails.links || []).map((l) =>
@@ -707,6 +709,13 @@ export default function AdminUsersTab({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <p className="font-black text-charcoal truncate text-xs">{link.title}</p>
+                            {link.bgColor && (
+                              <span
+                                className="w-2.5 h-2.5 rounded-full border border-black/20 shrink-0"
+                                style={{ backgroundColor: link.bgColor }}
+                                title={`Custom Card Color: ${link.bgColor}`}
+                              />
+                            )}
                             <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-black/5 text-charcoal/60">
                               {link.clickCount || 0} clicks
                             </span>
@@ -827,6 +836,67 @@ export default function AdminUsersTab({
                   className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-mono font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
                   required
                 />
+              </div>
+
+              {/* Card Color Theme Controls */}
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <div>
+                  <label className="text-[10px] font-bold text-charcoal/60 block mb-1">Card Background Color</label>
+                  <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#FAF7F2] border border-black/10">
+                    <input
+                      type="color"
+                      value={editingLink.link.bgColor || '#FFFFFF'}
+                      onChange={(e) =>
+                        setEditingLink({
+                          ...editingLink,
+                          link: { ...editingLink.link, bgColor: e.target.value },
+                        })
+                      }
+                      className="w-6 h-6 rounded cursor-pointer border-0 p-0"
+                    />
+                    <input
+                      type="text"
+                      value={editingLink.link.bgColor || ''}
+                      placeholder="#FFFFFF"
+                      onChange={(e) =>
+                        setEditingLink({
+                          ...editingLink,
+                          link: { ...editingLink.link, bgColor: e.target.value },
+                        })
+                      }
+                      className="bg-transparent text-[11px] font-mono font-bold w-full focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-charcoal/60 block mb-1">Card Text Color</label>
+                  <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#FAF7F2] border border-black/10">
+                    <input
+                      type="color"
+                      value={editingLink.link.textColor || '#141518'}
+                      onChange={(e) =>
+                        setEditingLink({
+                          ...editingLink,
+                          link: { ...editingLink.link, textColor: e.target.value },
+                        })
+                      }
+                      className="w-6 h-6 rounded cursor-pointer border-0 p-0"
+                    />
+                    <input
+                      type="text"
+                      value={editingLink.link.textColor || ''}
+                      placeholder="#141518"
+                      onChange={(e) =>
+                        setEditingLink({
+                          ...editingLink,
+                          link: { ...editingLink.link, textColor: e.target.value },
+                        })
+                      }
+                      className="bg-transparent text-[11px] font-mono font-bold w-full focus:outline-none"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

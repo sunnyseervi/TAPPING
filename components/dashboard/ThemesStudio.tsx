@@ -35,6 +35,7 @@ import confetti from 'canvas-confetti';
 import { THEMES, isColorDark, isDarkTheme } from '@/lib/themes';
 import { CARD_FONTS, CardFont, findCardFont } from '@/lib/cardFonts';
 import { compressWallpaperImage, formatFileSize } from '@/lib/imageCompression';
+import ColorChartPicker from '@/components/ui/ColorChartPicker';
 
 interface ThemesStudioProps {
   profile: Profile;
@@ -246,7 +247,7 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
 
   const handleUpdateHeaderPattern = (pattern: BackgroundPatternType) => {
     let nextTheme = draftProfile.theme;
-    if ((pattern === 'comic-sunburst' || pattern === 'comic-sunburst-red' || pattern === 'pop-halftone' || pattern === 'pop-halftone-cyan') && (draftProfile.theme === 'cyberpunk-neon')) {
+    if ((pattern === 'comic-sunburst' || pattern === 'comic-sunburst-red') && (draftProfile.theme === 'cyberpunk-neon')) {
       nextTheme = 'comic-pop';
     }
     const updated: Profile = {
@@ -328,12 +329,6 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
       name: 'Comic Pop Brutalist', 
       desc: 'Bold 2.5px black border with retro offset hard drop shadow', 
       previewClass: 'bg-[#FEF08A] border-2 border-black shadow-[3px_3px_0px_#000] text-black font-black' 
-    },
-    { 
-      id: 'comic-halftone', 
-      name: 'Comic Halftone Burst', 
-      desc: 'Explosive comic-book halftone dot background with bold outlines', 
-      previewClass: 'bg-[#FFFBEB] border-2 border-black shadow-[3px_3px_0px_#000] pattern-pop-halftone text-black font-black' 
     },
     { 
       id: 'retro-pixel', 
@@ -459,8 +454,7 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
 
   const patternPresets: { id: BackgroundPatternType; name: string; desc: string; previewClass: string }[] = [
     { id: 'none', name: 'Clean Solid', desc: 'No background pattern', previewClass: 'bg-[#F7F5EE]' },
-    { id: 'comic-sunburst', name: 'Comic Halftone Sunburst', desc: 'Explosive radial comic rays (from reference)', previewClass: 'pattern-comic-sunburst' },
-    { id: 'pop-halftone', name: 'Retro Pop Halftone Dots', desc: 'Classic comic-book printing dot grid', previewClass: 'pattern-pop-halftone' },
+    { id: 'comic-sunburst', name: 'Comic Sunburst Radial Rays', desc: 'Explosive radial comic rays', previewClass: 'pattern-comic-sunburst' },
     { id: 'retro-grid', name: '80s Synthwave Grid', desc: 'Arcade purple cyber perspective grid', previewClass: 'pattern-retro-grid' },
     { id: 'cyber-matrix', name: 'Cyber Matrix Grid', desc: 'Matrix green terminal digital points', previewClass: 'pattern-cyber-matrix' },
     { id: 'doodle-waves', name: 'Japanese Doodle Waves', desc: 'Ukiyo-e wave & geometric doodle curves', previewClass: 'pattern-doodle-waves' },
@@ -632,43 +626,18 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
               )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              {themeColorPresets.map((c) => {
-                const isSelected = draftProfile.customBgColor?.toLowerCase() === c.hex.toLowerCase();
-                return (
-                  <button
-                    key={c.hex}
-                    type="button"
-                    onClick={() => handleSelectThemeColor(c.hex)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-2xl border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-charcoal bg-black/5 ring-2 ring-charcoal shadow-2xs'
-                        : 'border-black/10 bg-white hover:bg-gray-50'
-                    }`}
-                  >
-                    <span
-                      className="w-4 h-4 rounded-full border border-black/20 shrink-0"
-                      style={{ backgroundColor: c.hex }}
-                    />
-                    <span className="text-xs font-bold text-charcoal">{c.name}</span>
-                  </button>
-                );
-              })}
-
-              {/* Custom Color Input */}
-              <div className="flex items-center gap-2 bg-white border border-black/10 rounded-2xl px-3 py-1.5 shadow-2xs">
-                <input
-                  type="color"
-                  value={draftProfile.customBgColor || '#FAF7F2'}
-                  onChange={(e) => handleSelectThemeColor(e.target.value)}
-                  className="w-6 h-6 rounded cursor-pointer border-0 p-0"
-                  title="Pick custom canvas hex color"
-                />
-                <span className="text-xs font-mono font-bold text-charcoal">
-                  {draftProfile.customBgColor || 'Custom'}
-                </span>
-              </div>
-            </div>
+            {/* Color Chart Spectrum Canvas Color Picker */}
+            <ColorChartPicker
+              label="Canvas Color Theme Spectrum"
+              description="Choose any color from the spectrum or full color wheel. Sets your global bio page canvas background."
+              value={draftProfile.customBgColor || '#FAF7F2'}
+              onChange={(hex) => handleSelectThemeColor(hex)}
+              onReset={() => updateDraft({ customBgColor: undefined })}
+              resetLabel="Reset Theme Default"
+              allowAutoContrast={true}
+              showTextAutoSuggestion={true}
+              onAutoContrast={(textColor) => updateDraft({ fontColor: textColor })}
+            />
           </div>
 
           {/* 3. UPLOAD YOUR OWN WALLPAPER */}
@@ -1204,43 +1173,15 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
                 </button>
               )}
             </div>
-            <p className="text-xs text-charcoal/60 mb-3">Select primary text and heading accent color or choose any custom color:</p>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {fontColorPresets.map((c) => {
-                const isSelected = (draftProfile.fontColor || '#141518') === c.hex;
-                return (
-                  <button
-                    key={c.hex}
-                    type="button"
-                    onClick={() => handleUpdateFontColor(c.hex)}
-                    className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-charcoal bg-black/[0.04] ring-2 ring-charcoal'
-                        : 'border-black/10 bg-[#FAF7F2] hover:bg-white'
-                    }`}
-                  >
-                    <span
-                      className="w-4 h-4 rounded-full border border-black/20"
-                      style={{ backgroundColor: c.hex }}
-                    />
-                    <span className="text-xs font-bold text-charcoal">{c.name}</span>
-                  </button>
-                );
-              })}
-
-              {/* Custom Color Input */}
-              <div className="flex items-center gap-2 bg-[#FAF7F2] hover:bg-white border border-black/10 rounded-2xl px-3 py-1.5 shadow-2xs">
-                <input
-                  type="color"
-                  value={draftProfile.fontColor || '#141518'}
-                  onChange={(e) => handleUpdateFontColor(e.target.value)}
-                  className="w-6 h-6 rounded cursor-pointer border-0 p-0"
-                  title="Pick any custom hex font color"
-                />
-                <span className="text-xs font-mono font-bold text-charcoal">{draftProfile.fontColor || 'Default'}</span>
-              </div>
-            </div>
+            {/* Color Chart Spectrum Font Color Picker */}
+            <ColorChartPicker
+              label="Typography & Font Color Spectrum"
+              description="Choose any text and heading color from the spectrum or full color wheel"
+              value={draftProfile.fontColor || '#141518'}
+              onChange={(hex) => handleUpdateFontColor(hex)}
+              onReset={() => handleResetAutoFontColor()}
+              resetLabel="Auto Contrast Default"
+            />
           </div>
         </div>
       )}

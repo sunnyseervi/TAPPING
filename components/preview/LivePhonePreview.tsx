@@ -477,17 +477,24 @@ export default function LivePhonePreview({
                   }
 
                   const cardStyle = link.linkTheme || profile.linkCardStyle;
-                  const cardClasses = resolveLinkCardClasses(
+                  let cardClasses = resolveLinkCardClasses(
                     profile.theme,
                     link.styleVariant,
                     cardStyle
                   ).replace(/rounded-full/g, 'rounded-2xl').replace(/rounded-none/g, 'rounded-2xl');
-                  const effectiveTextColor = link.textColor || (link.bgImage ? '#FFFFFF' : profile.fontColor || undefined);
+
+                  if (link.bgColor) {
+                    cardClasses = cardClasses
+                      .replace(/\bbg-\[[^\]]+\]/g, '')
+                      .replace(/\bbg-[a-z0-9\/-]+/g, '')
+                      .replace(/\bpattern-[a-z0-9-]+/g, '');
+                  }
+                  const effectiveTextColor = link.textColor || (link.bgImage ? '#FFFFFF' : (link.bgColor ? (isColorDark(link.bgColor) ? '#FFFFFF' : '#141518') : profile.fontColor || undefined));
                   return (
                     <div
                       key={link.id}
                       onClick={() => handleLinkClick(link)}
-                      className={`min-h-[50px] p-2.5 rounded-2xl border border-black/10 bg-white/95 text-charcoal shadow-2xs hover:bg-white transition-all cursor-pointer flex items-center justify-between relative overflow-hidden ${cardClasses}`}
+                      className={`min-h-[50px] p-2.5 rounded-2xl border border-black/10 text-charcoal shadow-2xs hover:opacity-95 transition-all cursor-pointer flex items-center justify-between relative overflow-hidden ${link.bgColor ? '' : 'bg-white/95 hover:bg-white'} ${cardClasses}`}
                       style={{
                         backgroundImage: link.bgImage ? `url(${link.bgImage})` : undefined,
                         backgroundSize: link.bgImage ? (link.bgImageFit === 'fill' ? '100% 100%' : (link.bgImageFit || 'cover')) : undefined,

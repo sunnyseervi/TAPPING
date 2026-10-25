@@ -411,6 +411,26 @@ export default function AccountOrdersSection({
         )}
       </div>
 
+      {/* Platform Administrator Access Badge & Direct Portal Link */}
+      <div className="p-5 rounded-3xl bg-white border border-black/10 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-[#FAF7F2] border border-black/10 flex items-center justify-center text-charcoal shrink-0 shadow-2xs">
+            <ShieldCheck className="w-5 h-5 text-[#4F83FF]" />
+          </div>
+          <div>
+            <p className="text-xs font-black text-charcoal">Tapping Central Administrator Gateway</p>
+            <p className="text-[11px] text-charcoal/60 font-medium">Owner console to manage all registered creators, order fulfillment, and payments.</p>
+          </div>
+        </div>
+        <a
+          href="/admin"
+          className="px-4 py-2.5 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 self-start sm:self-center transition-transform active:scale-95 shrink-0 shadow-xs"
+        >
+          <span>Open Admin Console</span>
+          <ExternalLink className="w-3.5 h-3.5 text-[#FDF166]" />
+        </a>
+      </div>
+
       {/* Danger Zone: Permanent Customer Profile Deletion */}
       <div className="p-6 md:p-8 rounded-4xl bg-rose-50/60 border border-rose-200/80 shadow-soft">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

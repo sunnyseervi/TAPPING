@@ -71,9 +71,9 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
 
   'comic-pop': {
     id: 'comic-pop',
-    name: 'Comic Pop Halftone',
+    name: 'Comic Pop & Brutalist',
     category: 'Pop & Comic',
-    description: 'Explosive Marvel / Comic-Con pop art with bold halftone sunbursts and thick 2.5px borders',
+    description: 'Explosive Marvel / Comic-Con pop art with bold comic styling and thick 2.5px borders',
     canvasBg: 'bg-[#FFFBEB]',
     canvasBgHex: '#FFFBEB',
     containerBg: 'bg-white',
@@ -460,7 +460,7 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     badgeBorder: 'border-2 border-black',
     badgeText: 'text-black font-black',
     defaultFont: 'comic',
-    defaultPattern: 'pop-halftone',
+    defaultPattern: 'none',
     defaultCardStyle: 'neobrutal-pastel',
     previewColors: ['#FEF08A', '#FFE600', '#86EFAC', '#000000', '#FFFFFF'],
     linkVariantClass: (variant: string) => {
@@ -504,9 +504,8 @@ export function getPatternClass(pattern?: BackgroundPatternType): string {
     case 'comic-sunburst-red':
       return 'pattern-comic-sunburst-red';
     case 'pop-halftone':
-      return 'pattern-pop-halftone';
     case 'pop-halftone-cyan':
-      return 'pattern-pop-halftone-cyan';
+      return '';
     case 'retro-grid':
       return 'pattern-retro-grid';
     case 'doodle-waves':
@@ -548,9 +547,9 @@ export function resolveLinkCardClasses(
     }
   }
 
-  // 2. Comic Halftone Burst
+  // 2. Comic Halftone Burst (Rendered clean without dotted pattern)
   if (cardStyle === 'comic-halftone') {
-    return 'bg-[#FFFBEB] hover:bg-[#FEF3C7] border-2 border-black shadow-[4px_4px_0px_#000] font-black text-black pattern-pop-halftone rounded-2xl';
+    return 'bg-[#FFFBEB] hover:bg-[#FEF3C7] border-2 border-black shadow-[4px_4px_0px_#000] font-black text-black rounded-2xl';
   }
 
   // 3. Retro 8-Bit Pixel
