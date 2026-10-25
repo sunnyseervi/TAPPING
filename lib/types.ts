@@ -116,6 +116,8 @@ export interface LinkBlock {
   // Custom link background & design
   linkTheme?: LinkCardStyleType; // Custom link card style theme
   bgImage?: string; // Custom uploaded image (data URL or external URL)
+  bgImageFit?: 'cover' | 'contain' | 'fill'; // Prevent awkward picture cropping
+  bgImageZoom?: number; // Image scale percentage
   bgColor?: string; // Custom hex/rgb background color
   textColor?: string; // Custom text color for contrast
   bgPattern?: string; // Custom pattern preset class
@@ -126,6 +128,17 @@ export type CardSideMode = 'double_sided' | 'single_sided';
 export interface CardSideConfig {
   artworkUrl?: string; // Custom uploaded image or preset
   artworkOpacity?: number; // 0 to 100
+  artworkZoom?: number; // 50 to 300 (%)
+  artworkPosX?: number; // -100 to 100 (%)
+  artworkPosY?: number; // -100 to 100 (%)
+  fontFamily?: string; // Card typography font
+
+  // Draggable / selectable placement positions for card elements
+  brandPosition?: 'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right';
+  namePosition?: 'bottom-left' | 'bottom-center' | 'bottom-right' | 'center' | 'top-left';
+  qrPosition?: 'bottom-right' | 'top-right' | 'bottom-left' | 'top-left' | 'center';
+  chipPosition?: 'top-right' | 'top-left' | 'bottom-right' | 'hidden';
+
   primaryText?: string; // Main title / engraved name
   secondaryText?: string; // Tagline / role / company
   topLabel?: string; // Brand header (e.g. 'TAPPING' or custom brand)

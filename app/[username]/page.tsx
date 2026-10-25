@@ -473,12 +473,11 @@ export default function PublicProfilePage() {
                   <div
                     key={link.id}
                     onClick={() => handleLinkClick(link)}
-                    className={`w-full p-4 transition-all cursor-pointer flex items-center justify-between group relative overflow-hidden ${
-                      hasCustomBg ? 'rounded-2xl border border-black/10 shadow-2xs' : cardClasses
-                    }`}
+                    className={`w-full p-4 transition-all cursor-pointer flex items-center justify-between group relative overflow-hidden ${cardClasses}`}
                     style={{
                       backgroundImage: link.bgImage ? `url(${link.bgImage})` : undefined,
-                      backgroundSize: link.bgImage ? 'cover' : undefined,
+                      backgroundSize: link.bgImage ? (link.bgImageFit === 'fill' ? '100% 100%' : (link.bgImageFit || 'cover')) : undefined,
+                      backgroundRepeat: link.bgImage ? 'no-repeat' : undefined,
                       backgroundPosition: link.bgImage ? 'center' : undefined,
                       backgroundColor: link.bgColor || undefined,
                       color: link.textColor || (link.bgImage ? '#FFFFFF' : undefined),

@@ -27,8 +27,12 @@ import {
   MapPin,
   Upload,
   Image as ImageIcon,
-  Sparkles
+  Sparkles,
+  Copy,
+  Download,
+  QrCode as QrCodeIcon
 } from 'lucide-react';
+import QRCode from 'qrcode';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 
@@ -112,9 +116,35 @@ export default function EditProfileSection({
   const [linkStyle, setLinkStyle] = useState<StyleVariant>('peach');
   const [selectedLinkTheme, setSelectedLinkTheme] = useState<LinkCardStyleType | undefined>(undefined);
   const [linkBgImage, setLinkBgImage] = useState('');
+  const [linkBgImageFit, setLinkBgImageFit] = useState<'cover' | 'contain' | 'fill'>('cover');
   const [linkBgColor, setLinkBgColor] = useState('');
   const [linkTextColor, setLinkTextColor] = useState('#141518');
   const linkFileInputRef = React.useRef<HTMLInputElement>(null);
+  const avatarFileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Save Confirmation Popup & Dynamic Generated QR
+  const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
+  const [confirmQrUrl, setConfirmQrUrl] = useState('');
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Invalid File', 'Please select a PNG, JPG, or SVG image file', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      setAvatarUrl(dataUrl);
+      notifyLive({ avatarUrl: dataUrl });
+      showToast('Profile Photo Uploaded', 'Your photo has been updated', 'success');
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleLinkImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -135,13 +165,6 @@ export default function EditProfileSection({
     reader.readAsDataURL(file);
   };
 
-  const avatarPresets = [
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
-    'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400',
-  ];
-
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanUsername = username.toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'creator';
@@ -161,8 +184,8 @@ export default function EditProfileSection({
 
     if (onUpdateVCard) {
       const parts = displayName.trim().split(' ');
-      const fName = parts[0] || 'Alex';
-      const lName = parts.slice(1).join(' ') || 'Morgan';
+      const fName = parts[0] || '';
+      const lName = parts.slice(1).join(' ') || '';
       const updatedVCard: VCardProfile = {
         ...(vcard || {
           id: 'vc_default',
@@ -187,7 +210,13 @@ export default function EditProfileSection({
       onUpdateVCard(updatedVCard);
     }
 
-    showToast('Profile & Contact Saved', 'Your bio and contact details have been updated', 'success');
+    // Generate real-time dynamic QR for confirmation popup with user data
+    QRCode.toDataURL(`http://${displayHost}/${cleanUsername}`, { width: 360, margin: 2 })
+      .then((qr) => setConfirmQrUrl(qr))
+      .catch(console.error);
+
+    setShowSaveConfirmModal(true);
+    showToast('Profile & Contact Saved', 'Live link and QR code generated with your data', 'success');
   };
 
   const openAddLinkModal = () => {
@@ -198,6 +227,7 @@ export default function EditProfileSection({
     setLinkStyle('peach');
     setSelectedLinkTheme(undefined);
     setLinkBgImage('');
+    setLinkBgImageFit('cover');
     setLinkBgColor('');
     setLinkTextColor('#141518');
     setEditingLinkId(null);
@@ -212,6 +242,7 @@ export default function EditProfileSection({
     setLinkStyle(link.styleVariant || 'peach');
     setSelectedLinkTheme(link.linkTheme);
     setLinkBgImage(link.bgImage || '');
+    setLinkBgImageFit(link.bgImageFit || 'cover');
     setLinkBgColor(link.bgColor || '');
     setLinkTextColor(link.textColor || (link.bgImage ? '#FFFFFF' : '#141518'));
     setEditingLinkId(link.id);
@@ -236,6 +267,7 @@ export default function EditProfileSection({
               styleVariant: linkStyle,
               linkTheme: selectedLinkTheme,
               bgImage: linkBgImage,
+              bgImageFit: linkBgImageFit,
               bgColor: linkBgColor,
               textColor: linkTextColor,
             }
@@ -255,6 +287,7 @@ export default function EditProfileSection({
         styleVariant: linkStyle,
         linkTheme: selectedLinkTheme,
         bgImage: linkBgImage,
+        bgImageFit: linkBgImageFit,
         bgColor: linkBgColor,
         textColor: linkTextColor,
         isActive: true,
@@ -353,35 +386,50 @@ export default function EditProfileSection({
         </div>
 
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Avatar Column */}
-          <div className="flex flex-col items-center gap-3 shrink-0">
-            <div className="w-24 h-24 rounded-3xl overflow-hidden bg-[#FDF166] border-2 border-white shadow-soft relative group">
-              <img
-                src={avatarUrl}
-                alt={displayName}
-                className="w-full h-full object-cover"
-              />
+          {/* Avatar Photo Upload Column (Self Photo Upload - No Forced Demo) */}
+          <div className="flex flex-col items-center gap-2.5 shrink-0">
+            <div className="w-24 h-24 rounded-3xl overflow-hidden bg-[#FAF7F2] border-2 border-black/10 shadow-soft relative flex items-center justify-center">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName || 'Profile Photo'}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="w-10 h-10 text-charcoal/30 stroke-[1.5]" />
+              )}
             </div>
-            <span className="text-[10px] font-bold text-charcoal/60 uppercase tracking-wider">
-              Photo Presets
-            </span>
-            <div className="flex items-center gap-2">
-              {avatarPresets.map((preset, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => {
-                    setAvatarUrl(preset);
-                    notifyLive({ avatarUrl: preset });
-                  }}
-                  className={`w-7 h-7 rounded-xl overflow-hidden border transition-all ${
-                    avatarUrl === preset ? 'ring-2 ring-charcoal border-white scale-105' : 'border-black/10 opacity-70 hover:opacity-100'
-                  }`}
-                >
-                  <img src={preset} alt="preset" className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
+
+            <input
+              type="file"
+              ref={avatarFileInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarUpload}
+            />
+
+            <button
+              type="button"
+              onClick={() => avatarFileInputRef.current?.click()}
+              className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-gray-50 border border-black/10 text-xs font-black text-charcoal flex items-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
+            >
+              <Upload className="w-3.5 h-3.5 text-[#4F83FF]" />
+              <span>Upload Photo</span>
+            </button>
+
+            {avatarUrl && (
+              <button
+                type="button"
+                onClick={() => {
+                  setAvatarUrl('');
+                  notifyLive({ avatarUrl: '' });
+                  showToast('Photo Cleared', 'Avatar removed from profile', 'info');
+                }}
+                className="text-[10px] font-bold text-rose-600 hover:text-rose-700 cursor-pointer"
+              >
+                Remove Photo
+              </button>
+            )}
           </div>
 
           {/* Form Fields Column */}
@@ -657,7 +705,8 @@ export default function EditProfileSection({
                 }`}
                 style={{
                   backgroundImage: link.bgImage ? `url(${link.bgImage})` : undefined,
-                  backgroundSize: link.bgImage ? 'cover' : undefined,
+                  backgroundSize: link.bgImage ? (link.bgImageFit === 'fill' ? '100% 100%' : (link.bgImageFit || 'cover')) : undefined,
+                  backgroundRepeat: link.bgImage ? 'no-repeat' : undefined,
                   backgroundPosition: link.bgImage ? 'center' : undefined,
                   backgroundColor: link.bgColor || undefined,
                   color: link.textColor || (link.bgImage ? '#FFFFFF' : undefined),
@@ -790,7 +839,8 @@ export default function EditProfileSection({
                     }`}
                     style={{
                       backgroundImage: linkBgImage ? `url(${linkBgImage})` : undefined,
-                      backgroundSize: linkBgImage ? 'cover' : undefined,
+                      backgroundSize: linkBgImage ? (linkBgImageFit === 'fill' ? '100% 100%' : linkBgImageFit) : undefined,
+                      backgroundRepeat: linkBgImage ? 'no-repeat' : undefined,
                       backgroundPosition: linkBgImage ? 'center' : undefined,
                       backgroundColor: linkBgColor || undefined,
                       color: linkTextColor,
@@ -971,6 +1021,36 @@ export default function EditProfileSection({
                     </button>
                   ))}
                 </div>
+
+                {/* Artwork Fit & Cropping Mode */}
+                {linkBgImage && (
+                  <div className="pt-2 border-t border-black/5">
+                    <label className="text-[10px] font-black text-charcoal uppercase tracking-wider block mb-1">
+                      Artwork Fit & Cropping Mode
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { id: 'cover' as const, label: 'Cover', desc: 'Fill block' },
+                        { id: 'contain' as const, label: 'Contain', desc: 'No crop / Logo' },
+                        { id: 'fill' as const, label: 'Stretch', desc: 'Fill 100%' },
+                      ].map((mode) => (
+                        <button
+                          key={mode.id}
+                          type="button"
+                          onClick={() => setLinkBgImageFit(mode.id)}
+                          className={`p-1.5 rounded-xl border text-center transition-all cursor-pointer ${
+                            linkBgImageFit === mode.id
+                              ? 'bg-[#141518] text-white border-black shadow-2xs'
+                              : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                          }`}
+                        >
+                          <p className="text-[11px] font-black leading-tight">{mode.label}</p>
+                          <p className="text-[9px] opacity-70 leading-tight">{mode.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Text Contrast Color */}
@@ -1053,6 +1133,96 @@ export default function EditProfileSection({
                   {editingLinkId ? 'Save Changes' : 'Create Block'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* THEME-BASED SAVE CONFIRMATION POPUP WITH GENERATED LINK & REAL DATA QR */}
+      {showSaveConfirmModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-4xl p-6 sm:p-8 w-full max-w-md shadow-2xl border border-black/10 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 rounded-3xl bg-emerald-100 border border-emerald-300 text-emerald-700 flex items-center justify-center mb-4 shadow-sm">
+              <Check className="w-7 h-7 stroke-[2.8]" />
+            </div>
+
+            <h3 className="text-2xl font-black text-charcoal tracking-tight">
+              Profile Saved Successfully
+            </h3>
+            <p className="text-xs text-charcoal/65 mt-1 font-medium max-w-xs">
+              Your public link-in-bio and dynamic contact QR code have been generated with your live data.
+            </p>
+
+            {/* Generated Profile Link Box */}
+            <div className="w-full mt-5 p-3.5 rounded-2xl bg-[#FAF7F2] border border-black/10 flex items-center justify-between gap-2">
+              <div className="text-left min-w-0 flex-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-charcoal/50 block">
+                  Public Profile URL
+                </span>
+                <p className="text-xs font-mono font-bold text-charcoal truncate">
+                  {displayHost}/{username}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(`http://${displayHost}/${username}`);
+                  setCopiedLink(true);
+                  setTimeout(() => setCopiedLink(false), 2000);
+                  showToast('Link Copied', 'Profile URL copied to clipboard', 'success');
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                  copiedLink
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-white hover:bg-gray-100 text-charcoal border border-black/10 shadow-2xs'
+                }`}
+              >
+                {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedLink ? 'Copied' : 'Copy'}</span>
+              </button>
+            </div>
+
+            {/* Dynamic Generated QR Code Card */}
+            {confirmQrUrl && (
+              <div className="mt-4 p-4 rounded-3xl bg-white border border-black/10 shadow-soft flex flex-col items-center">
+                <img
+                  src={confirmQrUrl}
+                  alt="Profile QR Code"
+                  className="w-40 h-40 rounded-2xl border border-black/5"
+                />
+                <span className="text-[10px] font-mono text-charcoal/50 mt-2">
+                  Dynamic QR for @{username}
+                </span>
+
+                <a
+                  href={confirmQrUrl}
+                  download={`${username}_qr.png`}
+                  className="mt-2 text-[11px] font-black text-[#4F83FF] hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Download className="w-3 h-3" />
+                  <span>Download QR Image</span>
+                </a>
+              </div>
+            )}
+
+            {/* Modal Actions */}
+            <div className="grid grid-cols-2 gap-2.5 w-full mt-6">
+              <a
+                href={`/${username}`}
+                target="_blank"
+                rel="noreferrer"
+                className="py-3 px-4 rounded-2xl bg-[#FAF7F2] hover:bg-[#F2ECE1] border border-black/10 text-xs font-black text-charcoal flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Open Live Bio</span>
+              </a>
+              <button
+                type="button"
+                onClick={() => setShowSaveConfirmModal(false)}
+                className="py-3 px-4 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black shadow-sm transition-transform active:scale-95 cursor-pointer"
+              >
+                Done
+              </button>
             </div>
           </div>
         </div>

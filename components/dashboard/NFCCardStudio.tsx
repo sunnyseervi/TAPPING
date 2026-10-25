@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { NFCCardDesign, CardMaterial, CardSideMode, CardSideConfig } from '@/lib/types';
+import { CARD_FONTS, CardFont } from '@/lib/cardFonts';
 import { 
   CreditCard, 
   QrCode, 
@@ -12,12 +13,16 @@ import {
   ShoppingBag, 
   X, 
   Upload, 
-  Image as ImageIcon, 
   Trash2, 
-  Layers, 
-  Sliders, 
+  Move, 
+  ZoomIn, 
+  ZoomOut, 
   Type, 
-  Palette,
+  Sliders, 
+  Layers, 
+  Copy, 
+  ExternalLink,
+  ChevronDown,
   Sparkles
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
@@ -37,9 +42,19 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   const [sideMode, setSideMode] = useState<CardSideMode>(nfcCard.sideMode || 'double_sided');
   const [redirectMode, setRedirectMode] = useState<'profile' | 'direct_vcard' | 'custom_url'>(nfcCard.redirectMode || 'profile');
   const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [saveConfirmModalOpen, setSaveConfirmModalOpen] = useState(false);
+  const [fontModalOpen, setFontModalOpen] = useState(false);
+  const [selectedFontCategory, setSelectedFontCategory] = useState<string>('All');
   const [displayHost, setDisplayHost] = useState('tapping.bio');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cardDragRef = useRef<{ isDragging: boolean; startX: number; startY: number; initPosX: number; initPosY: number }>({
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+    initPosX: 0,
+    initPosY: 0,
+  });
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -50,7 +65,15 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   // Front Side Config
   const [frontSide, setFrontSide] = useState<CardSideConfig>({
     artworkUrl: nfcCard.frontSide?.artworkUrl || '',
-    artworkOpacity: nfcCard.frontSide?.artworkOpacity ?? 90,
+    artworkOpacity: nfcCard.frontSide?.artworkOpacity ?? 95,
+    artworkZoom: nfcCard.frontSide?.artworkZoom ?? 100,
+    artworkPosX: nfcCard.frontSide?.artworkPosX ?? 0,
+    artworkPosY: nfcCard.frontSide?.artworkPosY ?? 0,
+    fontFamily: nfcCard.frontSide?.fontFamily || "'Plus Jakarta Sans', sans-serif",
+    brandPosition: nfcCard.frontSide?.brandPosition || 'top-left',
+    namePosition: nfcCard.frontSide?.namePosition || 'bottom-left',
+    chipPosition: nfcCard.frontSide?.chipPosition || 'top-right',
+    qrPosition: nfcCard.frontSide?.qrPosition || 'bottom-right',
     primaryText: nfcCard.frontSide?.primaryText || nfcCard.engravedName || username.toUpperCase(),
     secondaryText: nfcCard.frontSide?.secondaryText || nfcCard.engravedTagline || 'DIGITAL CREATOR & FOUNDER',
     topLabel: nfcCard.frontSide?.topLabel || 'TAPPING',
@@ -65,7 +88,15 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   // Back Side Config
   const [backSide, setBackSide] = useState<CardSideConfig>({
     artworkUrl: nfcCard.backSide?.artworkUrl || '',
-    artworkOpacity: nfcCard.backSide?.artworkOpacity ?? 80,
+    artworkOpacity: nfcCard.backSide?.artworkOpacity ?? 85,
+    artworkZoom: nfcCard.backSide?.artworkZoom ?? 100,
+    artworkPosX: nfcCard.backSide?.artworkPosX ?? 0,
+    artworkPosY: nfcCard.backSide?.artworkPosY ?? 0,
+    fontFamily: nfcCard.backSide?.fontFamily || "'Plus Jakarta Sans', sans-serif",
+    brandPosition: nfcCard.backSide?.brandPosition || 'top-left',
+    namePosition: nfcCard.backSide?.namePosition || 'bottom-left',
+    chipPosition: nfcCard.backSide?.chipPosition || 'hidden',
+    qrPosition: nfcCard.backSide?.qrPosition || 'bottom-right',
     primaryText: nfcCard.backSide?.primaryText || 'TAP ANY PHONE TO CONNECT',
     secondaryText: nfcCard.backSide?.secondaryText || `${displayHost}/${username}`,
     topLabel: nfcCard.backSide?.topLabel || 'TAPPING SMART CARD',
@@ -110,35 +141,6 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
 
   const currentMat = materials.find((m) => m.id === material) || materials[0];
 
-  // Curated Artwork Presets for Instant Design
-  const artworkPresets = [
-    {
-      id: 'comic-pop',
-      name: 'Comic Pop Halftone',
-      url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'retro-grid',
-      name: 'Retro 8-Bit Synthwave',
-      url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'cyber-circuit',
-      name: 'Cyberpunk Neon Matrix',
-      url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'dark-marble',
-      name: 'Black Marble Gold Veins',
-      url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'japanese-wave',
-      name: 'Japanese Geometric Wave',
-      url: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=800&auto=format&fit=crop&q=80',
-    },
-  ];
-
   const currentConfig = activeSide === 'front' ? frontSide : backSide;
   const updateCurrentConfig = (partial: Partial<CardSideConfig>) => {
     if (activeSide === 'front') {
@@ -147,6 +149,8 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
       setBackSide((prev) => ({ ...prev, ...partial }));
     }
   };
+
+  const currentFontObj = CARD_FONTS.find((f) => f.family === currentConfig.fontFamily) || CARD_FONTS[0];
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -160,10 +164,40 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     const reader = new FileReader();
     reader.onload = (event) => {
       const result = event.target?.result as string;
-      updateCurrentConfig({ artworkUrl: result });
-      showToast('Custom Artwork Uploaded', `Applied to ${activeSide.toUpperCase()} side`, 'success');
+      updateCurrentConfig({ 
+        artworkUrl: result, 
+        artworkZoom: 100, 
+        artworkPosX: 0, 
+        artworkPosY: 0 
+      });
+      showToast('Custom Artwork Uploaded', `Applied to ${activeSide.toUpperCase()} side. You can drag and zoom it below!`, 'success');
     };
     reader.readAsDataURL(file);
+  };
+
+  // Drag to reposition background artwork on the card
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!currentConfig.artworkUrl) return;
+    cardDragRef.current = {
+      isDragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      initPosX: currentConfig.artworkPosX ?? 0,
+      initPosY: currentConfig.artworkPosY ?? 0,
+    };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!cardDragRef.current.isDragging) return;
+    const dx = e.clientX - cardDragRef.current.startX;
+    const dy = e.clientY - cardDragRef.current.startY;
+    const newX = Math.max(-100, Math.min(100, cardDragRef.current.initPosX + Math.round(dx / 3)));
+    const newY = Math.max(-100, Math.min(100, cardDragRef.current.initPosY + Math.round(dy / 3)));
+    updateCurrentConfig({ artworkPosX: newX, artworkPosY: newY });
+  };
+
+  const handleMouseUp = () => {
+    cardDragRef.current.isDragging = false;
   };
 
   const handleSaveDesign = () => {
@@ -178,7 +212,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
       redirectMode,
     };
     onUpdateCard(updated);
-    showToast('Card Design Saved', 'Custom artwork and laser blueprint updated', 'success');
+    setSaveConfirmModalOpen(true);
   };
 
   const handlePlaceOrder = () => {
@@ -214,6 +248,54 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     setFlipped(side === 'back');
   };
 
+  const filteredFonts = selectedFontCategory === 'All' 
+    ? CARD_FONTS 
+    : CARD_FONTS.filter((f) => f.category === selectedFontCategory);
+
+  const categories = [
+    'All',
+    'Modern Sans',
+    'Luxury Serif',
+    'Comic & Pop',
+    'Retro & 8-Bit',
+    'Cyber & Sci-Fi',
+    'Display & Heavy',
+    'Script & Signature',
+    'Brutalist & Urban',
+  ];
+
+  // Helper for brand position classes
+  const getBrandPositionClass = (pos?: string) => {
+    switch (pos) {
+      case 'top-right': return 'top-5 right-5 text-right';
+      case 'top-center': return 'top-5 left-1/2 -translate-x-1/2 text-center';
+      case 'bottom-left': return 'bottom-5 left-5 text-left';
+      case 'bottom-right': return 'bottom-5 right-5 text-right';
+      default: return 'top-5 left-5 text-left';
+    }
+  };
+
+  // Helper for chip position classes
+  const getChipPositionClass = (pos?: string) => {
+    switch (pos) {
+      case 'top-left': return 'top-5 left-5';
+      case 'bottom-right': return 'bottom-5 right-5';
+      case 'hidden': return 'hidden';
+      default: return 'top-5 right-5';
+    }
+  };
+
+  // Helper for name & identity position classes
+  const getNamePositionClass = (pos?: string) => {
+    switch (pos) {
+      case 'top-left': return 'top-14 left-5 text-left';
+      case 'center': return 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-[85%]';
+      case 'bottom-center': return 'bottom-5 left-1/2 -translate-x-1/2 text-center w-[85%]';
+      case 'bottom-right': return 'bottom-5 right-5 text-right';
+      default: return 'bottom-5 left-5 text-left';
+    }
+  };
+
   return (
     <div className="bg-white rounded-4xl p-6 md:p-8 border border-black/5 shadow-soft">
       {/* Top Header */}
@@ -223,10 +305,10 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             Metal NFC Studio
           </h1>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-charcoal/35 tracking-tight leading-none mt-1">
-            Custom Hardware Design
+            Custom Hardware & Typography
           </h2>
           <p className="text-xs text-charcoal/60 mt-2 font-medium">
-            Upload custom artwork, design each side independently, or place all data on a single side.
+            Upload custom artwork with drag & zoom positioning, 100+ styled fonts, and draggable card element placements.
           </p>
         </div>
 
@@ -251,7 +333,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
       {/* Main Grid Workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-6">
         
-        {/* Left Column: 3D Interactive Card Preview with Custom Uploaded Artwork (Sticky on Scroll) */}
+        {/* Left Column: 3D Interactive Card Preview (STICKY ON SCROLL) */}
         <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-8 self-start flex flex-col items-center">
           
           {/* Side Mode Selector & Active Side Pills */}
@@ -287,11 +369,16 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             </div>
           </div>
 
-          {/* 3D Interactive Flip Card Frame */}
+          {/* 3D Interactive Flip Card Frame with Drag Pan Handler */}
           <div
-            onClick={flipCard}
-            className="perspective-1000 w-full max-w-[390px] h-[245px] cursor-pointer relative select-none"
-            title="Click card to flip between Front and Back"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            className={`perspective-1000 w-full max-w-[390px] h-[245px] relative select-none rounded-3xl ${
+              currentConfig.artworkUrl ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+            }`}
+            title={currentConfig.artworkUrl ? "Click to flip or drag image to reposition" : "Click to flip card"}
           >
             <div
               className={`w-full h-full preserve-3d transition-transform duration-700 relative rounded-3xl ${
@@ -301,24 +388,28 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
               {/* ===================== FRONT SIDE ===================== */}
               <div
                 className={`absolute inset-0 backface-hidden rounded-3xl p-6 flex flex-col justify-between overflow-hidden shadow-card border border-black/10 ${currentMat.class}`}
+                style={{ fontFamily: frontSide.fontFamily || "'Plus Jakarta Sans', sans-serif" }}
               >
-                {/* Custom Uploaded Artwork Layer */}
+                {/* Custom Uploaded Artwork Layer with Drag & Zoom */}
                 {frontSide.artworkUrl && (
                   <div 
-                    className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none transition-opacity duration-300"
+                    className="absolute inset-0 z-0 bg-no-repeat pointer-events-none transition-transform duration-75"
                     style={{ 
                       backgroundImage: `url(${frontSide.artworkUrl})`,
-                      opacity: (frontSide.artworkOpacity ?? 90) / 100,
+                      backgroundSize: `${frontSide.artworkZoom ?? 100}%`,
+                      backgroundPosition: `calc(50% + ${frontSide.artworkPosX ?? 0}px) calc(50% + ${frontSide.artworkPosY ?? 0}px)`,
+                      opacity: (frontSide.artworkOpacity ?? 95) / 100,
                     }}
                   />
                 )}
 
-                {/* Subtle Metallic Specular Sheen Overlay */}
+                {/* Subtle Metallic Specular Sheen */}
                 <div className="absolute inset-0 z-1 bg-gradient-to-tr from-white/10 via-transparent to-black/20 pointer-events-none" />
 
-                {/* SINGLE-SIDED MODE (Entire Data on Front Side) */}
+                {/* Content Elements Positioned on Card */}
                 {sideMode === 'single_sided' ? (
-                  <div className="relative z-10 flex flex-col justify-between h-full">
+                  /* SINGLE-SIDED MODE (All Data Placed on Front) */
+                  <div className="relative z-10 flex flex-col justify-between h-full pointer-events-none">
                     {/* Top Row: Brand & Chip */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -336,70 +427,78 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                       </div>
                     </div>
 
-                    {/* Middle / Bottom Content: Full Identity + QR Code Compact Stack */}
+                    {/* Bottom Row: Full Identity + Integrated QR */}
                     <div className="flex items-end justify-between gap-3 mt-auto">
                       <div className="min-w-0 flex-1">
-                        <p className="font-mono text-[9px] tracking-widest uppercase opacity-80 truncate">
+                        <p className="text-[9px] tracking-widest uppercase opacity-80 truncate">
                           {frontSide.secondaryText || 'DIGITAL CREATOR & FOUNDER'}
                         </p>
                         <h3 
-                          className="font-mono font-bold text-base md:text-lg tracking-widest mt-0.5 uppercase truncate"
+                          className="font-bold text-base md:text-lg tracking-widest mt-0.5 uppercase truncate"
                           style={{ color: frontSide.textColor || '#FFFFFF' }}
                         >
                           {frontSide.primaryText || username.toUpperCase()}
                         </h3>
-                        <p className="text-[9px] font-mono opacity-80 mt-1 truncate">
+                        <p className="text-[9px] opacity-80 mt-1 truncate">
                           {displayHost}/{username}
                         </p>
                       </div>
 
-                      {/* Integrated Permanent Vector QR Code on Front */}
                       <div className="w-16 h-16 bg-white p-1 rounded-xl flex items-center justify-center shrink-0 shadow-md">
                         <QrCode className="w-full h-full text-black" />
                       </div>
                     </div>
                   </div>
                 ) : (
-                  /* DUAL-SIDED MODE: Front Side (Clean Hero Identity) */
-                  <div className="relative z-10 flex flex-col justify-between h-full">
-                    {/* Top Row: Brand + Microchip */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span 
-                          className="font-extrabold text-sm tracking-widest uppercase"
-                          style={{ color: frontSide.textColor || '#FFFFFF' }}
-                        >
-                          {frontSide.topLabel || 'TAPPING'}
-                        </span>
-                        <span className="text-[9px] font-mono opacity-70">
-                          {frontSide.bottomLabel || 'NFC 13.56MHz'}
-                        </span>
-                      </div>
-                      {frontSide.showChip && (
+                  /* DUAL-SIDED MODE: Front Side with Customizable Element Positions */
+                  <div className="relative z-10 w-full h-full pointer-events-none">
+                    {/* Brand Label (TAPPING) */}
+                    <div className={`absolute z-10 ${getBrandPositionClass(frontSide.brandPosition)}`}>
+                      <span 
+                        className="font-extrabold text-sm tracking-widest uppercase"
+                        style={{ color: frontSide.textColor || '#FFFFFF' }}
+                      >
+                        {frontSide.topLabel || 'TAPPING'}
+                      </span>
+                      <span className="text-[9px] font-mono opacity-70 block">
+                        {frontSide.bottomLabel || 'NFC 13.56MHz'}
+                      </span>
+                    </div>
+
+                    {/* Chip Indicator */}
+                    {frontSide.showChip && (
+                      <div className={`absolute z-10 ${getChipPositionClass(frontSide.chipPosition)}`}>
                         <div className="w-10 h-7 rounded-md bg-amber-400/90 border border-amber-600/50 flex flex-col justify-around p-1 shadow-2xs">
                           <div className="w-full h-0.5 bg-amber-800/40" />
                           <div className="w-full h-0.5 bg-amber-800/40" />
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
 
-                    {/* Bottom Identity */}
-                    <div>
-                      <p className="font-mono text-[10px] tracking-widest uppercase opacity-80">
+                    {/* Primary Name & Tagline */}
+                    <div className={`absolute z-10 ${getNamePositionClass(frontSide.namePosition)}`}>
+                      <p className="text-[10px] tracking-widest uppercase opacity-80 truncate">
                         {frontSide.secondaryText || 'DIGITAL CREATOR & FOUNDER'}
                       </p>
                       <h3 
-                        className="font-mono font-bold text-lg md:text-xl tracking-widest mt-1 uppercase"
+                        className="font-bold text-lg md:text-xl tracking-widest mt-0.5 uppercase truncate"
                         style={{ color: frontSide.textColor || '#FFFFFF' }}
                       >
                         {frontSide.primaryText || username.toUpperCase()}
                       </h3>
                       {frontSide.customNote && (
-                        <p className="text-[9px] font-mono opacity-75 mt-1.5 uppercase">
+                        <p className="text-[9px] opacity-75 mt-1 uppercase">
                           {frontSide.customNote}
                         </p>
                       )}
                     </div>
+
+                    {/* Optional QR on Front if enabled */}
+                    {frontSide.showQrCode && (
+                      <div className={`absolute z-10 ${getBrandPositionClass(frontSide.qrPosition)} w-16 h-16 bg-white p-1 rounded-xl shadow-md`}>
+                        <QrCode className="w-full h-full text-black" />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -407,24 +506,26 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
               {/* ===================== BACK SIDE ===================== */}
               <div
                 className={`absolute inset-0 backface-hidden rotate-y-180 rounded-3xl p-6 flex flex-col justify-between overflow-hidden shadow-card border border-black/10 ${currentMat.class}`}
+                style={{ fontFamily: backSide.fontFamily || "'Plus Jakarta Sans', sans-serif" }}
               >
-                {/* Custom Uploaded Artwork Layer (Back) */}
+                {/* Custom Uploaded Artwork Layer (Back) with Drag & Zoom */}
                 {backSide.artworkUrl && (
                   <div 
-                    className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none transition-opacity duration-300"
+                    className="absolute inset-0 z-0 bg-no-repeat pointer-events-none transition-transform duration-75"
                     style={{ 
                       backgroundImage: `url(${backSide.artworkUrl})`,
-                      opacity: (backSide.artworkOpacity ?? 80) / 100,
+                      backgroundSize: `${backSide.artworkZoom ?? 100}%`,
+                      backgroundPosition: `calc(50% + ${backSide.artworkPosX ?? 0}px) calc(50% + ${backSide.artworkPosY ?? 0}px)`,
+                      opacity: (backSide.artworkOpacity ?? 85) / 100,
                     }}
                   />
                 )}
 
-                {/* Specular Sheen */}
                 <div className="absolute inset-0 z-1 bg-gradient-to-bl from-white/10 via-transparent to-black/25 pointer-events-none" />
 
-                {/* If Single-Sided: Back side is pristine brushed metal with minimalist centered mark */}
                 {sideMode === 'single_sided' ? (
-                  <div className="relative z-10 flex flex-col items-center justify-center h-full text-center">
+                  /* Single-Sided: Pristine Minimalist Reverse */
+                  <div className="relative z-10 flex flex-col items-center justify-center h-full text-center pointer-events-none">
                     <span 
                       className="font-extrabold text-sm tracking-widest uppercase"
                       style={{ color: backSide.textColor || '#FFFFFF' }}
@@ -439,8 +540,8 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                     </div>
                   </div>
                 ) : (
-                  /* Dual Sided Back */
-                  <div className="relative z-10 flex items-center justify-between h-full">
+                  /* Dual-Sided Back with QR & Connection details */
+                  <div className="relative z-10 flex items-center justify-between h-full pointer-events-none">
                     <div className="flex flex-col justify-between h-full min-w-0 pr-4">
                       <div>
                         <span 
@@ -449,7 +550,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                         >
                           {backSide.primaryText || 'TAP ANY PHONE TO CONNECT'}
                         </span>
-                        <p className="font-mono text-xs mt-1.5 opacity-90 truncate">
+                        <p className="text-xs mt-1.5 opacity-90 truncate">
                           {backSide.secondaryText || `${displayHost}/${username}`}
                         </p>
                       </div>
@@ -472,9 +573,64 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             </div>
           </div>
 
-          <p className="text-[11px] text-charcoal/60 mt-3 font-medium">
-            Click card to flip between front and back views
+          {/* Drag & Zoom Instructions */}
+          <p className="text-[11px] text-charcoal/60 mt-2 font-medium flex items-center gap-1.5">
+            <Move className="w-3 h-3 text-[#4F83FF]" />
+            <span>{currentConfig.artworkUrl ? 'Click & drag card to pan picture position' : 'Click card to flip between front & back'}</span>
           </p>
+
+          {/* Artwork Drag Pan & Zoom Controls Bar (Visible when image uploaded) */}
+          {currentConfig.artworkUrl && (
+            <div className="w-full max-w-[390px] mt-3 p-3 rounded-2xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-black text-charcoal flex items-center gap-1">
+                  <ZoomIn className="w-3.5 h-3.5 text-[#4F83FF]" />
+                  <span>Zoom Picture: {currentConfig.artworkZoom ?? 100}%</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => updateCurrentConfig({ artworkZoom: 100, artworkPosX: 0, artworkPosY: 0 })}
+                  className="text-[10px] font-bold text-charcoal/60 hover:text-black underline cursor-pointer"
+                >
+                  Reset Fit
+                </button>
+              </div>
+
+              <input
+                type="range"
+                min="50"
+                max="250"
+                value={currentConfig.artworkZoom ?? 100}
+                onChange={(e) => updateCurrentConfig({ artworkZoom: Number(e.target.value) })}
+                className="w-full accent-black cursor-pointer"
+              />
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <div>
+                  <span className="text-[10px] font-bold text-charcoal/60 block mb-0.5">Pan X: {currentConfig.artworkPosX ?? 0}px</span>
+                  <input
+                    type="range"
+                    min="-80"
+                    max="80"
+                    value={currentConfig.artworkPosX ?? 0}
+                    onChange={(e) => updateCurrentConfig({ artworkPosX: Number(e.target.value) })}
+                    className="w-full accent-black cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-charcoal/60 block mb-0.5">Pan Y: {currentConfig.artworkPosY ?? 0}px</span>
+                  <input
+                    type="range"
+                    min="-80"
+                    max="80"
+                    value={currentConfig.artworkPosY ?? 0}
+                    onChange={(e) => updateCurrentConfig({ artworkPosY: Number(e.target.value) })}
+                    className="w-full accent-black cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Production Status Pill */}
           <div className="w-full max-w-[390px] mt-4 p-3.5 rounded-2xl bg-[#FAF7F2] border border-black/5 flex items-center justify-between text-xs">
@@ -493,7 +649,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
           </div>
         </div>
 
-        {/* Right Column: Comprehensive Customization Controls */}
+        {/* Right Column: Customization Controls */}
         <div className="lg:col-span-7 xl:col-span-7 flex flex-col gap-5 text-left text-xs">
           
           {/* Section 1: Side Configuration Mode (Single-Sided vs Dual-Sided) */}
@@ -536,7 +692,112 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             </div>
           </div>
 
-          {/* Section 2: Metal Alloy Finish */}
+          {/* Section 2: 100+ Card Fonts Dropdown / Modal Selector */}
+          <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-2.5">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="font-black text-charcoal uppercase tracking-wider block">
+                  Card Typography Font (100 Styles)
+                </label>
+                <p className="text-[11px] text-charcoal/60">
+                  Every font renders in its own font style so you can preview it immediately
+                </p>
+              </div>
+
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white border border-black/10">
+                {currentFontObj.category}
+              </span>
+            </div>
+
+            {/* Current Selected Font Preview Button */}
+            <button
+              type="button"
+              onClick={() => setFontModalOpen(true)}
+              className="w-full p-3 rounded-2xl bg-white border border-black/10 hover:border-black flex items-center justify-between shadow-2xs cursor-pointer transition-all text-left"
+            >
+              <div>
+                <p className="text-[10px] text-charcoal/50 font-bold uppercase tracking-wider">
+                  Active Font: {currentFontObj.name}
+                </p>
+                <p 
+                  className="text-base font-bold text-charcoal mt-0.5 truncate tracking-wide"
+                  style={{ fontFamily: currentFontObj.family }}
+                >
+                  {frontSide.primaryText || 'ALEX MORGAN'} &bull; {frontSide.topLabel || 'TAPPING'}
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#4F83FF] bg-[#EFF4FF] px-3 py-1.5 rounded-xl">
+                <span>Browse 100 Fonts</span>
+                <ChevronDown className="w-3.5 h-3.5" />
+              </div>
+            </button>
+          </div>
+
+          {/* Section 3: Element Positions (Brand "TAPPING", Name, Chip Placement) */}
+          <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
+            <label className="font-black text-charcoal uppercase tracking-wider block">
+              Element Placement on Card
+            </label>
+
+            {/* Brand "TAPPING" Position */}
+            <div>
+              <span className="text-[11px] font-bold text-charcoal/70 block mb-1">
+                Brand Name &ldquo;TAPPING&rdquo; Position
+              </span>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                {[
+                  { id: 'top-left', label: 'Top Left' },
+                  { id: 'top-center', label: 'Top Center' },
+                  { id: 'top-right', label: 'Top Right' },
+                  { id: 'bottom-left', label: 'Bottom Left' },
+                  { id: 'bottom-right', label: 'Bottom Right' },
+                ].map((pos) => (
+                  <button
+                    key={pos.id}
+                    type="button"
+                    onClick={() => updateCurrentConfig({ brandPosition: pos.id as any })}
+                    className={`py-1.5 px-2 rounded-xl border text-[10px] font-bold transition-all cursor-pointer ${
+                      currentConfig.brandPosition === pos.id
+                        ? 'bg-[#141518] text-white border-black shadow-2xs'
+                        : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                    }`}
+                  >
+                    {pos.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Name & Tagline Position */}
+            <div>
+              <span className="text-[11px] font-bold text-charcoal/70 block mb-1">
+                Engraved Name &amp; Title Position
+              </span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                {[
+                  { id: 'bottom-left', label: 'Bottom Left' },
+                  { id: 'bottom-center', label: 'Bottom Center' },
+                  { id: 'center', label: 'Center Card' },
+                  { id: 'top-left', label: 'Top Left' },
+                ].map((pos) => (
+                  <button
+                    key={pos.id}
+                    type="button"
+                    onClick={() => updateCurrentConfig({ namePosition: pos.id as any })}
+                    className={`py-1.5 px-2 rounded-xl border text-[10px] font-bold transition-all cursor-pointer ${
+                      currentConfig.namePosition === pos.id
+                        ? 'bg-[#141518] text-white border-black shadow-2xs'
+                        : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                    }`}
+                  >
+                    {pos.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 4: Metal Alloy Finish */}
           <div>
             <label className="font-black text-charcoal uppercase tracking-wider block mb-2">
               Select Metal Alloy Finish
@@ -547,7 +808,6 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                   key={mat.id}
                   onClick={() => {
                     setMaterial(mat.id);
-                    // Adjust text color default if not explicitly customized
                     if (mat.id === 'matte_black') {
                       updateCurrentConfig({ textColor: '#FFFFFF' });
                     } else {
@@ -567,7 +827,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             </div>
           </div>
 
-          {/* Section 3: Upload Custom Artwork to Current Side */}
+          {/* Section 5: Upload Custom Artwork to Current Side */}
           <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <div>
@@ -575,7 +835,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                   Upload Custom Artwork ({activeSide.toUpperCase()} Side)
                 </label>
                 <p className="text-[11px] text-charcoal/60">
-                  Upload any photo, sketch, logo or graphic to imprint on this side
+                  Upload any photo, sketch, logo or graphic. Drag and zoom directly on the card!
                 </p>
               </div>
 
@@ -590,7 +850,6 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
               )}
             </div>
 
-            {/* Hidden native file input */}
             <input
               type="file"
               ref={fileInputRef}
@@ -599,126 +858,68 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
               onChange={handleFileUpload}
             />
 
-            {/* Upload Button & Artwork Presets */}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex-1 py-2.5 px-3 rounded-2xl bg-white hover:bg-gray-50 border border-black/10 font-black text-xs text-charcoal flex items-center justify-center gap-2 shadow-2xs cursor-pointer transition-colors"
-              >
-                <Upload className="w-4 h-4 text-[#4F83FF]" />
-                <span>Upload From Device (PNG/JPG)</span>
-              </button>
-            </div>
-
-            {/* Curated Presets Bar */}
-            <div>
-              <p className="text-[10px] font-black uppercase text-charcoal/50 mb-1.5">
-                Or pick a curated artwork preset:
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                {artworkPresets.map((preset) => (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => {
-                      updateCurrentConfig({ artworkUrl: preset.url });
-                      showToast('Artwork Applied', `Applied ${preset.name}`, 'info');
-                    }}
-                    className="p-1.5 rounded-xl border border-black/10 bg-white hover:bg-gray-50 text-left text-[10px] font-bold text-charcoal truncate shadow-2xs flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <span className="w-4 h-4 rounded-md bg-cover bg-center shrink-0" style={{ backgroundImage: `url(${preset.url})` }} />
-                    <span className="truncate">{preset.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Artwork Opacity Slider */}
-            {currentConfig.artworkUrl && (
-              <div className="pt-2 border-t border-black/5">
-                <div className="flex justify-between items-center mb-1 text-[11px] font-bold text-charcoal">
-                  <span>Metallic Surface Blend / Opacity</span>
-                  <span>{currentConfig.artworkOpacity ?? 90}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="20"
-                  max="100"
-                  value={currentConfig.artworkOpacity ?? 90}
-                  onChange={(e) => updateCurrentConfig({ artworkOpacity: Number(e.target.value) })}
-                  className="w-full accent-black cursor-pointer"
-                />
-              </div>
-            )}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full py-2.5 px-3 rounded-2xl bg-white hover:bg-gray-50 border border-black/10 font-black text-xs text-charcoal flex items-center justify-center gap-2 shadow-2xs cursor-pointer transition-colors"
+            >
+              <Upload className="w-4 h-4 text-[#4F83FF]" />
+              <span>Upload Picture / Logo (PNG/JPG/SVG)</span>
+            </button>
           </div>
 
-          {/* Section 4: Laser Engraved Text & Data on Current Side */}
+          {/* Section 6: Laser Engraved Text on Current Side */}
           <div className="space-y-3">
             <h4 className="font-black text-charcoal uppercase tracking-wider text-xs">
               Laser Engraving & Text ({activeSide.toUpperCase()} Side)
             </h4>
 
-            {/* Top Brand / Header */}
             <div>
               <label className="font-bold text-charcoal/70 block mb-1 text-[11px]">
-                Top Header / Brand Label
+                Brand Label
               </label>
               <input
                 type="text"
                 value={currentConfig.topLabel || ''}
                 onChange={(e) => updateCurrentConfig({ topLabel: e.target.value.toUpperCase() })}
                 placeholder="TAPPING"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-black/10 focus:outline-none focus:border-black font-mono font-bold text-xs"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-black/10 focus:outline-none focus:border-black font-bold text-xs"
+                style={{ fontFamily: currentConfig.fontFamily }}
               />
             </div>
 
-            {/* Primary Name / Title */}
             <div>
               <label className="font-bold text-charcoal/70 block mb-1 text-[11px]">
-                Primary Name or Main Laser Heading
+                Primary Name or Main Heading
               </label>
               <input
                 type="text"
                 value={currentConfig.primaryText || ''}
                 onChange={(e) => updateCurrentConfig({ primaryText: e.target.value.toUpperCase() })}
-                placeholder="ALEX MORGAN"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-black/10 focus:outline-none focus:border-black font-mono font-bold text-xs"
+                placeholder="YOUR NAME"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-black/10 focus:outline-none focus:border-black font-bold text-xs"
+                style={{ fontFamily: currentConfig.fontFamily }}
               />
             </div>
 
-            {/* Tagline / Secondary Text */}
             <div>
               <label className="font-bold text-charcoal/70 block mb-1 text-[11px]">
-                Tagline, Role, or Company
+                Tagline, Role, or Title
               </label>
               <input
                 type="text"
                 value={currentConfig.secondaryText || ''}
                 onChange={(e) => updateCurrentConfig({ secondaryText: e.target.value.toUpperCase() })}
-                placeholder="DESIGN DIRECTOR & SYSTEMS ARCHITECT"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-black/10 focus:outline-none focus:border-black font-mono text-xs"
+                placeholder="FOUNDER & DESIGNER"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-black/10 focus:outline-none focus:border-black text-xs"
+                style={{ fontFamily: currentConfig.fontFamily }}
               />
             </div>
 
-            {/* Bottom Label / Motto */}
+            {/* Laser Contrast Colors */}
             <div>
               <label className="font-bold text-charcoal/70 block mb-1 text-[11px]">
-                Bottom Detail or Serial Number
-              </label>
-              <input
-                type="text"
-                value={currentConfig.bottomLabel || ''}
-                onChange={(e) => updateCurrentConfig({ bottomLabel: e.target.value })}
-                placeholder="NFC 13.56MHz Contactless"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-black/10 focus:outline-none focus:border-black font-mono text-xs"
-              />
-            </div>
-
-            {/* Laser Text Color Swatches */}
-            <div>
-              <label className="font-bold text-charcoal/70 block mb-1 text-[11px]">
-                Laser Text Contrast Color
+                Laser Contrast Color
               </label>
               <div className="flex items-center gap-2 flex-wrap">
                 {[
@@ -746,66 +947,6 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                 ))}
               </div>
             </div>
-
-            {/* Toggles: QR Code & Chip Indicator */}
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => updateCurrentConfig({ showQrCode: !currentConfig.showQrCode })}
-                className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-between cursor-pointer ${
-                  currentConfig.showQrCode
-                    ? 'bg-[#141518] text-white border-black'
-                    : 'bg-white text-charcoal border-black/10'
-                }`}
-              >
-                <span>QR Code</span>
-                <span>{currentConfig.showQrCode ? 'Shown' : 'Hidden'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => updateCurrentConfig({ showChip: !currentConfig.showChip })}
-                className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-between cursor-pointer ${
-                  currentConfig.showChip
-                    ? 'bg-[#141518] text-white border-black'
-                    : 'bg-white text-charcoal border-black/10'
-                }`}
-              >
-                <span>Chip Icon</span>
-                <span>{currentConfig.showChip ? 'Shown' : 'Hidden'}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Section 5: NFC Hardware Tap Action */}
-          <div>
-            <label className="font-black text-charcoal uppercase tracking-wider block mb-1">
-              When Someone Taps Your Card
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setRedirectMode('profile')}
-                className={`py-2.5 px-3 rounded-xl border text-left text-xs font-bold cursor-pointer ${
-                  redirectMode === 'profile'
-                    ? 'bg-[#141518] text-white border-black shadow-2xs'
-                    : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
-                }`}
-              >
-                Open Tapping Profile
-              </button>
-              <button
-                type="button"
-                onClick={() => setRedirectMode('direct_vcard')}
-                className={`py-2.5 px-3 rounded-xl border text-left text-xs font-bold cursor-pointer ${
-                  redirectMode === 'direct_vcard'
-                    ? 'bg-[#141518] text-white border-black shadow-2xs'
-                    : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
-                }`}
-              >
-                Instant vCard Save
-              </button>
-            </div>
           </div>
 
           {/* Save Blueprint Action */}
@@ -818,6 +959,140 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
           </button>
         </div>
       </div>
+
+      {/* 100+ FONTS MODAL (Each rendered in its own font style) */}
+      {fontModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-4xl p-6 max-w-2xl w-full border border-black/10 shadow-2xl flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-black/5">
+              <div>
+                <h3 className="font-black text-base text-charcoal">
+                  100 Typography Font Styles
+                </h3>
+                <p className="text-[11px] text-charcoal/60">
+                  Select any font style &mdash; each option renders in its authentic typeface
+                </p>
+              </div>
+              <button
+                onClick={() => setFontModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center text-charcoal cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Category Filter Pills */}
+            <div className="flex items-center gap-1.5 py-3 overflow-x-auto no-scrollbar shrink-0">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedFontCategory(cat)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
+                    selectedFontCategory === cat
+                      ? 'bg-[#141518] text-white shadow-2xs'
+                      : 'bg-[#FAF7F2] text-charcoal/70 hover:text-black border border-black/5'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Scrollable Font Grid */}
+            <div className="flex-1 overflow-y-auto no-scrollbar grid grid-cols-1 sm:grid-cols-2 gap-2.5 pr-1 py-2">
+              {filteredFonts.map((font) => {
+                const isSelected = currentConfig.fontFamily === font.family;
+                return (
+                  <button
+                    key={font.id}
+                    type="button"
+                    onClick={() => {
+                      updateCurrentConfig({ fontFamily: font.family });
+                      setFontModalOpen(false);
+                      showToast('Font Applied', `${font.name} applied to card`, 'success');
+                    }}
+                    className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      isSelected
+                        ? 'border-charcoal ring-2 ring-charcoal bg-black/5 shadow-xs'
+                        : 'border-black/10 bg-white hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono font-bold text-charcoal/50">
+                        {font.category}
+                      </span>
+                      {isSelected && (
+                        <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </span>
+                      )}
+                    </div>
+
+                    <p 
+                      className="text-lg font-bold text-charcoal my-2 truncate tracking-wide"
+                      style={{ fontFamily: font.family }}
+                    >
+                      {frontSide.primaryText || 'ALEX MORGAN'}
+                    </p>
+
+                    <div className="flex items-center justify-between text-[11px] pt-1 border-t border-black/5">
+                      <span className="font-black text-charcoal/80">{font.name}</span>
+                      <span className="font-mono text-[9px] text-[#4F83FF]" style={{ fontFamily: font.family }}>
+                        TAPPING
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* THEME-BASED SAVE CONFIRMATION POPUP */}
+      {saveConfirmModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-4xl p-6 sm:p-8 max-w-sm w-full text-center border-2 border-black shadow-card animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 rounded-2xl bg-[#FDF166] border-2 border-black shadow-[3px_3px_0px_#000] flex items-center justify-center mx-auto mb-3">
+              <Check className="w-7 h-7 text-black stroke-[3]" />
+            </div>
+
+            <h3 className="text-xl font-black text-charcoal">
+              Card Blueprint Saved!
+            </h3>
+            <p className="text-xs text-charcoal/70 mt-1 font-medium">
+              Your custom artwork, laser font, and element placements are preserved and synced with your live profile.
+            </p>
+
+            <div className="my-4 p-3 bg-[#FAF7F2] rounded-2xl border border-black/10 text-left text-xs font-mono">
+              <p className="text-charcoal/50 text-[10px] uppercase font-bold">Profile Live URL</p>
+              <p className="font-black text-charcoal truncate mt-0.5">{displayHost}/{username}</p>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(`http://${displayHost}/${username}`);
+                  showToast('Link Copied', 'Public URL copied to clipboard', 'success');
+                }}
+                className="flex-1 py-2.5 rounded-full bg-[#FAF7F2] hover:bg-gray-100 border border-black/10 text-xs font-bold text-charcoal flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy Link</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSaveConfirmModalOpen(false)}
+                className="flex-1 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black shadow-xs cursor-pointer"
+              >
+                Got It
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Checkout Modal */}
       {orderModalOpen && (
