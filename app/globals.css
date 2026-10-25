@@ -99,3 +99,78 @@ body {
   animation-play-state: paused;
 }
 
+/* Custom Font Families */
+.font-comic {
+  font-family: 'Bangers', cursive, sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.font-cartoon {
+  font-family: 'Fredoka', cursive, sans-serif;
+}
+
+.font-mono-code {
+  font-family: 'Space Mono', monospace;
+}
+
+/* Background Patterns & Comic / Retro Textures (from User Design References) */
+.pattern-comic-sunburst {
+  background-color: #FEF08A;
+  background-image: repeating-conic-gradient(
+    from 0deg,
+    #FBBF24 0deg 15deg,
+    #F59E0B 15deg 30deg
+  );
+}
+
+.pattern-comic-sunburst-red {
+  background-color: #EF4444;
+  background-image: repeating-conic-gradient(
+    from 0deg,
+    #DC2626 0deg 15deg,
+    #B91C1C 15deg 30deg
+  );
+}
+
+.pattern-pop-halftone {
+  background-color: #F8FAFC;
+  background-image: radial-gradient(#0F172A 18%, transparent 19%), radial-gradient(#0F172A 18%, transparent 19%);
+  background-size: 16px 16px;
+  background-position: 0 0, 8px 8px;
+}
+
+.pattern-pop-halftone-cyan {
+  background-color: #38BDF8;
+  background-image: radial-gradient(#0284C7 22%, transparent 23%);
+  background-size: 14px 14px;
+}
+
+.pattern-retro-grid {
+  background-color: #0F172A;
+  background-image: 
+    linear-gradient(rgba(147, 51, 234, 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(147, 51, 234, 0.4) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.pattern-doodle-waves {
+  background-color: #0284C7;
+  background-image: radial-gradient(circle at 100% 150%, #0284C7 24%, #0369A1 25%, #0369A1 28%, #0284C7 29%, #0284C7 36%, #0369A1 36%, #0369A1 40%, transparent 40%, transparent),
+    radial-gradient(circle at 0 150%, #0284C7 24%, #0369A1 25%, #0369A1 28%, #0284C7 29%, #0284C7 36%, #0369A1 36%, #0369A1 40%, transparent 40%, transparent),
+    radial-gradient(circle at 50% 100%, #0369A1 10%, #0284C7 11%, #0284C7 23%, #0369A1 24%, #0369A1 30%, #0284C7 31%, #0284C7 43%, #0369A1 44%, #0369A1 50%, #0284C7 51%, #0284C7 63%, #0369A1 64%, #0369A1 71%, transparent 71%, transparent);
+  background-size: 50px 25px;
+}
+
+.pattern-cloud-burst {
+  background-color: #FDF4FF;
+  background-image: radial-gradient(#E879F9 20%, transparent 20%), radial-gradient(#C084FC 20%, transparent 20%);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+}
+
+.pattern-tribal-glyphs {
+  background-color: #1E293B;
+  background-image: repeating-linear-gradient(45deg, #334155 0, #334155 2px, transparent 0, transparent 16px);
+}
+
+

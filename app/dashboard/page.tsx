@@ -218,12 +218,26 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* TAB: PASTEL THEMES STUDIO */}
+          {/* TAB: PASTEL THEMES & DESIGN STUDIO */}
           {activeTab === 'themes' && (
-            <ThemesStudio
-              profile={profile}
-              onUpdateProfile={handleUpdateProfile}
-            />
+            <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-7 xl:col-span-8">
+                <ThemesStudio
+                  profile={profile}
+                  onUpdateProfile={handleUpdateProfile}
+                />
+              </div>
+
+              {/* Right Column: Sticky Live Mobile Phone Preview with Real-time Updates */}
+              <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-6 flex flex-col items-center justify-center">
+                <LivePhonePreview
+                  profile={profile}
+                  vcard={vcard}
+                  links={links}
+                  nfcCard={nfcCard}
+                />
+              </div>
+            </div>
           )}
         </main>
         </div>

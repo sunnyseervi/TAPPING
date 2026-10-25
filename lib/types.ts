@@ -1,4 +1,32 @@
-export type ThemeType = 'pastel-bento' | 'warm-editorial' | 'minimal-mono' | 'sage-cream' | 'tokyo-night';
+export type ThemeType = 
+  | 'pastel-bento' 
+  | 'comic-pop' 
+  | 'retro-arcade' 
+  | 'cartoon-doodle' 
+  | 'vaporwave-chill' 
+  | 'warm-editorial' 
+  | 'minimal-mono' 
+  | 'sage-cream' 
+  | 'tokyo-night';
+
+export type FontFamilyType = 'sans' | 'serif' | 'mono' | 'comic' | 'cartoon';
+export type FontSizeScale = 'sm' | 'md' | 'lg' | 'xl';
+export type BackgroundPatternType = 
+  | 'none' 
+  | 'comic-sunburst' 
+  | 'pop-halftone' 
+  | 'retro-grid' 
+  | 'doodle-waves' 
+  | 'cloud-burst' 
+  | 'tribal-glyphs';
+
+export type LinkCardStyleType = 
+  | 'solid' 
+  | 'comic-brutalist' 
+  | 'retro-pixel' 
+  | 'glass-glow' 
+  | 'vintage-ticket' 
+  | 'minimal-outline';
 
 export type CardMaterial = 'matte_black' | 'brushed_gold' | 'rose_gold' | 'titanium_silver';
 
@@ -25,6 +53,15 @@ export interface Profile {
   isVerified: boolean;
   socialLinks: SocialLinks;
   createdAt: string;
+
+  // Design, Typography & Background Customization
+  fontFamily?: FontFamilyType;
+  fontColor?: string;
+  fontSize?: FontSizeScale;
+  headerBackground?: BackgroundPatternType;
+  showHeaderBackground?: boolean;
+  linkCardStyle?: LinkCardStyleType;
+  customBgColor?: string;
 }
 
 export interface VCardProfile {

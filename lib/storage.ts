@@ -15,7 +15,9 @@ export function getStoredProfile(): Profile {
   if (typeof window === 'undefined') return initialProfile;
   try {
     const data = localStorage.getItem(KEYS.PROFILE);
-    return data ? JSON.parse(data) : initialProfile;
+    if (!data) return initialProfile;
+    const parsed = JSON.parse(data);
+    return { ...initialProfile, ...parsed };
   } catch {
     return initialProfile;
   }

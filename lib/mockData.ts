@@ -8,6 +8,12 @@ export const initialProfile: Profile = {
   avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
   badgeTitle: 'Product Designer',
   theme: 'pastel-bento',
+  fontFamily: 'sans',
+  fontColor: '#141518',
+  fontSize: 'md',
+  headerBackground: 'none',
+  showHeaderBackground: false,
+  linkCardStyle: 'solid',
   accentColor: '#FED5C3',
   isVerified: true,
   socialLinks: {

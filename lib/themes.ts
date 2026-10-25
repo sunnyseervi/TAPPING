@@ -1,8 +1,9 @@
-import { ThemeType } from './types';
+import { ThemeType, FontFamilyType, BackgroundPatternType, LinkCardStyleType } from './types';
 
 export interface ThemeConfig {
   id: ThemeType;
   name: string;
+  category: 'Pop & Comic' | 'Retro & Arcade' | 'Modern & Bento' | 'Editorial & Minimal';
   description: string;
   canvasBg: string;
   containerBg: string;
@@ -13,39 +14,181 @@ export interface ThemeConfig {
   badgeBg: string;
   badgeBorder: string;
   badgeText: string;
+  defaultFont: FontFamilyType;
+  defaultPattern: BackgroundPatternType;
+  defaultCardStyle: LinkCardStyleType;
   previewColors: string[];
-  linkVariantClass: (variant: string) => string;
+  linkVariantClass: (variant: string, style?: LinkCardStyleType) => string;
 }
 
 export const THEMES: Record<ThemeType, ThemeConfig> = {
   'pastel-bento': {
     id: 'pastel-bento',
     name: 'Pastel Bento Canvas',
-    description: 'Warm cream canvas with soft peach, lavender, mint and butter cards',
+    category: 'Modern & Bento',
+    description: 'Warm cream canvas with soft peach, butter yellow, spring lime and cobalt cards',
     canvasBg: 'bg-[#FAF7F2]',
     containerBg: 'bg-white',
-    textHeading: 'text-[#1F2024]',
+    textHeading: 'text-[#141518]',
     textBody: 'text-[#4A4B50]',
-    accentBtn: 'bg-[#1F2024] hover:bg-black',
+    accentBtn: 'bg-[#141518] hover:bg-black',
     accentBtnText: 'text-white',
-    badgeBg: 'bg-[#D8ECD7]',
-    badgeBorder: 'border-[#BDDFBC]',
-    badgeText: 'text-[#204024]',
-    previewColors: ['#FAF7F2', '#FED5C3', '#E4E0FA', '#D8ECD7', '#1F2024'],
+    badgeBg: 'bg-[#FDF166]',
+    badgeBorder: 'border-black/10',
+    badgeText: 'text-charcoal',
+    defaultFont: 'sans',
+    defaultPattern: 'none',
+    defaultCardStyle: 'solid',
+    previewColors: ['#FAF7F2', '#4F83FF', '#FDF166', '#B6F554', '#141518'],
+    linkVariantClass: (variant: string, style?: LinkCardStyleType) => {
+      if (style === 'comic-brutalist') {
+        return 'bg-white hover:bg-yellow-50 border-2 border-black shadow-[3px_3px_0px_#000] text-charcoal';
+      }
+      switch (variant) {
+        case 'peach':
+          return 'bg-[#EFF4FF] hover:bg-[#E2ECFF] border border-[#4F83FF]/20 text-[#141518] shadow-2xs';
+        case 'lavender':
+        case 'yellow':
+          return 'bg-[#FDF166] hover:bg-[#FBE849] border border-black/10 text-charcoal shadow-2xs';
+        case 'mint':
+          return 'bg-[#B6F554] hover:bg-[#A3ED33] border border-black/10 text-charcoal shadow-2xs';
+        case 'sky':
+          return 'bg-[#4F83FF] hover:bg-[#3B6DE6] border border-black/10 text-white shadow-2xs';
+        default:
+          return 'bg-white hover:bg-gray-50 border border-black/10 text-charcoal shadow-2xs';
+      }
+    },
+  },
+
+  'comic-pop': {
+    id: 'comic-pop',
+    name: 'Comic Pop Halftone',
+    category: 'Pop & Comic',
+    description: 'Explosive Marvel / Comic-Con pop art with bold halftone sunbursts and thick 2.5px borders',
+    canvasBg: 'bg-[#FFFBEB]',
+    containerBg: 'bg-white',
+    textHeading: 'text-black font-black',
+    textBody: 'text-zinc-800 font-bold',
+    accentBtn: 'bg-[#EF4444] hover:bg-[#DC2626] border-2 border-black shadow-[3px_3px_0px_#000]',
+    accentBtnText: 'text-white font-black',
+    badgeBg: 'bg-[#FBBF24]',
+    badgeBorder: 'border-2 border-black',
+    badgeText: 'text-black font-black',
+    defaultFont: 'comic',
+    defaultPattern: 'comic-sunburst',
+    defaultCardStyle: 'comic-brutalist',
+    previewColors: ['#EF4444', '#FBBF24', '#38BDF8', '#000000', '#FFFFFF'],
     linkVariantClass: (variant: string) => {
       switch (variant) {
         case 'peach':
-          return 'bg-[#FED5C3] hover:bg-[#FDBFA7] border-[#F8BFA5] text-[#1F2024]';
-        case 'lavender':
-          return 'bg-[#E4E0FA] hover:bg-[#D5CEFA] border-[#D0C7F5] text-[#1F2024]';
         case 'yellow':
-          return 'bg-[#FEF0B3] hover:bg-[#FDE25D] border-[#F4E187] text-[#1F2024]';
-        case 'mint':
-          return 'bg-[#D8ECD7] hover:bg-[#C2E4BF] border-[#BDDFBC] text-[#1F2024]';
+          return 'bg-[#FDE047] hover:bg-[#FACC15] border-2 border-black shadow-[4px_4px_0px_#000] text-black font-black';
+        case 'lavender':
         case 'sky':
-          return 'bg-[#D6E6FE] hover:bg-[#C2DCFE] border-[#BED6FC] text-[#1F2024]';
+          return 'bg-[#38BDF8] hover:bg-[#0EA5E9] border-2 border-black shadow-[4px_4px_0px_#000] text-black font-black';
+        case 'mint':
+          return 'bg-[#4ADE80] hover:bg-[#22C55E] border-2 border-black shadow-[4px_4px_0px_#000] text-black font-black';
         default:
-          return 'bg-white hover:bg-gray-50 border-black/10 text-[#1F2024]';
+          return 'bg-white hover:bg-amber-50 border-2 border-black shadow-[4px_4px_0px_#000] text-black font-black';
+      }
+    },
+  },
+
+  'retro-arcade': {
+    id: 'retro-arcade',
+    name: 'Retro 8-Bit Arcade',
+    category: 'Retro & Arcade',
+    description: 'Classic arcade pixel vibe with synthwave grid lines, neon cyan, purple & 8-bit styling',
+    canvasBg: 'bg-[#0B0F19]',
+    containerBg: 'bg-[#111827]',
+    textHeading: 'text-[#38BDF8]',
+    textBody: 'text-slate-300',
+    accentBtn: 'bg-[#8B5CF6] hover:bg-[#7C3AED] border-2 border-[#C084FC]',
+    accentBtnText: 'text-white font-mono',
+    badgeBg: 'bg-[#064E3B]',
+    badgeBorder: 'border-[#10B981]',
+    badgeText: 'text-[#34D399]',
+    defaultFont: 'mono',
+    defaultPattern: 'retro-grid',
+    defaultCardStyle: 'retro-pixel',
+    previewColors: ['#0B0F19', '#38BDF8', '#8B5CF6', '#10B981', '#F43F5E'],
+    linkVariantClass: (variant: string) => {
+      switch (variant) {
+        case 'peach':
+        case 'yellow':
+          return 'bg-[#1E1B4B] hover:bg-[#2E1065] border-2 border-[#818CF8] text-[#A5B4FC] shadow-[3px_3px_0px_#4F46E5] font-mono';
+        case 'mint':
+          return 'bg-[#064E3B] hover:bg-[#022C22] border-2 border-[#10B981] text-[#6EE7B7] shadow-[3px_3px_0px_#059669] font-mono';
+        case 'sky':
+          return 'bg-[#082F49] hover:bg-[#0C4A6E] border-2 border-[#38BDF8] text-[#7DD3FC] shadow-[3px_3px_0px_#0284C7] font-mono';
+        default:
+          return 'bg-[#182234] hover:bg-[#1E293B] border-2 border-slate-700 text-white font-mono shadow-[3px_3px_0px_#0F172A]';
+      }
+    },
+  },
+
+  'cartoon-doodle': {
+    id: 'cartoon-doodle',
+    name: 'Cartoon Doodle Burst',
+    category: 'Pop & Comic',
+    description: 'Playful anime street stickers, vibrant coral, candy pink and bubble typography',
+    canvasBg: 'bg-[#FEFCE8]',
+    containerBg: 'bg-white',
+    textHeading: 'text-[#1E1B4B]',
+    textBody: 'text-[#4338CA]',
+    accentBtn: 'bg-[#F43F5E] hover:bg-[#E11D48] text-white rounded-3xl',
+    accentBtnText: 'text-white font-bold',
+    badgeBg: 'bg-[#FCE7F3]',
+    badgeBorder: 'border-[#F472B6]',
+    badgeText: 'text-[#DB2777]',
+    defaultFont: 'cartoon',
+    defaultPattern: 'cloud-burst',
+    defaultCardStyle: 'comic-brutalist',
+    previewColors: ['#FEFCE8', '#F43F5E', '#FBBF24', '#38BDF8', '#A855F7'],
+    linkVariantClass: (variant: string) => {
+      switch (variant) {
+        case 'peach':
+          return 'bg-[#FFE4E6] hover:bg-[#FECDD3] border-2 border-[#F43F5E] text-[#9F1239] rounded-2xl shadow-xs';
+        case 'lavender':
+          return 'bg-[#F3E8FF] hover:bg-[#E9D5FF] border-2 border-[#A855F7] text-[#6B21A8] rounded-2xl shadow-xs';
+        case 'yellow':
+          return 'bg-[#FEF08A] hover:bg-[#FDE047] border-2 border-[#EAB308] text-[#854D0E] rounded-2xl shadow-xs';
+        case 'mint':
+          return 'bg-[#DCFCE7] hover:bg-[#BBF7D0] border-2 border-[#22C55E] text-[#166534] rounded-2xl shadow-xs';
+        default:
+          return 'bg-white hover:bg-amber-50 border-2 border-[#1E1B4B] text-[#1E1B4B] rounded-2xl shadow-xs';
+      }
+    },
+  },
+
+  'vaporwave-chill': {
+    id: 'vaporwave-chill',
+    name: 'Vaporwave & Statue Chill',
+    category: 'Retro & Arcade',
+    description: 'Aesthetic Greek sculpture statue, lo-fi purple haze, retro typography and sunset chill',
+    canvasBg: 'bg-[#FAF5FF]',
+    containerBg: 'bg-white',
+    textHeading: 'text-[#3B0764]',
+    textBody: 'text-[#581C87]',
+    accentBtn: 'bg-[#7E22CE] hover:bg-[#6B21A8]',
+    accentBtnText: 'text-white',
+    badgeBg: 'bg-[#F3E8FF]',
+    badgeBorder: 'border-[#D8B4FE]',
+    badgeText: 'text-[#7E22CE]',
+    defaultFont: 'serif',
+    defaultPattern: 'doodle-waves',
+    defaultCardStyle: 'glass-glow',
+    previewColors: ['#FAF5FF', '#7E22CE', '#38BDF8', '#F43F5E', '#3B0764'],
+    linkVariantClass: (variant: string) => {
+      switch (variant) {
+        case 'peach':
+          return 'bg-[#FDF2F8] hover:bg-[#FCE7F3] border border-[#F472B6] text-[#831843] shadow-xs';
+        case 'lavender':
+          return 'bg-[#F3E8FF] hover:bg-[#E9D5FF] border border-[#C084FC] text-[#581C87] shadow-xs';
+        case 'sky':
+          return 'bg-[#F0F9FF] hover:bg-[#E0F2FE] border border-[#38BDF8] text-[#075985] shadow-xs';
+        default:
+          return 'bg-white hover:bg-purple-50/50 border border-[#D8B4FE]/50 text-[#3B0764] shadow-xs';
       }
     },
   },
@@ -53,7 +196,8 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
   'warm-editorial': {
     id: 'warm-editorial',
     name: 'Warm Editorial Paper',
-    description: 'Terracotta accents with off-white warm paper styling and forest accents',
+    category: 'Editorial & Minimal',
+    description: 'Terracotta accents with off-white warm paper styling and classic editorial serif',
     canvasBg: 'bg-[#F4EFEA]',
     containerBg: 'bg-[#FCFBF8]',
     textHeading: 'text-[#1C1A17]',
@@ -63,28 +207,53 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     badgeBg: 'bg-[#F2D7CE]',
     badgeBorder: 'border-[#E5B5A5]',
     badgeText: 'text-[#873218]',
+    defaultFont: 'serif',
+    defaultPattern: 'none',
+    defaultCardStyle: 'vintage-ticket',
     previewColors: ['#F4EFEA', '#C0512F', '#3D5A4C', '#E8DDD3', '#1C1A17'],
     linkVariantClass: (variant: string) => {
       switch (variant) {
         case 'peach':
-          return 'bg-[#F5DDD3] hover:bg-[#ECC5B7] border-[#DEB0A0] text-[#1C1A17]';
+          return 'bg-[#F5DDD3] hover:bg-[#ECC5B7] border border-[#DEB0A0] text-[#1C1A17]';
         case 'lavender':
-          return 'bg-[#EBE5DE] hover:bg-[#DED7CE] border-[#CFC6B9] text-[#1C1A17]';
+          return 'bg-[#EBE5DE] hover:bg-[#DED7CE] border border-[#CFC6B9] text-[#1C1A17]';
         case 'yellow':
-          return 'bg-[#F5ECD5] hover:bg-[#EBDDB7] border-[#DEC997] text-[#1C1A17]';
+          return 'bg-[#F5ECD5] hover:bg-[#EBDDB7] border border-[#DEC997] text-[#1C1A17]';
         case 'mint':
-          return 'bg-[#DEE9E3] hover:bg-[#C9DDD2] border-[#ADCAB9] text-[#1C1A17]';
-        case 'sky':
-          return 'bg-[#DCE6E8] hover:bg-[#CAD9DC] border-[#B2C6CA] text-[#1C1A17]';
+          return 'bg-[#DEE9E3] hover:bg-[#C9DDD2] border border-[#ADCAB9] text-[#1C1A17]';
         default:
-          return 'bg-white hover:bg-gray-50 border-[#CFC6B9] text-[#1C1A17]';
+          return 'bg-white hover:bg-gray-50 border border-[#CFC6B9] text-[#1C1A17]';
       }
+    },
+  },
+
+  'minimal-mono': {
+    id: 'minimal-mono',
+    name: 'Minimal Monochrome',
+    category: 'Editorial & Minimal',
+    description: 'Crisp high-contrast Swiss typography with subtle borders and flat surfaces',
+    canvasBg: 'bg-[#F8F9FA]',
+    containerBg: 'bg-white',
+    textHeading: 'text-[#111111]',
+    textBody: 'text-[#555555]',
+    accentBtn: 'bg-black hover:bg-zinc-800',
+    accentBtnText: 'text-white',
+    badgeBg: 'bg-[#E9ECEF]',
+    badgeBorder: 'border-[#CED4DA]',
+    badgeText: 'text-[#212529]',
+    defaultFont: 'sans',
+    defaultPattern: 'none',
+    defaultCardStyle: 'minimal-outline',
+    previewColors: ['#FFFFFF', '#F8F9FA', '#DEE2E6', '#495057', '#111111'],
+    linkVariantClass: () => {
+      return 'bg-white hover:bg-zinc-50 border border-black/15 text-[#111111] shadow-2xs';
     },
   },
 
   'sage-cream': {
     id: 'sage-cream',
     name: 'Sage and Botanical',
+    category: 'Modern & Bento',
     description: 'Organic botanical greens with soft ivory and matcha pills',
     canvasBg: 'bg-[#F3F6F2]',
     containerBg: 'bg-[#FBFDFB]',
@@ -95,47 +264,28 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     badgeBg: 'bg-[#D8ECD7]',
     badgeBorder: 'border-[#B4DBB2]',
     badgeText: 'text-[#1E3B24]',
+    defaultFont: 'sans',
+    defaultPattern: 'none',
+    defaultCardStyle: 'solid',
     previewColors: ['#F3F6F2', '#D8ECD7', '#A3CFAB', '#3B6846', '#1E2B20'],
     linkVariantClass: (variant: string) => {
       switch (variant) {
         case 'peach':
-          return 'bg-[#EAEFD5] hover:bg-[#DBE3BD] border-[#C7D3A1] text-[#1E2B20]';
+          return 'bg-[#EAEFD5] hover:bg-[#DBE3BD] border border-[#C7D3A1] text-[#1E2B20]';
         case 'lavender':
-          return 'bg-[#E3EAE6] hover:bg-[#D2DDD6] border-[#BCD0C3] text-[#1E2B20]';
-        case 'yellow':
-          return 'bg-[#F0F2D6] hover:bg-[#E1E5BC] border-[#CED4A1] text-[#1E2B20]';
+          return 'bg-[#E3EAE6] hover:bg-[#D2DDD6] border border-[#BCD0C3] text-[#1E2B20]';
         case 'mint':
-          return 'bg-[#D8ECD7] hover:bg-[#C2E4BF] border-[#A8DBA6] text-[#1E2B20]';
-        case 'sky':
-          return 'bg-[#D4E8E4] hover:bg-[#C0DDD8] border-[#A2CDC5] text-[#1E2B20]';
+          return 'bg-[#D8ECD7] hover:bg-[#C2E4BF] border border-[#A8DBA6] text-[#1E2B20]';
         default:
-          return 'bg-white hover:bg-gray-50 border-black/10 text-[#1E2B20]';
+          return 'bg-white hover:bg-gray-50 border border-black/10 text-[#1E2B20]';
       }
-    },
-  },
-
-  'minimal-mono': {
-    id: 'minimal-mono',
-    name: 'Minimal Monochrome',
-    description: 'Crisp high-contrast monochrome with subtle borders and flat surfaces',
-    canvasBg: 'bg-[#F8F9FA]',
-    containerBg: 'bg-white',
-    textHeading: 'text-[#111111]',
-    textBody: 'text-[#555555]',
-    accentBtn: 'bg-black hover:bg-zinc-800',
-    accentBtnText: 'text-white',
-    badgeBg: 'bg-[#E9ECEF]',
-    badgeBorder: 'border-[#CED4DA]',
-    badgeText: 'text-[#212529]',
-    previewColors: ['#FFFFFF', '#F8F9FA', '#DEE2E6', '#495057', '#111111'],
-    linkVariantClass: () => {
-      return 'bg-white hover:bg-zinc-50 border-black/15 text-[#111111] shadow-2xs';
     },
   },
 
   'tokyo-night': {
     id: 'tokyo-night',
     name: 'Soft Rose and Mauve',
+    category: 'Editorial & Minimal',
     description: 'Delicate dusty rose, blush canvas, and mauve accent highlights',
     canvasBg: 'bg-[#FDF6F7]',
     containerBg: 'bg-white',
@@ -146,22 +296,111 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
     badgeBg: 'bg-[#FCE6E9]',
     badgeBorder: 'border-[#F4BFCA]',
     badgeText: 'text-[#6E2838]',
+    defaultFont: 'sans',
+    defaultPattern: 'none',
+    defaultCardStyle: 'solid',
     previewColors: ['#FDF6F7', '#FCE6E9', '#F7CCD3', '#E8E2F7', '#281A1E'],
     linkVariantClass: (variant: string) => {
       switch (variant) {
         case 'peach':
-          return 'bg-[#FCE6E9] hover:bg-[#F9D0D6] border-[#F4BFCA] text-[#281A1E]';
+          return 'bg-[#FCE6E9] hover:bg-[#F9D0D6] border border-[#F4BFCA] text-[#281A1E]';
         case 'lavender':
-          return 'bg-[#F1ECFB] hover:bg-[#E3DAF8] border-[#D4C5F3] text-[#281A1E]';
-        case 'yellow':
-          return 'bg-[#FEF5DF] hover:bg-[#FDEAC0] border-[#F6DC9B] text-[#281A1E]';
-        case 'mint':
-          return 'bg-[#EBF7F0] hover:bg-[#D5EFE0] border-[#B7E3C8] text-[#281A1E]';
-        case 'sky':
-          return 'bg-[#E8F1FC] hover:bg-[#D1E3F9] border-[#B5D3F6] text-[#281A1E]';
+          return 'bg-[#F1ECFB] hover:bg-[#E3DAF8] border border-[#D4C5F3] text-[#281A1E]';
         default:
-          return 'bg-white hover:bg-gray-50 border-black/10 text-[#281A1E]';
+          return 'bg-white hover:bg-gray-50 border border-black/10 text-[#281A1E]';
       }
     },
   },
 };
+
+export function getFontFamilyClass(fontFamily?: FontFamilyType): string {
+  switch (fontFamily) {
+    case 'comic':
+      return 'font-comic tracking-wide';
+    case 'cartoon':
+      return 'font-cartoon';
+    case 'mono':
+      return 'font-mono-code font-mono';
+    case 'serif':
+      return 'font-serif';
+    default:
+      return 'font-sans';
+  }
+}
+
+export function getPatternClass(pattern?: BackgroundPatternType): string {
+  switch (pattern) {
+    case 'comic-sunburst':
+      return 'pattern-comic-sunburst';
+    case 'comic-sunburst-red':
+      return 'pattern-comic-sunburst-red';
+    case 'pop-halftone':
+      return 'pattern-pop-halftone';
+    case 'pop-halftone-cyan':
+      return 'pattern-pop-halftone-cyan';
+    case 'retro-grid':
+      return 'pattern-retro-grid';
+    case 'doodle-waves':
+      return 'pattern-doodle-waves';
+    case 'cloud-burst':
+      return 'pattern-cloud-burst';
+    case 'tribal-glyphs':
+      return 'pattern-tribal-glyphs';
+    default:
+      return '';
+  }
+}
+
+export function resolveLinkCardClasses(
+  themeId: ThemeType = 'pastel-bento',
+  variant: string = 'default',
+  cardStyle?: LinkCardStyleType
+): string {
+  // If a global linkCardStyle was chosen
+  if (cardStyle === 'comic-brutalist') {
+    switch (variant) {
+      case 'peach':
+      case 'yellow':
+        return 'bg-[#FEF08A] hover:bg-[#FDE047] border-2 border-black shadow-[4px_4px_0px_#000] text-black font-black active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] rounded-2xl';
+      case 'mint':
+        return 'bg-[#86EFAC] hover:bg-[#4ADE80] border-2 border-black shadow-[4px_4px_0px_#000] text-black font-black active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] rounded-2xl';
+      case 'sky':
+        return 'bg-[#7DD3FC] hover:bg-[#38BDF8] border-2 border-black shadow-[4px_4px_0px_#000] text-black font-black active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] rounded-2xl';
+      case 'lavender':
+        return 'bg-[#F472B6] hover:bg-[#EC4899] border-2 border-black shadow-[4px_4px_0px_#000] text-black font-black active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] rounded-2xl';
+      default:
+        return 'bg-white hover:bg-amber-50 border-2 border-black shadow-[4px_4px_0px_#000] text-black font-black active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] rounded-2xl';
+    }
+  }
+
+  if (cardStyle === 'retro-pixel') {
+    switch (variant) {
+      case 'peach':
+      case 'yellow':
+        return 'bg-[#1E1B4B] hover:bg-[#2E1065] border-2 border-[#818CF8] text-[#A5B4FC] shadow-[3px_3px_0px_#4F46E5] font-mono rounded-none';
+      case 'mint':
+        return 'bg-[#064E3B] hover:bg-[#022C22] border-2 border-[#10B981] text-[#6EE7B7] shadow-[3px_3px_0px_#059669] font-mono rounded-none';
+      case 'sky':
+        return 'bg-[#082F49] hover:bg-[#0C4A6E] border-2 border-[#38BDF8] text-[#7DD3FC] shadow-[3px_3px_0px_#0284C7] font-mono rounded-none';
+      default:
+        return 'bg-[#111827] hover:bg-[#1F2937] border-2 border-slate-700 text-white shadow-[3px_3px_0px_#0F172A] font-mono rounded-none';
+    }
+  }
+
+  if (cardStyle === 'glass-glow') {
+    return 'bg-white/80 hover:bg-white backdrop-blur-md border border-white/90 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.1)] text-charcoal rounded-2xl transition-all';
+  }
+
+  if (cardStyle === 'vintage-ticket') {
+    return 'bg-[#FAF6F0] hover:bg-[#F3ECE1] border-2 border-dashed border-stone-400 text-[#292524] shadow-2xs font-serif rounded-xl transition-all';
+  }
+
+  if (cardStyle === 'minimal-outline') {
+    return 'bg-transparent hover:bg-black/5 border border-black/20 text-[#111111] shadow-2xs rounded-2xl transition-all';
+  }
+
+  // Fallback to active theme's styling
+  const theme = THEMES[themeId] || THEMES['pastel-bento'];
+  return theme.linkVariantClass(variant, cardStyle);
+}
+

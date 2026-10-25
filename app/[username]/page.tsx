@@ -39,6 +39,7 @@ import { downloadVCardFile } from '@/lib/vcard';
 import QRCode from 'qrcode';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
+import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses } from '@/lib/themes';
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -75,6 +76,22 @@ export default function PublicProfilePage() {
   }, [usernameParam]);
 
   const activeLinks = links.filter((l) => l.isActive);
+
+  // Active theme and styling tokens
+  const currentTheme = THEMES[profile.theme] || THEMES['pastel-bento'];
+  const fontFamilyClass = getFontFamilyClass(profile.fontFamily);
+  const patternClass = profile.showHeaderBackground ? getPatternClass(profile.headerBackground) : '';
+
+  // Dynamic font sizing
+  const titleSizeClass = 
+    profile.fontSize === 'sm' ? 'text-xl sm:text-2xl' :
+    profile.fontSize === 'lg' ? 'text-3xl sm:text-4xl' :
+    profile.fontSize === 'xl' ? 'text-4xl sm:text-5xl' : 'text-2xl sm:text-3xl';
+
+  const bodySizeClass = 
+    profile.fontSize === 'sm' ? 'text-xs' :
+    profile.fontSize === 'lg' ? 'text-sm sm:text-base' :
+    profile.fontSize === 'xl' ? 'text-base sm:text-lg' : 'text-xs sm:text-sm';
 
   const handleLinkClick = (link: LinkBlock) => {
     incrementLinkClick(link.id);
@@ -135,22 +152,6 @@ export default function PublicProfilePage() {
     }
   };
 
-  const getStyleClass = (variant: string) => {
-    switch (variant) {
-      case 'peach':
-        return 'bg-[#EFF4FF] hover:bg-[#E2ECFF] border-[#4F83FF]/25 text-charcoal';
-      case 'lavender':
-      case 'yellow':
-        return 'bg-[#FDF166] hover:bg-[#FBE849] border-black/10 text-charcoal';
-      case 'mint':
-        return 'bg-[#B6F554] hover:bg-[#A3ED33] border-black/10 text-charcoal';
-      case 'sky':
-        return 'bg-[#4F83FF] hover:bg-[#3B6DE6] border-black/10 text-white';
-      default:
-        return 'bg-white hover:bg-gray-50 border-black/10 text-charcoal';
-    }
-  };
-
   const phoneNumber = vcard.workPhone || vcard.mobilePhone || profile.socialLinks?.phone || '';
   const emailAddress = vcard.workEmail || profile.socialLinks?.email || '';
   const organizationName = vcard.organization || '';
@@ -158,8 +159,8 @@ export default function PublicProfilePage() {
   const fullAddress = [vcard.streetAddress, vcard.city, vcard.country].filter(Boolean).join(', ');
 
   return (
-    <div className="min-h-screen bg-[#F7F5EE] text-charcoal flex flex-col items-center justify-between p-4 sm:p-6 lg:p-10 selection:bg-[#FDF166] selection:text-charcoal font-sans">
-      {/* TOP FLOATING ACTION BAR: Pure Contact Sharing (No Admin / No Dashboard clutter) */}
+    <div className={`min-h-screen ${currentTheme.canvasBg} text-charcoal flex flex-col items-center justify-between p-4 sm:p-6 lg:p-10 selection:bg-[#FDF166] selection:text-charcoal transition-colors duration-200`}>
+      {/* TOP FLOATING ACTION BAR: Pure Contact Sharing */}
       <div className="w-full max-w-xl mx-auto flex items-center justify-between py-2 mb-2">
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-black/10 shadow-2xs">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -190,298 +191,318 @@ export default function PublicProfilePage() {
       </div>
 
       {/* MAIN PROFILE CARD: USER IDENTITY & CONTACT DATA */}
-      <main className="w-full max-w-xl mx-auto bg-white rounded-[36px] sm:rounded-[44px] p-6 sm:p-8 shadow-card border border-black/5 flex flex-col gap-6 text-center">
+      <main className={`w-full max-w-xl mx-auto ${currentTheme.containerBg} rounded-[36px] sm:rounded-[44px] shadow-card border border-black/5 flex flex-col overflow-hidden text-center transition-all`}>
         
-        {/* 1. USER IDENTITY (Avatar, Name, Handle, Title, Location, Bio) */}
-        <div className="flex flex-col items-center">
-          {/* Avatar with Crisp White Ring & Shadow */}
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden ring-4 ring-[#FAF7F2] border-2 border-white shadow-soft bg-[#FDF166] relative">
-            <img
-              src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
-              alt={profile.displayName}
-              className="w-full h-full object-cover"
-            />
-          </div>
+        {/* Optional Header Background Pattern Banner */}
+        {profile.showHeaderBackground && patternClass && (
+          <div className={`w-full h-32 sm:h-44 shrink-0 relative ${patternClass} border-b border-black/10`} />
+        )}
 
-          {/* User Display Name */}
-          <h1 className="text-2xl sm:text-3xl font-black text-charcoal tracking-tight mt-3.5 leading-tight">
-            {profile.displayName}
-          </h1>
-
-          {/* Professional Work / Title / Company */}
-          {(jobTitleText || organizationName) && (
-            <div className="flex items-center justify-center gap-1.5 mt-1 text-xs sm:text-sm font-bold text-charcoal/70 flex-wrap">
-              <Briefcase className="w-3.5 h-3.5 text-[#4F83FF] shrink-0" />
-              <span>{jobTitleText}</span>
-              {organizationName && (
-                <>
-                  <span className="text-charcoal/30">&bull;</span>
-                  <span>{organizationName}</span>
-                </>
-              )}
+        {/* Card Body */}
+        <div className={`p-6 sm:p-8 flex flex-col gap-6 ${profile.showHeaderBackground && patternClass ? 'pt-0' : ''}`}>
+          {/* 1. USER IDENTITY (Avatar, Name, Handle, Title, Location, Bio) */}
+          <div className="flex flex-col items-center">
+            {/* Avatar with Crisp White Ring & Shadow */}
+            <div className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden ring-4 ring-white border-2 border-white shadow-soft bg-white relative ${
+              profile.showHeaderBackground && patternClass ? '-mt-12 sm:-mt-14 z-10' : 'mt-1'
+            }`}>
+              <img
+                src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
+                alt={profile.displayName}
+                className="w-full h-full object-cover"
+              />
             </div>
-          )}
 
-          {/* Location / Address */}
-          {fullAddress && (
-            <div className="flex items-center justify-center gap-1.5 mt-1 text-xs font-semibold text-charcoal/50">
-              <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-              <span>{fullAddress}</span>
-            </div>
-          )}
+            {/* User Display Name */}
+            <h1 
+              className={`${titleSizeClass} font-black tracking-tight mt-3.5 leading-tight ${fontFamilyClass}`}
+              style={profile.fontColor ? { color: profile.fontColor } : undefined}
+            >
+              {profile.displayName}
+            </h1>
 
-          {/* Bio Description */}
-          {profile.bio && (
-            <p className="text-xs sm:text-sm text-charcoal/75 mt-3 max-w-md leading-relaxed font-medium">
-              {profile.bio}
-            </p>
-          )}
-        </div>
-
-        {/* 2. PRIMARY CONTACT ACTION: SAVE DIRECT VCARD 3.0 TO PHONE */}
-        <div className="flex flex-col gap-2.5">
-          <button
-            onClick={handleDownloadVCard}
-            className="w-full py-3.5 px-6 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs sm:text-sm font-black flex items-center justify-center gap-2.5 shadow-sm transition-transform active:scale-98 cursor-pointer"
-            title="Download contact vCard directly into iPhone / Android phonebook"
-          >
-            <Download className="w-4 h-4 text-[#FDF166] stroke-[2.5]" />
-            <span>Save Contact to Phone (vCard)</span>
-          </button>
-
-          {/* Quick Contact Action Pills: Call / Email / Website */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {phoneNumber && (
-              <a
-                href={`tel:${phoneNumber.replace(/[^0-9+]/g, '')}`}
-                className="py-2.5 px-3 rounded-2xl bg-[#EFF4FF] hover:bg-[#E2ECFF] text-[#4F83FF] border border-[#4F83FF]/20 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
-                title={`Call ${phoneNumber}`}
-              >
-                <Phone className="w-3.5 h-3.5" />
-                <span className="truncate">Call</span>
-              </a>
-            )}
-
-            {emailAddress && (
-              <a
-                href={`mailto:${emailAddress}`}
-                className="py-2.5 px-3 rounded-2xl bg-[#EFF4FF] hover:bg-[#E2ECFF] text-[#4F83FF] border border-[#4F83FF]/20 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
-                title={`Email ${emailAddress}`}
-              >
-                <Mail className="w-3.5 h-3.5" />
-                <span className="truncate">Email</span>
-              </a>
-            )}
-
-            {vcard.website && (
-              <a
-                href={vcard.website.startsWith('http') ? vcard.website : `https://${vcard.website}`}
-                target="_blank"
-                rel="noreferrer"
-                className="col-span-2 sm:col-span-1 py-2.5 px-3 rounded-2xl bg-white hover:bg-gray-50 text-charcoal border border-black/10 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
-                title="Open Website"
-              >
-                <Globe className="w-3.5 h-3.5" />
-                <span className="truncate">Website</span>
-              </a>
-            )}
-          </div>
-        </div>
-
-        {/* 3. STRUCTURED CONTACT DETAILS CARD (Name, Number, Work, Address, Website) */}
-        <div className="rounded-3xl bg-[#FAF7F2] border border-black/5 p-4 sm:p-5 flex flex-col gap-3 text-left">
-          <p className="text-[10px] font-black uppercase tracking-wider text-charcoal/50">
-            Contact & Business Details
-          </p>
-
-          <div className="space-y-2.5 text-xs">
-            {/* Phone */}
-            {phoneNumber && (
-              <div className="flex items-center justify-between pb-2 border-b border-black/5">
-                <span className="font-bold text-charcoal/60 flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-charcoal/40" />
-                  <span>Phone Number</span>
+            {/* Professional Work / Title / Company Badge */}
+            {(jobTitleText || organizationName) && (
+              <div className="mt-1.5 flex items-center justify-center">
+                <span className={`text-xs sm:text-sm font-black px-3.5 py-1 rounded-full ${currentTheme.badgeBg} ${currentTheme.badgeBorder} ${currentTheme.badgeText} shadow-2xs flex items-center gap-1.5`}>
+                  <Briefcase className="w-3.5 h-3.5 shrink-0" />
+                  <span>{jobTitleText}</span>
+                  {organizationName && (
+                    <>
+                      <span className="opacity-40">&bull;</span>
+                      <span>{organizationName}</span>
+                    </>
+                  )}
                 </span>
+              </div>
+            )}
+
+            {/* Location / Address */}
+            {fullAddress && (
+              <div className="flex items-center justify-center gap-1.5 mt-1.5 text-xs font-semibold opacity-60">
+                <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                <span>{fullAddress}</span>
+              </div>
+            )}
+
+            {/* Bio Description */}
+            {profile.bio && (
+              <p className={`${bodySizeClass} opacity-75 mt-3 max-w-md leading-relaxed font-medium`}>
+                {profile.bio}
+              </p>
+            )}
+          </div>
+
+          {/* 2. PRIMARY CONTACT ACTION: SAVE DIRECT VCARD 3.0 TO PHONE */}
+          <div className="flex flex-col gap-2.5">
+            <button
+              onClick={handleDownloadVCard}
+              className={`w-full py-3.5 px-6 rounded-2xl ${currentTheme.accentBtn} ${currentTheme.accentBtnText} text-xs sm:text-sm font-black flex items-center justify-center gap-2.5 shadow-sm transition-transform active:scale-98 cursor-pointer`}
+              title="Download contact vCard directly into iPhone / Android phonebook"
+            >
+              <Download className="w-4 h-4 stroke-[2.5]" />
+              <span>Save Contact to Phone (vCard)</span>
+            </button>
+
+            {/* Quick Contact Action Pills: Call / Email / Website */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {phoneNumber && (
                 <a
                   href={`tel:${phoneNumber.replace(/[^0-9+]/g, '')}`}
-                  className="font-mono font-black text-charcoal hover:underline"
+                  className="py-2.5 px-3 rounded-2xl bg-white hover:bg-gray-50 text-charcoal border border-black/10 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                  title={`Call ${phoneNumber}`}
                 >
-                  {phoneNumber}
+                  <Phone className="w-3.5 h-3.5 text-[#34A853]" />
+                  <span className="truncate">Call</span>
                 </a>
-              </div>
-            )}
+              )}
 
-            {/* Email */}
-            {emailAddress && (
-              <div className="flex items-center justify-between pb-2 border-b border-black/5">
-                <span className="font-bold text-charcoal/60 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-charcoal/40" />
-                  <span>Work Email</span>
-                </span>
+              {emailAddress && (
                 <a
                   href={`mailto:${emailAddress}`}
-                  className="font-mono font-bold text-charcoal hover:underline truncate max-w-[200px]"
+                  className="py-2.5 px-3 rounded-2xl bg-white hover:bg-gray-50 text-charcoal border border-black/10 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                  title={`Email ${emailAddress}`}
                 >
-                  {emailAddress}
+                  <Mail className="w-3.5 h-3.5 text-[#4F83FF]" />
+                  <span className="truncate">Email</span>
                 </a>
-              </div>
-            )}
+              )}
 
-            {/* Organization / Work */}
-            {organizationName && (
-              <div className="flex items-center justify-between pb-2 border-b border-black/5">
-                <span className="font-bold text-charcoal/60 flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-charcoal/40" />
-                  <span>Organization</span>
-                </span>
-                <span className="font-black text-charcoal">
-                  {organizationName}
-                </span>
-              </div>
-            )}
-
-            {/* Address */}
-            {fullAddress && (
-              <div className="flex items-center justify-between pb-2 border-b border-black/5">
-                <span className="font-bold text-charcoal/60 flex items-center gap-1.5 shrink-0">
-                  <MapPin className="w-3.5 h-3.5 text-charcoal/40" />
-                  <span>Address</span>
-                </span>
-                <span className="font-bold text-charcoal text-right truncate max-w-[220px]">
-                  {fullAddress}
-                </span>
-              </div>
-            )}
-
-            {/* Website */}
-            {vcard.website && (
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-charcoal/60 flex items-center gap-1.5">
-                  <Globe className="w-3.5 h-3.5 text-charcoal/40" />
-                  <span>Website</span>
-                </span>
+              {vcard.website && (
                 <a
                   href={vcard.website.startsWith('http') ? vcard.website : `https://${vcard.website}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="font-mono font-bold text-[#4F83FF] hover:underline truncate max-w-[200px]"
+                  className="col-span-2 sm:col-span-1 py-2.5 px-3 rounded-2xl bg-white hover:bg-gray-50 text-charcoal border border-black/10 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                  title="Open Website"
                 >
-                  {vcard.website.replace(/^https?:\/\//, '')}
+                  <Globe className="w-3.5 h-3.5 text-purple-600" />
+                  <span className="truncate">Website</span>
                 </a>
-              </div>
+              )}
+            </div>
+          </div>
+
+          {/* 3. STRUCTURED CONTACT DETAILS CARD (Name, Number, Work, Address, Website) */}
+          <div className="rounded-3xl bg-black/[0.03] border border-black/5 p-4 sm:p-5 flex flex-col gap-3 text-left">
+            <p className="text-[10px] font-black uppercase tracking-wider opacity-50">
+              Contact & Business Details
+            </p>
+
+            <div className="space-y-2.5 text-xs">
+              {/* Phone */}
+              {phoneNumber && (
+                <div className="flex items-center justify-between pb-2 border-b border-black/5">
+                  <span className="font-bold opacity-60 flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 opacity-50" />
+                    <span>Phone Number</span>
+                  </span>
+                  <a
+                    href={`tel:${phoneNumber.replace(/[^0-9+]/g, '')}`}
+                    className="font-mono font-black text-charcoal hover:underline"
+                  >
+                    {phoneNumber}
+                  </a>
+                </div>
+              )}
+
+              {/* Email */}
+              {emailAddress && (
+                <div className="flex items-center justify-between pb-2 border-b border-black/5">
+                  <span className="font-bold opacity-60 flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 opacity-50" />
+                    <span>Work Email</span>
+                  </span>
+                  <a
+                    href={`mailto:${emailAddress}`}
+                    className="font-mono font-bold text-charcoal hover:underline truncate max-w-[200px]"
+                  >
+                    {emailAddress}
+                  </a>
+                </div>
+              )}
+
+              {/* Organization / Work */}
+              {organizationName && (
+                <div className="flex items-center justify-between pb-2 border-b border-black/5">
+                  <span className="font-bold opacity-60 flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 opacity-50" />
+                    <span>Organization</span>
+                  </span>
+                  <span className="font-black text-charcoal">
+                    {organizationName}
+                  </span>
+                </div>
+              )}
+
+              {/* Address */}
+              {fullAddress && (
+                <div className="flex items-center justify-between pb-2 border-b border-black/5">
+                  <span className="font-bold opacity-60 flex items-center gap-1.5 shrink-0">
+                    <MapPin className="w-3.5 h-3.5 opacity-50" />
+                    <span>Address</span>
+                  </span>
+                  <span className="font-bold text-charcoal text-right truncate max-w-[220px]">
+                    {fullAddress}
+                  </span>
+                </div>
+              )}
+
+              {/* Website */}
+              {vcard.website && (
+                <div className="flex items-center justify-between">
+                  <span className="font-bold opacity-60 flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 opacity-50" />
+                    <span>Website</span>
+                  </span>
+                  <a
+                    href={vcard.website.startsWith('http') ? vcard.website : `https://${vcard.website}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-mono font-bold text-[#4F83FF] hover:underline truncate max-w-[200px]"
+                  >
+                    {vcard.website.replace(/^https?:\/\//, '')}
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 4. SOCIAL MEDIA HANDLES (Instagram, Twitter / X, LinkedIn, GitHub, Email) */}
+          <div className="flex items-center justify-center gap-2 pt-1 pb-1 flex-wrap">
+            {profile.socialLinks?.instagram && (
+              <a
+                href={`https://instagram.com/${profile.socialLinks.instagram.replace('@', '')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-10 h-10 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
+                title="Instagram"
+              >
+                <InstagramIcon className="w-4 h-4" />
+              </a>
+            )}
+            {profile.socialLinks?.twitter && (
+              <a
+                href={`https://x.com/${profile.socialLinks.twitter.replace('@', '')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-10 h-10 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
+                title="X / Twitter"
+              >
+                <TwitterIcon className="w-4 h-4" />
+              </a>
+            )}
+            {profile.socialLinks?.github && (
+              <a
+                href={`https://github.com/${profile.socialLinks.github.replace('@', '')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-10 h-10 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
+                title="GitHub"
+              >
+                <GithubIcon className="w-4 h-4" />
+              </a>
+            )}
+            {profile.socialLinks?.linkedin && (
+              <a
+                href={profile.socialLinks.linkedin.startsWith('http') ? profile.socialLinks.linkedin : `https://${profile.socialLinks.linkedin}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-10 h-10 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
+                title="LinkedIn"
+              >
+                <LinkedinIcon className="w-4 h-4" />
+              </a>
+            )}
+            {profile.socialLinks?.email && (
+              <a
+                href={`mailto:${profile.socialLinks.email}`}
+                className="w-10 h-10 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
+                title="Direct Email"
+              >
+                <Mail className="w-4 h-4" />
+              </a>
             )}
           </div>
-        </div>
 
-        {/* 4. SOCIAL MEDIA HANDLES (Instagram, Twitter / X, LinkedIn, GitHub, Email) */}
-        <div className="flex items-center justify-center gap-2 pt-1 pb-1 flex-wrap">
-          {profile.socialLinks?.instagram && (
-            <a
-              href={`https://instagram.com/${profile.socialLinks.instagram.replace('@', '')}`}
-              target="_blank"
-              rel="noreferrer"
-              className="w-10 h-10 rounded-full bg-[#FAF7F2] hover:bg-[#FDF166] border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
-              title="Instagram"
-            >
-              <InstagramIcon className="w-4 h-4" />
-            </a>
-          )}
-          {profile.socialLinks?.twitter && (
-            <a
-              href={`https://x.com/${profile.socialLinks.twitter.replace('@', '')}`}
-              target="_blank"
-              rel="noreferrer"
-              className="w-10 h-10 rounded-full bg-[#FAF7F2] hover:bg-[#FDF166] border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
-              title="X / Twitter"
-            >
-              <TwitterIcon className="w-4 h-4" />
-            </a>
-          )}
-          {profile.socialLinks?.github && (
-            <a
-              href={`https://github.com/${profile.socialLinks.github.replace('@', '')}`}
-              target="_blank"
-              rel="noreferrer"
-              className="w-10 h-10 rounded-full bg-[#FAF7F2] hover:bg-[#FDF166] border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
-              title="GitHub"
-            >
-              <GithubIcon className="w-4 h-4" />
-            </a>
-          )}
-          {profile.socialLinks?.linkedin && (
-            <a
-              href={profile.socialLinks.linkedin.startsWith('http') ? profile.socialLinks.linkedin : `https://${profile.socialLinks.linkedin}`}
-              target="_blank"
-              rel="noreferrer"
-              className="w-10 h-10 rounded-full bg-[#FAF7F2] hover:bg-[#FDF166] border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
-              title="LinkedIn"
-            >
-              <LinkedinIcon className="w-4 h-4" />
-            </a>
-          )}
-          {profile.socialLinks?.email && (
-            <a
-              href={`mailto:${profile.socialLinks.email}`}
-              className="w-10 h-10 rounded-full bg-[#FAF7F2] hover:bg-[#FDF166] border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
-              title="Direct Email"
-            >
-              <Mail className="w-4 h-4" />
-            </a>
-          )}
-        </div>
+          {/* 5. USER'S CONTENT & ACTIVE LINKS STACK */}
+          <div className="flex flex-col gap-3 pt-2 text-left">
+            <p className="text-[10px] font-black uppercase tracking-wider opacity-50 px-1">
+              Featured Links & Portfolio
+            </p>
 
-        {/* 5. USER'S CONTENT & ACTIVE LINKS STACK */}
-        <div className="flex flex-col gap-3 pt-2 text-left">
-          <p className="text-[10px] font-black uppercase tracking-wider text-charcoal/50 px-1">
-            Featured Links & Portfolio
-          </p>
-
-          {activeLinks.length === 0 ? (
-            <div className="p-6 rounded-3xl bg-[#FAF7F2] border border-black/5 text-center text-charcoal/60 text-xs">
-              No active links published yet.
-            </div>
-          ) : (
-            activeLinks.map((link) => (
-              <div
-                key={link.id}
-                onClick={() => handleLinkClick(link)}
-                className={`w-full p-4 rounded-2xl border shadow-2xs transition-all cursor-pointer flex items-center justify-between group hover:shadow-xs active:scale-[0.99] ${getStyleClass(
-                  link.styleVariant || 'white'
-                )}`}
-              >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center shrink-0 shadow-2xs">
-                    {renderIcon(link.icon)}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs sm:text-sm font-black truncate leading-tight">
-                      {link.title}
-                    </p>
-                    {link.subtitle && (
-                      <p className="text-[11px] opacity-70 truncate font-semibold mt-0.5">
-                        {link.subtitle}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="w-7 h-7 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-[#141518] group-hover:text-white transition-all shrink-0 ml-2">
-                  <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
-                </div>
+            {activeLinks.length === 0 ? (
+              <div className="p-6 rounded-3xl bg-black/[0.03] border border-black/5 text-center opacity-60 text-xs">
+                No active links published yet.
               </div>
-            ))
-          )}
-        </div>
+            ) : (
+              activeLinks.map((link) => {
+                const cardClasses = resolveLinkCardClasses(
+                  profile.theme,
+                  link.styleVariant,
+                  profile.linkCardStyle
+                );
+                return (
+                  <div
+                    key={link.id}
+                    onClick={() => handleLinkClick(link)}
+                    className={`w-full p-4 transition-all cursor-pointer flex items-center justify-between group ${cardClasses}`}
+                  >
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-9 h-9 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center shrink-0 shadow-2xs">
+                        {renderIcon(link.icon)}
+                      </div>
+                      <div className="min-w-0">
+                        <p className={`text-xs sm:text-sm font-black truncate leading-tight ${fontFamilyClass}`}>
+                          {link.title}
+                        </p>
+                        {link.subtitle && (
+                          <p className="text-[11px] opacity-70 truncate font-semibold mt-0.5">
+                            {link.subtitle}
+                          </p>
+                        )}
+                      </div>
+                    </div>
 
-        {/* FOOTER: Minimal Powered by Tapping */}
-        <div className="pt-4 border-t border-black/5 text-center">
-          <a
-            href="/"
-            className="text-[10px] font-black text-charcoal/40 hover:text-charcoal uppercase tracking-widest inline-flex items-center gap-1.5 transition-colors"
-          >
-            <span>Powered by TAPPING</span>
-            <ExternalLink className="w-3 h-3" />
-          </a>
+                    <div className="w-7 h-7 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-[#141518] group-hover:text-white transition-all shrink-0 ml-2">
+                      <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* FOOTER: Minimal Powered by Tapping */}
+          <div className="pt-4 border-t border-black/5 text-center">
+            <a
+              href="/"
+              className="text-[10px] font-black opacity-40 hover:opacity-100 uppercase tracking-widest inline-flex items-center gap-1.5 transition-opacity"
+            >
+              <span>Powered by TAPPING</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
         </div>
       </main>
 

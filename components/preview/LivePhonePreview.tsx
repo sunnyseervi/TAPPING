@@ -4,9 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { Profile, VCardProfile, LinkBlock, NFCCardDesign } from '@/lib/types';
 import { 
   Download, 
-  ExternalLink, 
-  Check, 
-  CreditCard, 
   Globe, 
   Briefcase, 
   Layers, 
@@ -16,14 +13,15 @@ import {
   Mail,
   Phone,
   MapPin,
-  Building2,
   ArrowUpRight,
-  Wifi
+  Wifi,
+  CreditCard
 } from 'lucide-react';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 import { downloadVCardFile } from '@/lib/vcard';
 import { incrementLinkClick } from '@/lib/storage';
 import { useToast } from '@/components/ui/Toast';
+import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses } from '@/lib/themes';
 
 interface LivePreviewProps {
   profile: Profile;
@@ -51,6 +49,22 @@ export default function LivePhonePreview({
   }, []);
 
   const activeLinks = links.filter((l) => l.isActive);
+
+  // Active theme and styling tokens
+  const currentTheme = THEMES[profile.theme] || THEMES['pastel-bento'];
+  const fontFamilyClass = getFontFamilyClass(profile.fontFamily);
+  const patternClass = profile.showHeaderBackground ? getPatternClass(profile.headerBackground) : '';
+
+  // Font sizing calculations
+  const titleSizeClass = 
+    profile.fontSize === 'sm' ? 'text-sm' :
+    profile.fontSize === 'lg' ? 'text-lg' :
+    profile.fontSize === 'xl' ? 'text-xl' : 'text-base';
+
+  const bodySizeClass = 
+    profile.fontSize === 'sm' ? 'text-[9px]' :
+    profile.fontSize === 'lg' ? 'text-[11px]' :
+    profile.fontSize === 'xl' ? 'text-xs' : 'text-[10px]';
 
   const handleLinkClick = (link: LinkBlock) => {
     incrementLinkClick(link.id);
@@ -88,22 +102,6 @@ export default function LivePhonePreview({
     }
   };
 
-  const getStyleClasses = (variant: string) => {
-    switch (variant) {
-      case 'peach':
-        return 'bg-[#EFF4FF] hover:bg-[#E2ECFF] border-[#4F83FF]/20 text-charcoal';
-      case 'lavender':
-      case 'yellow':
-        return 'bg-[#FDF166] hover:bg-[#FBE849] border-black/10 text-charcoal';
-      case 'mint':
-        return 'bg-[#B6F554] hover:bg-[#A3ED33] border-black/10 text-charcoal';
-      case 'sky':
-        return 'bg-[#4F83FF] hover:bg-[#3B6DE6] border-black/10 text-white';
-      default:
-        return 'bg-white hover:bg-gray-50 border-black/10 text-charcoal';
-    }
-  };
-
   return (
     <div className="flex flex-col items-center">
       {/* Top Preview Controls Bar */}
@@ -125,9 +123,9 @@ export default function LivePhonePreview({
       {/* Realistic iPhone Mockup Frame */}
       <div className="w-[320px] sm:w-[340px] h-[670px] bg-[#141518] rounded-[48px] p-[10px] shadow-2xl border border-black/10 ring-1 ring-white/10 relative flex flex-col select-none">
         {/* Inner Phone Screen */}
-        <div className="w-full h-full bg-[#F7F5EE] rounded-[38px] overflow-hidden flex flex-col relative">
+        <div className={`w-full h-full rounded-[38px] overflow-hidden flex flex-col relative transition-colors duration-200 ${currentTheme.canvasBg}`}>
           {/* Authentic Dynamic Island & Status Bar */}
-          <div className="w-full pt-3 px-6 pb-2 flex items-center justify-between bg-[#F7F5EE]/95 backdrop-blur-xs z-20 shrink-0">
+          <div className="w-full pt-3 px-6 pb-2 flex items-center justify-between bg-black/5 backdrop-blur-xs z-20 shrink-0">
             <span className="text-[11px] font-black font-mono tracking-tight text-charcoal">9:41</span>
             
             {/* Dynamic Island */}
@@ -160,11 +158,16 @@ export default function LivePhonePreview({
             </div>
           )}
 
+          {/* Optional Expressive Header Pattern Banner */}
+          {profile.showHeaderBackground && patternClass && (
+            <div className={`w-full h-24 shrink-0 relative ${patternClass} border-b border-black/10`} />
+          )}
+
           {/* Scrollable Phone Bio Page Content */}
-          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-2 pb-6 flex flex-col items-center">
+          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-1 pb-6 flex flex-col items-center">
             {/* Circular Avatar with Clean Border */}
-            <div className="relative mt-2">
-              <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-white shadow-soft bg-[#FDF166]">
+            <div className={`relative ${profile.showHeaderBackground && patternClass ? '-mt-12' : 'mt-2'}`}>
+              <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-white shadow-soft bg-white">
                 <img
                   src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
                   alt={profile.displayName}
@@ -174,17 +177,20 @@ export default function LivePhonePreview({
             </div>
 
             {/* Display Name & Handle */}
-            <h1 className="text-base font-black text-charcoal mt-2.5 tracking-tight text-center">
+            <h1 
+              className={`${titleSizeClass} font-black mt-2.5 tracking-tight text-center ${fontFamilyClass}`}
+              style={profile.fontColor ? { color: profile.fontColor } : undefined}
+            >
               {profile.displayName}
             </h1>
 
-            <p className="text-[11px] font-bold text-charcoal/60 mt-0.5 font-mono">
+            <p className="text-[11px] font-bold opacity-60 mt-0.5 font-mono">
               @{profile.username}
             </p>
 
-            {/* Work & Organization */}
+            {/* Work & Organization Badge */}
             {(profile.badgeTitle || vcard.organization) && (
-              <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#FDF166] text-charcoal border border-black/10 shadow-2xs mt-1.5 flex items-center gap-1">
+              <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${currentTheme.badgeBg} ${currentTheme.badgeBorder} ${currentTheme.badgeText} shadow-2xs mt-1.5 flex items-center gap-1`}>
                 <span>{profile.badgeTitle || vcard.jobTitle}</span>
                 {vcard.organization && <span>&bull; {vcard.organization}</span>}
               </span>
@@ -192,14 +198,14 @@ export default function LivePhonePreview({
 
             {/* Address / Location */}
             {(vcard.city || vcard.country) && (
-              <div className="flex items-center gap-1 mt-1 text-[9px] font-bold text-charcoal/50">
+              <div className="flex items-center gap-1 mt-1 text-[9px] font-bold opacity-60">
                 <MapPin className="w-2.5 h-2.5 text-rose-500" />
                 <span>{[vcard.city, vcard.country].filter(Boolean).join(', ')}</span>
               </div>
             )}
 
             {profile.bio && (
-              <p className="text-[10px] text-charcoal/70 text-center mt-2 max-w-[250px] leading-relaxed font-medium">
+              <p className={`${bodySizeClass} opacity-75 text-center mt-2 max-w-[250px] leading-relaxed font-medium`}>
                 {profile.bio}
               </p>
             )}
@@ -210,9 +216,9 @@ export default function LivePhonePreview({
                 downloadVCardFile(vcard, `${profile.username}_contact.vcf`);
                 showToast('Contact Saved', 'Downloaded contact card to phonebook', 'success');
               }}
-              className="mt-3 w-full py-2 px-3 rounded-full bg-[#141518] hover:bg-black text-white text-[11px] font-black flex items-center justify-center gap-1.5 shadow-xs transition-transform active:scale-95 cursor-pointer"
+              className={`mt-3 w-full py-2 px-3 rounded-full ${currentTheme.accentBtn} ${currentTheme.accentBtnText} text-[11px] font-black flex items-center justify-center gap-1.5 shadow-xs transition-transform active:scale-95 cursor-pointer`}
             >
-              <Download className="w-3.5 h-3.5 text-[#FDF166] stroke-[2.5]" />
+              <Download className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Save Contact Card</span>
             </button>
 
@@ -299,28 +305,37 @@ export default function LivePhonePreview({
                   <p className="text-xs text-charcoal/60 font-bold">No blocks active</p>
                 </div>
               ) : (
-                activeLinks.map((link) => (
-                  <div
-                    key={link.id}
-                    onClick={() => handleLinkClick(link)}
-                    className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between shadow-2xs hover:shadow-xs hover:-translate-y-0.5 active:translate-y-0 ${getStyleClasses(
-                      link.styleVariant
-                    )}`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center shrink-0 shadow-2xs">
-                        {renderIcon(link.icon)}
+                activeLinks.map((link) => {
+                  const cardClasses = resolveLinkCardClasses(
+                    profile.theme,
+                    link.styleVariant,
+                    profile.linkCardStyle
+                  );
+                  return (
+                    <div
+                      key={link.id}
+                      onClick={() => handleLinkClick(link)}
+                      className={`p-3 transition-all cursor-pointer flex items-center justify-between ${cardClasses}`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center shrink-0 shadow-2xs">
+                          {renderIcon(link.icon)}
+                        </div>
+                        <div className="text-left min-w-0">
+                          <p className={`${bodySizeClass} font-black truncate leading-tight ${fontFamilyClass}`}>
+                            {link.title}
+                          </p>
+                          {link.subtitle && (
+                            <p className="text-[10px] opacity-75 truncate mt-0.5 font-medium">
+                              {link.subtitle}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-left min-w-0">
-                        <p className="text-xs font-black truncate leading-tight">{link.title}</p>
-                        {link.subtitle && (
-                          <p className="text-[10px] text-charcoal/70 truncate mt-0.5 font-medium">{link.subtitle}</p>
-                        )}
-                      </div>
+                      <ArrowUpRight className="w-4 h-4 opacity-75 shrink-0 ml-1 stroke-[2.2]" />
                     </div>
-                    <ArrowUpRight className="w-4 h-4 text-charcoal/70 shrink-0 ml-1 stroke-[2.2]" />
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 
