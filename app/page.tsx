@@ -19,14 +19,14 @@ import {
   Briefcase, 
   Globe, 
   Wifi, 
-  Building2,
-  ExternalLink,
-  Repeat,
-  ShoppingBag,
-  BarChart3,
-  ImageUp,
   SlidersHorizontal,
-  Palette
+  Palette,
+  ShoppingBag,
+  Sparkles,
+  TrendingUp,
+  ShieldCheck,
+  Zap,
+  Eye
 } from 'lucide-react';
 import { saveStoredProfile, getStoredProfile } from '@/lib/storage';
 import { downloadVCardFile } from '@/lib/vcard';
@@ -38,7 +38,7 @@ import TappingLogo from '@/components/brand/TappingLogo';
 export default function LandingPage() {
   const router = useRouter();
   const { showToast } = useToast();
-  const [handle, setHandle] = useState('aarav');
+  const [handle, setHandle] = useState('');
   const [displayHost, setDisplayHost] = useState('tapping.bio');
 
   // Metal NFC Hardware Studio State in Hero
@@ -48,6 +48,9 @@ export default function LandingPage() {
   const [copied, setCopied] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [isSignedIn, setIsSignedIn] = useState(false);
+
+  // Active showcase creator tab
+  const [activeCreatorIndex, setActiveCreatorIndex] = useState(0);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -61,11 +64,11 @@ export default function LandingPage() {
 
   const handleClaim = (e: React.FormEvent) => {
     e.preventDefault();
-    const clean = handle.toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'creator';
+    const clean = handle.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'creator';
     const profile = getStoredProfile();
     profile.username = clean;
     saveStoredProfile(profile);
-    showToast('Space Claimed!', `Welcome @${clean}! Set up your bio and metal card.`, 'success');
+    showToast('Handle Claimed', `Welcome @${clean}! Set up your bio and metal card.`, 'success');
     router.push('/dashboard?tab=profile');
   };
 
@@ -76,7 +79,7 @@ export default function LandingPage() {
   };
 
   const handleCopyLink = () => {
-    const liveUrl = typeof window !== 'undefined' ? `${window.location.origin}/${handle}` : `https://${displayHost}/${handle}`;
+    const liveUrl = typeof window !== 'undefined' ? `${window.location.origin}/${handle || 'aarav'}` : `https://${displayHost}/${handle || 'aarav'}`;
     if (typeof window !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(liveUrl);
       setCopied(true);
@@ -98,7 +101,7 @@ export default function LandingPage() {
         mobilePhone: '+91 98765 43210',
         workEmail: 'aarav@tapping.bio',
         streetAddress: 'Indiranagar 100ft Road',
-        website: typeof window !== 'undefined' ? `${window.location.origin}/${handle}` : `https://${displayHost}/${handle}`,
+        website: typeof window !== 'undefined' ? `${window.location.origin}/aarav` : `https://${displayHost}/aarav`,
         city: 'Bengaluru, Karnataka',
         country: 'India',
         note: 'Saved via Tapping Contact & NFC Platform'
@@ -140,19 +143,67 @@ export default function LandingPage() {
     { id: 'titanium_silver', name: 'Titanium Steel', colorDot: 'bg-[#CCD2DA]' },
   ];
 
-  const marqueeCards = [
-    { title: 'Interactive Link Blocks', tag: 'Socials, Spotify, YouTube & Portfolios', badge: 'Smart Blocks', color: 'bg-[#B6F554] text-[#141518] border border-black/10', accent: 'text-[#141518]' },
-    { title: 'Slidable Product Slider', tag: 'Curate Merch, Art & Direct Links', badge: 'Product Slider', color: 'bg-[#EFF4FF] text-charcoal border border-[#4F83FF]/20', accent: 'text-[#4F83FF]' },
-    { title: 'Matte Stealth Black NFC', tag: 'Laser Engraved Stainless Steel', badge: '13.56MHz', color: 'bg-[#141518] text-white', accent: 'text-[#FDF166]' },
-    { title: 'Direct Contact Card Export', tag: 'Zero App Installation Required', badge: 'Apple & Android', color: 'bg-[#FAF7F2] text-charcoal border border-black/10', accent: 'text-charcoal' },
-    { title: 'Permanent Dynamic QR Code', tag: 'Vector Crisp Print Quality', badge: 'Dynamic URL', color: 'bg-[#FDF166] text-charcoal border border-black/10', accent: 'text-charcoal' },
-    { title: '24K Brushed Gold Hardware', tag: 'Weighted Solid Metallic Core', badge: 'NTAG216 Chip', color: 'bg-[#FAF7F2] text-charcoal border border-black/10', accent: 'text-amber-600' },
-    { title: 'Custom Theme Wallpapers', tag: 'Upload, Zoom & Pan Framing Controls', badge: 'Theme Studio', color: 'bg-[#FFE5D6] text-charcoal border border-black/10', accent: 'text-[#C04E20]' },
-    { title: 'Physical Metal NFC Studio', tag: 'Laser-Etched Custom Name & UID', badge: 'Hardware Studio', color: 'bg-[#4F83FF] text-white', accent: 'text-[#FDF166]' },
+  const showcaseCreators = [
+    {
+      name: 'Aarav Sharma',
+      handle: 'aarav',
+      role: 'Founder & Hardware Architect',
+      location: 'Bengaluru, India',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+      bio: 'Building contactless NFC hardware and digital identity infrastructure in Bengaluru.',
+      badge: 'Hardware & Tech',
+      links: [
+        { title: 'Tapping Smart Metal NFC Card', sub: 'Laser-etched 13.56MHz chip', clicks: '4,820' },
+        { title: 'Book 1:1 Product Advisory Call', sub: '30-min strategy session', clicks: '1,940' },
+        { title: 'Bengaluru Founders Meetup RSVP', sub: 'Quarterly hardware summit', clicks: '850' },
+      ],
+      products: [
+        { name: 'Matte Stealth Black NFC', price: '₹1,499', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300' },
+        { name: '24K Brushed Gold Card', price: '₹1,999', img: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=300' },
+      ]
+    },
+    {
+      name: 'Mira Kapoor',
+      handle: 'mirakapoor',
+      role: 'Ceramicist & Spatial Designer',
+      location: 'Mumbai, India',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
+      bio: 'Functional daily ceramic objects and sculptural pottery handcrafted in Bandra studio.',
+      badge: 'Art & Design',
+      links: [
+        { title: 'Studio Exhibition RSVP • Mumbai 2026', sub: 'Gallery preview & catalog', clicks: '3,210' },
+        { title: 'Weekend Pottery Masterclass', sub: 'Small batch hands-on session', clicks: '2,400' },
+        { title: 'Architectural Custom Commissions', sub: 'Inquire for residential spaces', clicks: '980' },
+      ],
+      products: [
+        { name: 'Sculpted Ceramic Mug', price: '₹1,299', img: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=300' },
+        { name: 'Terracotta Vase No. 4', price: '₹2,499', img: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=300' },
+      ]
+    },
+    {
+      name: 'Devansh Verma',
+      handle: 'devansh',
+      role: 'Music Producer & Sound Engineer',
+      location: 'New Delhi, India',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
+      bio: 'Independent electronic producer and film composer. Streaming on Spotify and Apple Music.',
+      badge: 'Audio & Music',
+      links: [
+        { title: 'Listen to Debut EP "Monsoon Nocturne"', sub: 'Stream on Spotify & Apple Music', clicks: '6,180' },
+        { title: 'Tour Tickets & Live Concert Dates', sub: 'Delhi, Pune & Bengaluru', clicks: '3,840' },
+        { title: 'Sample Pack Vol. 2 for Producers', sub: 'Royalty-free analog synths', clicks: '1,250' },
+      ],
+      products: [
+        { name: 'Analog Drum Kit WAV', price: '₹799', img: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300' },
+        { name: 'Limited Cassette Tape', price: '₹999', img: 'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=300' },
+      ]
+    }
   ];
 
+  const currentCreator = showcaseCreators[activeCreatorIndex];
+
   return (
-    <div className="min-h-screen bg-[#F7F5EE] text-charcoal selection:bg-[#FDF166] selection:text-charcoal relative overflow-x-hidden font-sans">
+    <div className="min-h-screen bg-[#FAF7F2] text-[#141518] selection:bg-[#FDF166] selection:text-charcoal relative overflow-x-hidden font-sans">
       
       {/* TOP NAVIGATION */}
       <nav className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between relative z-20">
@@ -161,10 +212,10 @@ export default function LandingPage() {
         </Link>
 
         <div className="hidden lg:flex items-center gap-6 text-xs font-bold text-charcoal/70">
-          <a href="#showcase" className="hover:text-black transition-colors">Link-in-Bio</a>
+          <a href="#showcase" className="hover:text-black transition-colors">Creators</a>
           <a href="#hardware" className="hover:text-black transition-colors">Metal NFC</a>
           <a href="#features" className="hover:text-black transition-colors">Features</a>
-          <a href="#pricing" className="hover:text-black transition-colors">Pricing (&#8377;299)</a>
+          <a href="#pricing" className="hover:text-black transition-colors">Pricing (₹299)</a>
           <Link href="/aarav" className="hover:text-black transition-colors">Sample Bio Link</Link>
         </div>
 
@@ -172,7 +223,7 @@ export default function LandingPage() {
           {isSignedIn ? (
             <Link
               href="/dashboard"
-              className="px-5 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
+              className="px-5 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
             >
               <span>Dashboard</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -188,7 +239,7 @@ export default function LandingPage() {
 
               <Link
                 href="/dashboard"
-                className="px-5 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
+                className="px-5 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
               >
                 <span>Get Started</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -198,79 +249,78 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* HERO HEADER */}
-      <section className="max-w-7xl mx-auto px-6 pt-6 pb-12 flex flex-col items-center text-center relative z-10">
-        <div className="w-full flex items-center justify-between text-xs font-bold text-charcoal/60 max-w-4xl mb-4 px-2">
-          <span>Everything You Are &bull; In One Simple Link</span>
-          <span className="hidden sm:inline-block max-w-xs text-right">
-            Connect socials, showcase slidable products, and bridge the physical world with metal NFC
-          </span>
+      {/* HERO SECTION (LINKTREE INSPIRED WITH APPLE-GRADE TYPOGRAPHY) */}
+      <section className="max-w-7xl mx-auto px-6 pt-10 pb-16 flex flex-col items-center text-center relative z-10">
+        
+        {/* Top Accent Pill */}
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-black/10 shadow-2xs text-[11px] font-black uppercase tracking-wider text-charcoal/80 mb-6">
+          <span className="w-2 h-2 rounded-full bg-[#141518]" />
+          <span>The Next-Generation Link-in-Bio for India</span>
         </div>
 
-        <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-charcoal leading-[1.05] max-w-4xl">
-          Everything You Are. <br />
-          <span className="text-charcoal/35">In One Simple Link.</span>
+        {/* Main Headline */}
+        <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-[-0.04em] text-[#141518] leading-[1.02] max-w-5xl">
+          Everything you are. <br />
+          <span className="text-[#141518]/30">In one simple link in bio.</span>
         </h1>
 
-        <p className="text-sm sm:text-base text-charcoal/70 max-w-xl mt-4 leading-relaxed font-medium">
-          Connect your audience to everything you create. Share your social channels, slidable product collections, custom theme wallpapers, and tap to exchange contacts with laser-engraved metal NFC cards.
+        {/* Value Subtitle */}
+        <p className="text-sm sm:text-base md:text-lg text-[#141518]/70 max-w-2xl mt-5 leading-relaxed font-medium">
+          Join creators, founders, artists, and professionals sharing everything they create, curate, and sell online and in person with custom themes, product sliders, and smart metal NFC cards.
         </p>
 
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-[11px] font-black">
-          <span className="rounded-full border border-black/10 bg-[#FDF166] px-3 py-1.5">Link-in-bio</span>
-          <span className="rounded-full border border-black/10 bg-[#B6F554] px-3 py-1.5">Product slider</span>
-          <span className="rounded-full border border-black/10 bg-[#EFF4FF] text-[#4F83FF] px-3 py-1.5">Digital vCard</span>
-          <span className="rounded-full border border-black/10 bg-white px-3 py-1.5">Metal NFC &amp; QR</span>
-        </div>
-
-        {/* Claim Handle Bar */}
+        {/* Interactive Handle Claim Input Bar */}
         <form
           onSubmit={handleClaim}
-          className="mt-6 flex flex-col sm:flex-row items-center gap-2 p-2 bg-white rounded-3xl shadow-card border border-black/10 max-w-md w-full"
+          className="mt-8 flex flex-col sm:flex-row items-center gap-2.5 p-2 bg-white rounded-3xl sm:rounded-full shadow-card border border-black/10 max-w-xl w-full"
         >
-          <div className="flex items-center pl-4 flex-1 w-full text-xs font-mono font-bold text-charcoal">
-            <span className="text-charcoal/40 font-bold">{displayHost}/</span>
+          <div className="flex items-center pl-4 sm:pl-6 flex-1 w-full text-sm font-mono font-bold text-charcoal min-h-[46px]">
+            <span className="text-charcoal/40 font-bold select-none">{displayHost}/</span>
             <input
               type="text"
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
-              placeholder="username"
-              className="bg-transparent focus:outline-none w-full text-xs font-black text-charcoal"
+              placeholder="yourname"
+              className="bg-transparent focus:outline-none w-full text-sm font-black text-charcoal placeholder:text-charcoal/30 ml-0.5"
             />
           </div>
           <button
             type="submit"
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
+            className="w-full sm:w-auto px-7 py-3.5 rounded-2xl sm:rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer shrink-0"
           >
-            <span>Claim Space</span>
+            <span>Claim your Tapping</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </form>
+
+        <p className="text-[11px] font-bold text-charcoal/45 mt-3">
+          Free to claim • No credit card required • Instant live link
+        </p>
       </section>
 
-      {/* HERO HARDWARE & LIVE PHONE SHOWCASE: TILTED IPHONE + PHYSICAL METAL NFC CARD */}
+      {/* HARDWARE & LIVE BIO DEMO: TILTED PHONE + LASER-ENGRAVED METAL NFC CARD */}
       <section className="max-w-7xl mx-auto px-6 pb-20 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center justify-center">
           
-          {/* LEFT COLUMN (lg:col-span-6): REALISTIC TILTED IPHONE SHOWCASING REAL CREATOR LINK & DETAILS */}
+          {/* LEFT: TILTED IPHONE SHOWCASING REAL CREATOR LINK & DETAILS */}
           <div className="lg:col-span-6 flex flex-col items-center">
             
             {/* Top Indicator */}
             <div className="flex items-center gap-2 mb-3">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-black text-charcoal tracking-tight">
-                Live Bio Profile Preview &bull; @{handle}
+                Live Bio Profile Preview • @{handle || 'aarav'}
               </span>
             </div>
 
             {/* THE TILTED IPHONE CHASSIS */}
             <div className="relative group perspective-1000">
               
-              {/* iPhone Mockup Frame: Smoothly Tilted at -rotate-3 */}
-              <div className="w-[330px] sm:w-[350px] bg-[#141518] rounded-[50px] p-[10px] shadow-2xl border-[3px] border-[#2A2B30] transform -rotate-2 sm:-rotate-3 group-hover:rotate-0 transition-transform duration-500 ease-out select-none relative">
+              {/* iPhone Mockup Frame: Smoothly Tilted at -rotate-2 */}
+              <div className="w-[330px] sm:w-[350px] bg-[#141518] rounded-[50px] p-[10px] shadow-2xl border-[3px] border-[#2A2B30] transform -rotate-1 sm:-rotate-2 group-hover:rotate-0 transition-transform duration-500 ease-out select-none relative">
                 
                 {/* Dynamic Island Notch */}
-                <div className="w-full pt-3 px-6 pb-2 flex items-center justify-between bg-[#F7F5EE] rounded-t-[40px] z-20">
+                <div className="w-full pt-3 px-6 pb-2 flex items-center justify-between bg-[#FAF7F2] rounded-t-[40px] z-20">
                   <span className="text-[11px] font-black font-mono tracking-tight text-charcoal">9:41</span>
                   <div className="w-24 h-5 bg-black rounded-full flex items-center justify-between px-2.5 shadow-sm">
                     <div className="w-1.5 h-1.5 rounded-full bg-blue-900/60" />
@@ -285,8 +335,8 @@ export default function LandingPage() {
                 {/* Simulated NFC Tap Banner when triggered */}
                 {nfcTapped && (
                   <div className="absolute top-12 left-4 right-4 z-30 bg-[#141518] text-white p-3 rounded-2xl shadow-float flex items-center gap-2.5 border border-white/20 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="w-8 h-8 rounded-xl bg-[#FDF166] flex items-center justify-center shrink-0">
-                      <CreditCard className="w-4 h-4 text-charcoal stroke-[2.5]" />
+                    <div className="w-8 h-8 rounded-xl bg-white text-charcoal flex items-center justify-center shrink-0">
+                      <CreditCard className="w-4 h-4 stroke-[2.5]" />
                     </div>
                     <div className="flex-1 min-w-0 text-left">
                       <p className="text-xs font-black text-white">NFC Smart Card Tapped</p>
@@ -296,11 +346,11 @@ export default function LandingPage() {
                 )}
 
                 {/* SCROLLABLE INNER PHONE SCREEN SHOWING REAL GENERATED CONTENT */}
-                <div className="w-full bg-[#F7F5EE] rounded-b-[40px] overflow-y-auto max-h-[580px] no-scrollbar px-4 pt-1 pb-6 flex flex-col items-center text-center">
+                <div className="w-full bg-[#FAF7F2] rounded-b-[40px] overflow-y-auto max-h-[580px] no-scrollbar px-4 pt-1 pb-6 flex flex-col items-center text-center">
                   
-                  {/* Avatar */}
+                  {/* Squircle Avatar with Clean Thin Border */}
                   <div className="relative mt-2">
-                    <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-white shadow-soft bg-[#FDF166]">
+                    <div className="w-20 h-20 rounded-[24px] overflow-hidden ring-1.5 ring-white/80 border border-black/10 shadow-sm bg-white flex items-center justify-center">
                       <img
                         src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400"
                         alt="Aarav Sharma"
@@ -314,31 +364,31 @@ export default function LandingPage() {
                     Aarav Sharma
                   </h2>
                   <p className="text-[11px] font-bold text-charcoal/60 mt-0.5 font-mono">
-                    @{handle}
+                    @{handle || 'aarav'}
                   </p>
 
                   {/* Work & Location */}
-                  <div className="inline-flex items-center gap-1 mt-1 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#FDF166] text-charcoal border border-black/10 shadow-2xs">
-                    <Briefcase className="w-3 h-3 text-[#4F83FF]" />
-                    <span>Founder &amp; Architect &bull; Tapping Technologies India</span>
+                  <div className="inline-flex items-center gap-1 mt-1 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-white text-charcoal border border-black/10 shadow-2xs">
+                    <Briefcase className="w-3 h-3 text-[#141518]" />
+                    <span>Founder & Architect • Tapping Technologies India</span>
                   </div>
 
                   <div className="flex items-center gap-1 mt-1 text-[9px] font-semibold text-charcoal/50">
                     <MapPin className="w-3 h-3 text-rose-500" />
-                    <span>Indiranagar 100ft Road, Bengaluru, Karnataka, India</span>
+                    <span>Bengaluru, Karnataka, India</span>
                   </div>
 
                   {/* Bio */}
                   <p className="text-[10px] text-charcoal/70 mt-2 max-w-[250px] leading-relaxed font-medium">
-                    Founder &amp; Product Architect. Designing smart contactless NFC hardware, digital cards &amp; bio spaces in India.
+                    Founder & Product Architect. Designing smart contactless NFC hardware, digital cards & bio spaces in India.
                   </p>
 
                   {/* CTA: Save Contact Card */}
                   <button
                     onClick={handleDownloadVCard}
-                    className="mt-3 w-full py-2.5 px-4 rounded-full bg-[#141518] hover:bg-black text-white text-[11px] font-black flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95 cursor-pointer"
+                    className="mt-3 w-full py-2.5 px-4 rounded-2xl bg-[#141518] hover:bg-black text-white text-[11px] font-black flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95 cursor-pointer"
                   >
-                    <Download className="w-3.5 h-3.5 text-[#FDF166]" />
+                    <Download className="w-3.5 h-3.5" />
                     <span>Save Contact to Phone (.vcf)</span>
                   </button>
 
@@ -360,110 +410,78 @@ export default function LandingPage() {
                     </a>
                   </div>
 
-                  {/* Structured Contact Box */}
-                  <div className="w-full p-2.5 rounded-2xl bg-white border border-black/5 text-left text-[10px] space-y-1 shadow-2xs mt-2.5">
-                    <div className="flex justify-between">
-                      <span className="font-bold text-charcoal/50">Organization:</span>
-                      <span className="font-black text-charcoal">Tapping Technologies India</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-bold text-charcoal/50">Address:</span>
-                      <span className="font-bold text-charcoal">Bengaluru, Karnataka, India</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-bold text-charcoal/50">Bio Link:</span>
-                      <span className="font-mono font-bold text-[#4F83FF]">{displayHost}/{handle}</span>
-                    </div>
-                  </div>
-
                   {/* Social Icons Strip */}
                   <div className="w-full py-2.5 flex items-center justify-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-white border border-black/10 flex items-center justify-center text-charcoal shadow-2xs">
-                      <InstagramIcon className="w-3.5 h-3.5" />
+                    <div className="w-8 h-8 rounded-full bg-white border border-black/10 flex items-center justify-center shadow-2xs">
+                      <InstagramIcon className="w-3.5 h-3.5 text-charcoal" />
                     </div>
-                    <div className="w-7 h-7 rounded-full bg-white border border-black/10 flex items-center justify-center text-charcoal shadow-2xs">
-                      <TwitterIcon className="w-3.5 h-3.5" />
+                    <div className="w-8 h-8 rounded-full bg-white border border-black/10 flex items-center justify-center shadow-2xs">
+                      <TwitterIcon className="w-3.5 h-3.5 text-charcoal" />
                     </div>
-                    <div className="w-7 h-7 rounded-full bg-white border border-black/10 flex items-center justify-center text-charcoal shadow-2xs">
-                      <LinkedinIcon className="w-3.5 h-3.5" />
+                    <div className="w-8 h-8 rounded-full bg-white border border-black/10 flex items-center justify-center shadow-2xs">
+                      <LinkedinIcon className="w-3.5 h-3.5 text-charcoal" />
                     </div>
-                    <div className="w-7 h-7 rounded-full bg-white border border-black/10 flex items-center justify-center text-charcoal shadow-2xs">
-                      <GithubIcon className="w-3.5 h-3.5" />
+                    <div className="w-8 h-8 rounded-full bg-white border border-black/10 flex items-center justify-center shadow-2xs">
+                      <GithubIcon className="w-3.5 h-3.5 text-charcoal" />
                     </div>
                   </div>
 
-                  {/* Active Link Blocks Stack */}
-                  <div className="w-full flex flex-col gap-2 mt-1">
+                  {/* Real Link Blocks */}
+                  <div className="w-full space-y-2 mt-1">
                     <a
                       href="https://github.com"
                       target="_blank"
                       rel="noreferrer"
-                      className="p-2.5 rounded-2xl bg-[#EFF4FF] hover:bg-[#E2ECFF] border border-[#4F83FF]/20 text-charcoal flex items-center justify-between text-left shadow-2xs transition-all hover:scale-[1.02] active:scale-98 cursor-pointer"
+                      className="p-2.5 rounded-2xl bg-white hover:bg-gray-50 border border-black/10 text-charcoal flex items-center justify-between text-left shadow-2xs transition-all hover:scale-[1.01] active:scale-98 cursor-pointer"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shrink-0">
-                          <Briefcase className="w-3.5 h-3.5 text-[#4F83FF]" />
+                        <div className="w-7 h-7 rounded-xl bg-[#FAF7F2] flex items-center justify-center shrink-0 border border-black/5">
+                          <Briefcase className="w-3.5 h-3.5 text-charcoal" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[10px] font-black truncate">Design Portfolio &amp; Works</p>
-                          <p className="text-[8px] text-charcoal/60 truncate">Case studies &amp; systems</p>
+                          <p className="text-[10px] font-black truncate">Design Portfolio & Works</p>
+                          <p className="text-[8px] text-charcoal/60 truncate">Case studies & systems</p>
                         </div>
                       </div>
                       <ArrowUpRight className="w-3 h-3 text-charcoal/50 shrink-0" />
                     </a>
 
                     <a
-                      href={`mailto:contact@aaravsharma.in?subject=Product%20Advisory%20Call`}
-                      className="p-2.5 rounded-2xl bg-[#FDF166] hover:bg-[#FBE849] border border-black/10 text-charcoal flex items-center justify-between text-left shadow-2xs transition-all hover:scale-[1.02] active:scale-98 cursor-pointer"
+                      href="mailto:aarav@tapping.bio"
+                      className="p-2.5 rounded-2xl bg-white hover:bg-gray-50 border border-black/10 text-charcoal flex items-center justify-between text-left shadow-2xs transition-all hover:scale-[1.01] active:scale-98 cursor-pointer"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shrink-0">
+                        <div className="w-7 h-7 rounded-xl bg-[#FAF7F2] flex items-center justify-center shrink-0 border border-black/5">
                           <Phone className="w-3.5 h-3.5 text-charcoal" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[10px] font-black truncate">Book 1:1 Product Strategy</p>
+                          <p className="text-[10px] font-black truncate">Book 1:1 Product Advisory Call</p>
                           <p className="text-[8px] text-charcoal/60 truncate">30 min advisory call</p>
                         </div>
                       </div>
                       <ArrowUpRight className="w-3 h-3 text-charcoal/50 shrink-0" />
                     </a>
-
-                    <Link
-                      href="/aarav"
-                      className="p-2.5 rounded-2xl bg-[#B6F554] hover:bg-[#A6EC3C] border border-black/10 text-charcoal flex items-center justify-between text-left shadow-2xs transition-all hover:scale-[1.02] active:scale-98 cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shrink-0">
-                          <Layers className="w-3.5 h-3.5 text-charcoal" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[10px] font-black truncate">Core Engineering Stack</p>
-                          <p className="text-[8px] text-charcoal/60 truncate">Live Profile Preview &rarr;</p>
-                        </div>
-                      </div>
-                      <ArrowUpRight className="w-3 h-3 text-charcoal/50 shrink-0" />
-                    </Link>
                   </div>
 
                   <p className="text-[9px] font-black uppercase tracking-widest text-charcoal/40 mt-4">
-                    Powered by TAPPING
+                    Tapping • Made for India
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* RIGHT COLUMN (lg:col-span-6): PHYSICAL METAL NFC HARDWARE STUDIO */}
+          {/* RIGHT: PHYSICAL METAL NFC HARDWARE STUDIO */}
           <div id="hardware" className="lg:col-span-6 flex flex-col items-center lg:items-start text-center lg:text-left gap-5">
             <div>
-              <span className="text-[10px] font-black px-3 py-1 rounded-full bg-[#B6F554] text-charcoal border border-black/10 uppercase tracking-wider">
+              <span className="text-[10px] font-black px-3 py-1 rounded-full bg-white text-charcoal border border-black/10 uppercase tracking-wider shadow-2xs">
                 Laser-Engraved Smart Hardware
               </span>
-              <h2 className="text-3xl sm:text-4xl font-black text-charcoal mt-2 tracking-tight">
+              <h2 className="text-3xl sm:text-5xl font-black text-[#141518] mt-3 tracking-tight">
                 Physical Metal NFC Cards
               </h2>
-              <p className="text-xs sm:text-sm text-charcoal/70 mt-1 max-w-md font-medium">
-                Tap against any smartphone to transmit your complete bio profile and contact card instantly. Built with encrypted 13.56MHz NTAG216 contactless microchips.
+              <p className="text-xs sm:text-sm text-charcoal/70 mt-2 max-w-md font-medium leading-relaxed">
+                Tap against any smartphone to transmit your complete bio profile and contact card instantly. Built with encrypted 13.56MHz NTAG216 contactless microchips and aerospace-grade steel.
               </p>
             </div>
 
@@ -495,14 +513,14 @@ export default function LandingPage() {
 
                   <div>
                     <p className="font-mono text-[9px] tracking-widest uppercase opacity-70">
-                      FOUNDER &amp; ARCHITECT
+                      FOUNDER & ARCHITECT
                     </p>
                     <h3 className="font-mono font-bold text-xl tracking-widest mt-1 uppercase">
                       AARAV SHARMA
                     </h3>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-[9px] font-mono tracking-wider opacity-80">
-                        NFC SMART TAP HARDWARE &bull; TAP-IN-9482
+                        NFC SMART TAP HARDWARE • TAP-IN-9482
                       </span>
                     </div>
                   </div>
@@ -516,420 +534,278 @@ export default function LandingPage() {
                         TAP ANY PHONE TO CONNECT
                       </span>
                       <p className="font-mono text-xs mt-1 opacity-90 font-bold">
-                        {displayHost}/{handle}
+                        {displayHost}/{handle || 'aarav'}
                       </p>
                     </div>
-                    <div className="text-[10px] font-mono opacity-60">
-                      UID: 04:A2:8F:9B:41:22
-                      <br />
-                      Encrypted NTAG216 Chip
-                    </div>
+                    <p className="text-[9px] font-mono opacity-60">
+                      ISO 14443A • Water Resistant • Lifetime NFC Core
+                    </p>
                   </div>
-
-                  <div className="w-20 h-20 bg-white p-1.5 rounded-2xl flex items-center justify-center shadow-md">
-                    <QrCode className="w-full h-full text-black" />
+                  <div className="w-16 h-16 rounded-xl bg-white p-1.5 shadow-xs flex items-center justify-center">
+                    <QrCode className="w-full h-full text-charcoal" />
                   </div>
                 </div>
               </div>
             </div>
 
-            <p className="text-[11px] text-charcoal/50 font-bold">
-              Click card to flip front & back &bull; Laser-engraved precision steel
-            </p>
+            {/* Material Selector & NFC Simulator Controls */}
+            <div className="w-full max-w-[380px] flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-charcoal">Finish:</span>
+                <span className="text-xs font-mono font-bold text-charcoal/60">
+                  {getMaterialName(selectedMaterial)}
+                </span>
+              </div>
 
-            {/* MATERIAL FINISH SWITCHER BUTTONS */}
-            <div className="flex flex-wrap items-center gap-2">
-              {materials.map((m) => (
+              <div className="grid grid-cols-4 gap-2">
+                {materials.map((mat) => (
+                  <button
+                    key={mat.id}
+                    onClick={() => setSelectedMaterial(mat.id)}
+                    className={`py-2 px-2.5 rounded-2xl border text-[11px] font-bold flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                      selectedMaterial === mat.id
+                        ? 'bg-white border-black shadow-xs ring-1 ring-black'
+                        : 'bg-white/60 border-black/10 hover:bg-white text-charcoal/70'
+                    }`}
+                  >
+                    <div className={`w-3.5 h-3.5 rounded-full ${mat.colorDot} border border-black/10`} />
+                    <span className="truncate text-[10px]">{mat.name}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 mt-1">
                 <button
-                  key={m.id}
-                  onClick={() => setSelectedMaterial(m.id)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer ${
-                    selectedMaterial === m.id
-                      ? 'bg-[#141518] text-white shadow-xs'
-                      : 'bg-white hover:bg-gray-50 text-charcoal border border-black/10'
-                  }`}
+                  type="button"
+                  onClick={handleSimulateNFCTap}
+                  className="py-3 px-4 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95 cursor-pointer"
                 >
-                  <span className={`w-3 h-3 rounded-full ${m.colorDot} border border-black/20`} />
-                  <span>{m.name}</span>
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Simulate Tap</span>
                 </button>
-              ))}
-            </div>
 
-            {/* ACTION ROW: SIMULATE NFC TAP & GO TO ORDER */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button
-                onClick={handleSimulateNFCTap}
-                className="px-5 py-3 rounded-2xl bg-[#FDF166] hover:bg-[#FBE849] text-charcoal text-xs font-black border border-black/10 flex items-center gap-2 shadow-xs transition-transform active:scale-95 cursor-pointer"
-              >
-                <CreditCard className="w-4 h-4 text-charcoal" />
-                <span>Simulate NFC Hardware Tap</span>
-              </button>
-
-              <Link
-                href="/dashboard?tab=nfc-shop"
-                className="px-5 py-3 rounded-2xl bg-[#B6F554] hover:bg-[#a6e644] text-charcoal text-xs font-black border border-black/10 flex items-center gap-2 shadow-xs transition-transform active:scale-95"
-              >
-                <ShoppingBag className="w-4 h-4 text-charcoal" />
-                <span>Order NFC Tags &amp; Hardware</span>
-              </Link>
-
-              <Link
-                href="/dashboard?tab=nfc"
-                className="px-5 py-3 rounded-2xl bg-white hover:bg-black/5 text-charcoal text-xs font-black border border-black/10 flex items-center gap-2 shadow-xs transition-colors"
-              >
-                <span>Customize Metal Card</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+                <Link
+                  href="/dashboard?tab=nfc"
+                  className="py-3 px-4 rounded-2xl bg-white hover:bg-gray-50 border border-black/10 text-charcoal text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                >
+                  <span>Order Metal Card</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* LINK-IN-BIO & PRODUCT SHOWCASE (LINKTREE INSPIRED) */}
-      <section id="showcase" className="max-w-7xl mx-auto px-6 pb-20">
-        <div className="relative overflow-hidden rounded-[2.25rem] border border-black/10 bg-[#FAF7F2] text-charcoal shadow-card">
-          <div className="pointer-events-none absolute -left-16 -top-20 h-64 w-64 rounded-full bg-[#B6F554]/20 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-[#FDF166]/30 blur-3xl" />
-          
-          <div className="grid lg:grid-cols-12 gap-8 items-center p-7 sm:p-10 lg:p-12">
-            
-            {/* Left Content Column */}
-            <div className="relative z-10 lg:col-span-7 flex flex-col justify-between">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-charcoal shadow-2xs">
-                  <Layers className="h-3.5 w-3.5 text-[#4F83FF]" /> Link in Bio Architecture
-                </div>
+      {/* INDIAN CREATOR SHOWCASE SECTION (REPLACED UGLY SEAT CARD WITH ELEGANT LINKTREE-GRADE SHOWCASE) */}
+      <section id="showcase" className="max-w-7xl mx-auto px-6 py-16 border-t border-black/5">
+        <div className="text-center mb-10">
+          <span className="text-xs font-black px-3.5 py-1 rounded-full bg-white text-charcoal border border-black/10 shadow-2xs uppercase tracking-wider">
+            Verified Indian Creators & Brands
+          </span>
+          <h2 className="text-3xl sm:text-5xl font-black text-[#141518] mt-3 tracking-tight">
+            Built for how India creates and sells.
+          </h2>
+          <p className="text-xs sm:text-sm text-charcoal/65 mt-2 max-w-xl mx-auto font-medium">
+            From tech founders in Bangalore to independent artists in Mumbai, see how creators organize their world in one tap.
+          </p>
 
-                <h2 className="mt-5 max-w-xl text-3xl font-black leading-[1.08] tracking-tight sm:text-5xl text-charcoal">
-                  Connect your audience to everything you do.
-                </h2>
-                
-                <p className="mt-4 max-w-xl text-sm font-medium leading-relaxed text-charcoal/70">
-                  The modern link in bio built for creators, makers, and founders. Share your socials, portfolio, music, videos, and slidable product collections in one fast, beautiful mobile experience.
+          {/* Creator Tabs */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+            {showcaseCreators.map((c, idx) => (
+              <button
+                key={c.handle}
+                onClick={() => setActiveCreatorIndex(idx)}
+                className={`px-4 py-2 rounded-full text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
+                  activeCreatorIndex === idx
+                    ? 'bg-[#141518] text-white shadow-xs'
+                    : 'bg-white hover:bg-gray-100 text-charcoal border border-black/10'
+                }`}
+              >
+                <span>{c.name}</span>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
+                  activeCreatorIndex === idx ? 'bg-white/20 text-white' : 'bg-black/5 text-charcoal/60'
+                }`}>
+                  @{c.handle}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Dynamic Showcase Display Card */}
+        <div className="max-w-4xl mx-auto bg-white rounded-4xl border border-black/10 p-6 sm:p-10 shadow-card">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+            
+            {/* Left: Profile summary & telemetry */}
+            <div className="md:col-span-5 flex flex-col items-center md:items-start text-center md:text-left">
+              <div className="w-20 h-20 rounded-[22px] overflow-hidden border border-black/10 shadow-sm relative">
+                <img
+                  src={currentCreator.avatar}
+                  alt={currentCreator.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              <div className="mt-4">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#4F83FF]">
+                  {currentCreator.badge}
+                </span>
+                <h3 className="text-xl font-black text-charcoal mt-0.5">{currentCreator.name}</h3>
+                <p className="text-xs font-mono font-bold text-charcoal/50">
+                  {displayHost}/{currentCreator.handle}
+                </p>
+                <p className="text-xs font-medium text-charcoal/70 mt-2 leading-relaxed">
+                  {currentCreator.bio}
                 </p>
               </div>
 
-              {/* 4 Feature Value Pillars */}
-              <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                {[
-                  {
-                    icon: Share2,
-                    title: 'Unlimited Smart Links',
-                    text: 'Connect Instagram, YouTube, Spotify, GitHub, TikTok, Substack, and custom links with instant previews.',
-                  },
-                  {
-                    icon: SlidersHorizontal,
-                    title: 'Slidable Product Slider',
-                    text: 'Curate physical merch, art, books, or digital tools in a smooth touch carousel without clutter.',
-                  },
-                  {
-                    icon: Palette,
-                    title: 'Custom Canvas Themes',
-                    text: 'Clean light, deep dark, custom color palettes, and upload your own wallpaper with zoom and framing.',
-                  },
-                  {
-                    icon: UserCheck,
-                    title: 'One-Tap vCard Export',
-                    text: 'Let fans and clients save your verified contact details straight into Apple and Google contacts with no app.',
-                  },
-                ].map(({ icon: Icon, title, text }) => (
-                  <div key={title} className="rounded-3xl border border-black/8 bg-white/80 p-4 shadow-2xs backdrop-blur-sm">
-                    <Icon className="h-5 w-5 text-charcoal" />
-                    <h3 className="mt-3 text-sm font-black text-charcoal">{title}</h3>
-                    <p className="mt-1 text-[11px] font-medium leading-relaxed text-charcoal/60">{text}</p>
+              {/* Creator Metas */}
+              <div className="mt-5 w-full pt-5 border-t border-black/5 space-y-2 text-xs">
+                <div className="flex items-center justify-between text-charcoal/60">
+                  <span>Location</span>
+                  <span className="font-bold text-charcoal">{currentCreator.location}</span>
+                </div>
+                <div className="flex items-center justify-between text-charcoal/60">
+                  <span>Role</span>
+                  <span className="font-bold text-charcoal">{currentCreator.role}</span>
+                </div>
+              </div>
+
+              <div className="mt-6 w-full flex flex-col gap-2">
+                <Link
+                  href={`/${currentCreator.handle}`}
+                  className="w-full py-3 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-xs transition-transform active:scale-95"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>View Live Bio Page</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Right: Curated links and products */}
+            <div className="md:col-span-7 flex flex-col gap-4">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-charcoal/50 font-bold">
+                Active Smart Blocks & Product Collections
+              </span>
+
+              {/* Curated Links */}
+              <div className="space-y-2.5">
+                {currentCreator.links.map((link, i) => (
+                  <div
+                    key={i}
+                    className="p-3.5 rounded-2xl bg-[#FAF7F2] hover:bg-[#F2ECE1] border border-black/10 flex items-center justify-between gap-3 transition-colors"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-black text-charcoal truncate">{link.title}</p>
+                      <p className="text-[11px] text-charcoal/60 truncate mt-0.5">{link.sub}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white border border-black/5 text-charcoal/70">
+                        {link.clicks} clicks
+                      </span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-charcoal/40" />
+                    </div>
                   </div>
                 ))}
               </div>
 
-              {/* Action Buttons */}
-              <div className="mt-8 flex flex-col sm:flex-row items-center gap-3">
-                <Link
-                  href="/dashboard?tab=profile"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] px-6 py-3.5 text-xs font-black text-white shadow-sm transition-transform active:scale-95 cursor-pointer"
-                >
-                  <span>Build Your Bio Page</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/aarav"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white hover:bg-black/5 px-6 py-3.5 text-xs font-black text-charcoal shadow-2xs transition-colors"
-                >
-                  <span>View Sample Creator Page</span>
-                  <ArrowUpRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Right Interactive Mockup Column */}
-            <div className="relative z-10 lg:col-span-5 flex justify-center">
-              <div className="w-full max-w-[340px] rounded-[2.5rem] bg-white border border-black/10 p-5 shadow-2xl relative select-none">
-                {/* Simulated Profile Card */}
-                <div className="flex flex-col items-center text-center">
-                  <div className="relative">
-                    <img
-                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=85"
-                      alt="Creator"
-                      className="w-18 h-18 rounded-2xl object-cover border-2 border-black/10 shadow-sm"
-                    />
-                    <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#B6F554] border-2 border-white flex items-center justify-center">
-                      <Check className="w-2.5 h-2.5 stroke-[3] text-charcoal" />
-                    </span>
-                  </div>
-
-                  <h3 className="text-base font-black text-charcoal mt-3">Mira Kapoor</h3>
-                  <p className="text-[11px] font-bold text-charcoal/50 font-mono">@mirakapoor &bull; Art &amp; Design</p>
-                  <p className="text-[11px] text-charcoal/70 mt-1 max-w-[240px] leading-relaxed font-medium">
-                    Ceramic artist &amp; spatial designer. Building functional daily objects in Mumbai.
-                  </p>
-
-                  {/* Social Dock */}
-                  <div className="flex items-center gap-2 mt-3">
-                    <div className="w-7 h-7 rounded-full bg-[#FAF7F2] border border-black/10 flex items-center justify-center shadow-2xs">
-                      <InstagramIcon className="w-3.5 h-3.5 text-charcoal" />
-                    </div>
-                    <div className="w-7 h-7 rounded-full bg-[#FAF7F2] border border-black/10 flex items-center justify-center shadow-2xs">
-                      <TwitterIcon className="w-3.5 h-3.5 text-charcoal" />
-                    </div>
-                    <div className="w-7 h-7 rounded-full bg-[#FAF7F2] border border-black/10 flex items-center justify-center shadow-2xs">
-                      <LinkedinIcon className="w-3.5 h-3.5 text-charcoal" />
-                    </div>
-                    <div className="w-7 h-7 rounded-full bg-[#FAF7F2] border border-black/10 flex items-center justify-center shadow-2xs">
-                      <GithubIcon className="w-3.5 h-3.5 text-charcoal" />
-                    </div>
-                  </div>
-
-                  {/* Curated Products Slider Header */}
-                  <div className="w-full flex items-center justify-between mt-4 mb-2 px-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-charcoal/60">
-                      Curated Works &bull; Slider
-                    </span>
-                    <span className="text-[9px] font-bold text-[#4F83FF]">Swipe &rarr;</span>
-                  </div>
-
-                  {/* Product Slider Cards */}
-                  <div className="w-full flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
-                    {[
-                      {
-                        title: 'Sculpted Ceramic Mug',
-                        price: '₹1,299',
-                        image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop&q=85',
-                      },
-                      {
-                        title: 'Terracotta Vase No. 4',
-                        price: '₹2,499',
-                        image: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=400&auto=format&fit=crop&q=85',
-                      },
-                      {
-                        title: 'Studio Linen Apron',
-                        price: '₹899',
-                        image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&auto=format&fit=crop&q=85',
-                      },
-                    ].map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="shrink-0 w-[125px] rounded-2xl border border-black/10 bg-[#FAF7F2] p-2 text-left flex flex-col justify-between shadow-2xs"
-                      >
-                        <div className="w-full aspect-square rounded-xl overflow-hidden bg-white mb-2">
-                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                        </div>
-                        <p className="text-[10px] font-black text-charcoal truncate">{item.title}</p>
-                        <div className="mt-1 flex items-center justify-between">
-                          <span className="text-[10px] font-black text-charcoal">{item.price}</span>
-                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded-md bg-[#141518] text-white">
-                            View
-                          </span>
-                        </div>
+              {/* Product Slider Preview */}
+              <div className="mt-2 pt-4 border-t border-black/5">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-black text-charcoal">Touch Product Slider</span>
+                  <span className="text-[11px] font-bold text-[#4F83FF]">Integrated Store</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {currentCreator.products.map((prod, i) => (
+                    <div
+                      key={i}
+                      className="p-3 rounded-2xl bg-[#FAF7F2] border border-black/10 flex flex-col justify-between shadow-2xs"
+                    >
+                      <div className="w-full aspect-square rounded-xl overflow-hidden bg-white mb-2 border border-black/5">
+                        <img src={prod.img} alt={prod.name} className="w-full h-full object-cover" />
                       </div>
-                    ))}
-                  </div>
-
-                  {/* Featured Link Blocks */}
-                  <div className="w-full space-y-2 mt-3">
-                    <div className="w-full p-2.5 rounded-2xl bg-[#EFF4FF] border border-[#4F83FF]/20 flex items-center justify-between text-left shadow-2xs">
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-black text-charcoal truncate">Exhibition &bull; Nature &amp; Form 2026</p>
-                        <p className="text-[8px] text-charcoal/60 truncate">Gallery RSVP &amp; Catalog</p>
+                      <p className="text-xs font-black text-charcoal truncate">{prod.name}</p>
+                      <div className="mt-1 flex items-center justify-between">
+                        <span className="text-xs font-black text-charcoal">{prod.price}</span>
+                        <span className="text-[9px] font-black px-2 py-0.5 rounded-md bg-[#141518] text-white">
+                          Buy
+                        </span>
                       </div>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-charcoal/50 shrink-0" />
                     </div>
-
-                    <div className="w-full p-2.5 rounded-2xl bg-[#FDF166] border border-black/10 flex items-center justify-between text-left shadow-2xs">
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-black text-charcoal truncate">Book a Pottery Workshop</p>
-                        <p className="text-[8px] text-charcoal/60 truncate">Weekend batches in Bandra</p>
-                      </div>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-charcoal/50 shrink-0" />
-                    </div>
-                  </div>
-
-                  {/* Save Contact CTA */}
-                  <div className="w-full mt-3 py-2 px-3 rounded-2xl bg-[#141518] text-white text-[10px] font-black flex items-center justify-center gap-1.5 shadow-xs">
-                    <Download className="w-3 h-3 text-[#B6F554]" />
-                    <span>Save Contact to Phone (.vcf)</span>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
 
           </div>
         </div>
-
-        {/* 3 Steps: How It Works */}
-        <div className="mt-5 grid gap-3 md:grid-cols-3">
-          {[
-            ['01', 'Claim your custom handle', 'Grab tapping.bio/yourname in seconds to claim your permanent home on the web.'],
-            ['02', 'Add links & product sliders', 'Add socials, portfolios, videos, and slidable merchandise with full theme customization.'],
-            ['03', 'Share everywhere & tap in person', 'Put your link in your social bios and tap phones instantly with laser-engraved metal NFC cards.'],
-          ].map(([number, title, text]) => (
-            <div key={number} className="rounded-3xl border border-black/10 bg-white p-5 shadow-2xs">
-              <span className="text-[10px] font-black text-[#4F83FF]">STEP {number}</span>
-              <h3 className="mt-2 text-base font-black text-charcoal">{title}</h3>
-              <p className="mt-1.5 text-xs font-medium leading-relaxed text-charcoal/60">{text}</p>
-            </div>
-          ))}
-        </div>
       </section>
 
-      {/* CONTINUOUS INFINITE MARQUEE CAROUSEL */}
-      <section className="w-full py-8 overflow-hidden border-y border-black/5 bg-white/60 backdrop-blur-xs">
-        <div className="max-w-7xl mx-auto px-6 mb-3 flex items-center justify-between text-xs">
-          <span className="font-black text-charcoal uppercase tracking-wider text-[10px]">
-            Live Ecosystem & Hardware Stream
-          </span>
-          <span className="text-[10px] font-bold text-charcoal/50">
-            Hover to pause &bull; 60fps hardware acceleration
-          </span>
-        </div>
-
-        <div className="animate-marquee gap-5 px-4">
-          {[...marqueeCards, ...marqueeCards].map((card, i) => (
-            <div
-              key={i}
-              className={`p-5 rounded-3xl min-w-[270px] sm:min-w-[300px] h-[130px] flex flex-col justify-between shadow-2xs hover:shadow-card transition-all cursor-pointer ${card.color}`}
-            >
-              <div className="flex items-start justify-between">
-                <span className={`text-[10px] font-black uppercase tracking-wider ${card.accent}`}>
-                  {card.badge}
-                </span>
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              </div>
-              <div>
-                <h4 className="text-sm font-black leading-tight truncate">{card.title}</h4>
-                <p className="text-[11px] opacity-75 mt-0.5 font-semibold truncate">{card.tag}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* SYSTEM ARCHITECTURE FEATURES */}
-      <section id="features" className="max-w-7xl mx-auto px-6 py-20">
+      {/* CORE CAPABILITIES (CLEAN BENTO GRID WITHOUT CLICHE CARDS) */}
+      <section id="features" className="max-w-7xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
-          <span className="text-xs font-black px-3 py-1 rounded-full bg-[#FDF166] text-charcoal border border-black/10">
-            SYSTEM ARCHITECTURE
+          <span className="text-xs font-black px-3.5 py-1 rounded-full bg-white text-charcoal border border-black/10 shadow-2xs uppercase tracking-wider">
+            All-In-One Identity Suite
           </span>
-          <h2 className="text-3xl sm:text-5xl font-black text-charcoal mt-3 tracking-tight">
-            Everything for Your Profile, Products &amp; Identity
+          <h2 className="text-3xl sm:text-5xl font-black text-[#141518] mt-3 tracking-tight">
+            Everything your profile needs. Nothing it doesn't.
           </h2>
           <p className="text-xs sm:text-sm text-charcoal/60 mt-2 max-w-lg mx-auto font-medium">
-            Publish your identity, showcase slidable products, share contact details, and connect in person from one creator workspace.
+            Clean architecture designed for ultra-fast mobile loading, zero ad tracking, and effortless contact exchange.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="bg-[#141518] text-white rounded-4xl p-7 shadow-card flex flex-col justify-between min-h-[280px] md:col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Bento Card 1: Links & Sliders */}
+          <div className="bg-white rounded-3xl p-7 border border-black/10 shadow-card flex flex-col justify-between">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-5 shadow-xs">
-                <ShoppingBag className="w-6 h-6 text-[#B6F554] stroke-[2.4]" />
+              <div className="w-12 h-12 rounded-2xl bg-[#FAF7F2] border border-black/10 flex items-center justify-center mb-4">
+                <Layers className="w-6 h-6 text-charcoal" />
               </div>
-              <h3 className="font-black text-xl text-white">Slidable Product Showcase</h3>
-              <p className="text-xs text-white/75 mt-2 leading-relaxed font-medium max-w-xl">
-                Showcase your merchandise, curated physical goods, artworks, or digital tools in a smooth touch-enabled horizontal slider. Upload compressed photos, display prices, and route customers directly to your buy links without checkout friction.
-              </p>
-            </div>
-            <Link href="/dashboard?tab=profile" className="mt-6 text-xs font-black text-[#B6F554] flex items-center gap-1 hover:underline">
-              <span>Add Products in Studio</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-          {/* Module 1: Metal NFC Hardware */}
-          <div className="bg-[#4F83FF] text-white rounded-4xl p-7 shadow-card flex flex-col justify-between min-h-[280px]">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-5 shadow-xs">
-                <CreditCard className="w-6 h-6 text-white stroke-[2.4]" />
-              </div>
-              <h3 className="font-black text-lg text-white">Metal NFC Hardware</h3>
-              <p className="text-xs text-white/80 mt-2 leading-relaxed">
-                Precision laser-engraved stainless steel, brushed gold, and matte black NFC cards. Tap against any modern smartphone to transmit your identity.
-              </p>
-            </div>
-            <Link
-              href="/dashboard?tab=nfc"
-              className="mt-6 text-xs font-black text-white flex items-center gap-1 hover:underline"
-            >
-              <span>Explore Hardware</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          {/* Module 2: Link in Bio Builder */}
-          <div className="bg-[#FDF166] text-charcoal rounded-4xl p-7 shadow-card flex flex-col justify-between min-h-[280px]">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-black/10 flex items-center justify-center mb-5 shadow-xs">
-                <Layers className="w-6 h-6 text-charcoal stroke-[2.4]" />
-              </div>
-              <h3 className="font-black text-lg text-charcoal">Link in Bio Creator</h3>
-              <p className="text-xs text-charcoal/80 mt-2 leading-relaxed font-medium">
-                High-converting mobile-first bio space with drag-and-drop link ordering, pastel bento styling, and zero bloated templates.
-              </p>
-            </div>
-            <Link
-              href="/dashboard?tab=profile"
-              className="mt-6 text-xs font-black text-charcoal flex items-center gap-1 hover:underline"
-            >
-              <span>Manage Profile</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          {/* Module 3: Digital Business Card */}
-          <div className="bg-[#B6F554] text-charcoal rounded-4xl p-7 shadow-card flex flex-col justify-between min-h-[280px]">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-black/10 flex items-center justify-center mb-5 shadow-xs">
-                <UserCheck className="w-6 h-6 text-charcoal stroke-[2.4]" />
-              </div>
-              <h3 className="font-black text-lg text-charcoal">Digital Business Card</h3>
-              <p className="text-xs text-charcoal/80 mt-2 leading-relaxed font-medium">
-                Instant digital contact card. One tap exports your verified name, phone, email, socials, and company directly to Apple & Google phonebooks.
-              </p>
-            </div>
-            <Link
-              href="/dashboard?tab=digital-card"
-              className="mt-6 text-xs font-black text-charcoal flex items-center gap-1 hover:underline"
-            >
-              <span>Configure Contact Card</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          {/* Module 4: Permanent Dynamic QR */}
-          <div className="bg-white text-charcoal rounded-4xl p-7 border border-black/10 shadow-card flex flex-col justify-between min-h-[280px]">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#F7F5EE] border border-black/10 flex items-center justify-center mb-5 shadow-xs">
-                <QrCode className="w-6 h-6 text-charcoal stroke-[2.4]" />
-              </div>
-              <h3 className="font-black text-lg text-charcoal">Permanent Vector QR</h3>
+              <h3 className="text-lg font-black text-charcoal">Smart Block Architecture</h3>
               <p className="text-xs text-charcoal/70 mt-2 leading-relaxed font-medium">
-                QR codes that never break. Update your bio or change phone numbers without reprinting business cards, menus, or event badges.
+                Add websites, WhatsApp, Instagram, YouTube, and curated slidable product collections in any order with drag-and-drop simplicity.
               </p>
             </div>
-            <Link
-              href="/dashboard?tab=digital-card"
-              className="mt-6 text-xs font-black text-charcoal flex items-center gap-1 hover:underline"
-            >
-              <span>Generate QR</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+            <div className="mt-6 pt-4 border-t border-black/5 flex items-center justify-between text-xs font-bold text-charcoal/60">
+              <span>Drag & Reorder</span>
+              <span className="font-mono text-emerald-600">Active</span>
+            </div>
+          </div>
+
+          {/* Bento Card 2: Contact Card & Dialer */}
+          <div className="bg-white rounded-3xl p-7 border border-black/10 shadow-card flex flex-col justify-between">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-[#FAF7F2] border border-black/10 flex items-center justify-center mb-4">
+                <UserCheck className="w-6 h-6 text-charcoal" />
+              </div>
+              <h3 className="text-lg font-black text-charcoal">Direct vCard Phonebook Save</h3>
+              <p className="text-xs text-charcoal/70 mt-2 leading-relaxed font-medium">
+                One tap exports your verified name, phone, email, company, and links straight into iPhone and Android contact books without downloading an app.
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-black/5 flex items-center justify-between text-xs font-bold text-charcoal/60">
+              <span>Apple & Android Native</span>
+              <span className="font-mono text-emerald-600">vCard 3.0</span>
+            </div>
+          </div>
+
+          {/* Bento Card 3: Metal NFC */}
+          <div className="bg-[#141518] text-white rounded-3xl p-7 shadow-card flex flex-col justify-between">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-4">
+                <CreditCard className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-black text-white">Aerospace Metal NFC</h3>
+              <p className="text-xs text-white/70 mt-2 leading-relaxed font-medium">
+                Laser-engraved stainless steel, brushed gold, and matte black cards powered by NTAG216 contactless microchips that work indefinitely.
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-bold text-white/60">
+              <span>13.56MHz Frequency</span>
+              <span className="font-mono text-amber-400">Zero Battery</span>
+            </div>
           </div>
         </div>
       </section>
@@ -937,18 +813,18 @@ export default function LandingPage() {
       {/* TRANSPARENT INDIAN RUPEE PRICING SECTION */}
       <section id="pricing" className="max-w-7xl mx-auto px-6 py-20 border-t border-black/5">
         <div className="text-center mb-10">
-          <span className="text-xs font-black px-3.5 py-1 rounded-full bg-[#EFF4FF] text-[#4F83FF] border border-[#4F83FF]/20">
-            TRANSPARENT CREATOR PRICING
+          <span className="text-xs font-black px-3.5 py-1 rounded-full bg-white text-charcoal border border-black/10 shadow-2xs uppercase tracking-wider">
+            Transparent Pricing
           </span>
-          <h2 className="text-3xl sm:text-5xl font-black text-charcoal mt-3 tracking-tight">
-            Activate Your Bio Space &amp; Dynamic QR
+          <h2 className="text-3xl sm:text-5xl font-black text-[#141518] mt-3 tracking-tight">
+            Simple plans for creators in India.
           </h2>
           <p className="text-xs sm:text-sm text-charcoal/65 mt-2 max-w-lg mx-auto font-medium">
-            Publish your link-in-bio, showcase products, generate permanent QR codes, print visiting cards, and connect with NFC hardware.
+            Publish your link-in-bio, showcase products, generate permanent QR codes, and connect in person.
           </p>
 
           {/* Monthly / Yearly Billing Toggle */}
-          <div className="inline-flex items-center p-1 rounded-full bg-[#FAF7F2] border border-black/10 mt-6 shadow-2xs">
+          <div className="inline-flex items-center p-1 rounded-full bg-white border border-black/10 mt-6 shadow-2xs">
             <button
               type="button"
               onClick={() => setBillingCycle('monthly')}
@@ -970,7 +846,7 @@ export default function LandingPage() {
               }`}
             >
               <span>Yearly Billing</span>
-              <span className="px-2 py-0.5 rounded-full bg-[#B6F554] text-charcoal text-[9px] font-black">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-black">
                 Save 16%
               </span>
             </button>
@@ -983,8 +859,8 @@ export default function LandingPage() {
           {/* Monthly Plan: ₹299 / month */}
           <div className={`p-8 rounded-4xl border flex flex-col justify-between transition-all ${
             billingCycle === 'monthly'
-              ? 'bg-white border-2 border-[#4F83FF] shadow-card ring-2 ring-[#4F83FF]/20'
-              : 'bg-[#FAF7F2] border-black/10 opacity-90'
+              ? 'bg-white border-2 border-black shadow-card'
+              : 'bg-white/60 border-black/10 opacity-90'
           }`}>
             <div>
               <div className="flex items-center justify-between">
@@ -992,14 +868,14 @@ export default function LandingPage() {
                   Monthly Membership
                 </span>
                 {billingCycle === 'monthly' && (
-                  <span className="px-3 py-1 rounded-full bg-[#EFF4FF] text-[#4F83FF] text-[10px] font-black border border-[#4F83FF]/20">
-                    Active Selection
+                  <span className="px-3 py-1 rounded-full bg-[#141518] text-white text-[10px] font-black">
+                    Active Plan
                   </span>
                 )}
               </div>
 
               <div className="flex items-baseline gap-1 mt-4">
-                <span className="text-4xl sm:text-5xl font-black text-charcoal tracking-tight">&#8377;299</span>
+                <span className="text-4xl sm:text-5xl font-black text-charcoal tracking-tight">₹299</span>
                 <span className="text-xs font-bold text-charcoal/60">/ month</span>
               </div>
               <p className="text-xs text-charcoal/70 mt-2 font-medium">
@@ -1029,9 +905,9 @@ export default function LandingPage() {
 
             <Link
               href="/dashboard?action=upgrade&plan=monthly"
-              className="mt-8 w-full py-3.5 px-4 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
+              className="mt-8 w-full py-3.5 px-4 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
             >
-              <span>Activate Monthly (&#8377;299)</span>
+              <span>Activate Monthly (₹299)</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -1039,26 +915,26 @@ export default function LandingPage() {
           {/* Yearly Plan: ₹2,999 / year */}
           <div className={`p-8 rounded-4xl border flex flex-col justify-between transition-all relative overflow-hidden ${
             billingCycle === 'yearly'
-              ? 'bg-[#141518] text-white border-2 border-amber-400 shadow-2xl ring-2 ring-amber-400/20'
+              ? 'bg-[#141518] text-white border-2 border-black shadow-2xl'
               : 'bg-white border-black/10'
           }`}>
             <div className="absolute top-4 right-4">
-              <span className="px-3 py-1 rounded-full bg-[#FDF166] text-charcoal text-[10px] font-black uppercase tracking-wider shadow-2xs">
+              <span className="px-3 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider shadow-2xs">
                 Best Value
               </span>
             </div>
 
             <div>
-              <span className={`text-xs font-black uppercase tracking-wider block ${billingCycle === 'yearly' ? 'text-amber-400' : 'text-charcoal/60'}`}>
+              <span className={`text-xs font-black uppercase tracking-wider block ${billingCycle === 'yearly' ? 'text-white/60' : 'text-charcoal/60'}`}>
                 Annual Membership (Save 16%)
               </span>
 
               <div className="flex items-baseline gap-1 mt-4">
                 <span className={`text-4xl sm:text-5xl font-black tracking-tight ${billingCycle === 'yearly' ? 'text-white' : 'text-charcoal'}`}>
-                  &#8377;2,999
+                  ₹2,999
                 </span>
                 <span className={`text-xs font-bold ${billingCycle === 'yearly' ? 'text-white/60' : 'text-charcoal/60'}`}>
-                  / year (&#8377;250/mo)
+                  / year (₹250/mo)
                 </span>
               </div>
               <p className={`text-xs mt-2 font-medium ${billingCycle === 'yearly' ? 'text-white/70' : 'text-charcoal/70'}`}>
@@ -1077,7 +953,7 @@ export default function LandingPage() {
                   'Priority creator support & fast fulfillment',
                 ].map((feat, idx) => (
                   <div key={idx} className="flex items-center gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-emerald-400/20 text-emerald-400 flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 stroke-[3]" />
                     </div>
                     <span>{feat}</span>
@@ -1088,9 +964,9 @@ export default function LandingPage() {
 
             <Link
               href="/dashboard?action=upgrade&plan=yearly"
-              className="mt-8 w-full py-3.5 px-4 rounded-2xl bg-[#FDF166] hover:bg-[#FBE849] text-charcoal font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
+              className="mt-8 w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-gray-100 text-charcoal font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
             >
-              <span>Activate Yearly (&#8377;2,999)</span>
+              <span>Activate Yearly (₹2,999)</span>
               <ArrowRight className="w-4 h-4 text-charcoal" />
             </Link>
           </div>
@@ -1101,14 +977,14 @@ export default function LandingPage() {
       <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-black/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-charcoal/60">
         <div className="flex items-center gap-3">
           <TappingLogo size="xs" variant="full" />
-          <span className="text-charcoal/40">&bull; Production Platform</span>
+          <span className="text-charcoal/40">• Made for Indian Creators</span>
         </div>
         <div className="flex items-center gap-6">
           <Link href="/admin" className="text-charcoal/70 hover:text-black hover:underline">
             Admin Access
           </Link>
           <Link href="/dashboard" className="text-charcoal font-black hover:underline">
-            Creator Dashboard &rarr;
+            Creator Dashboard →
           </Link>
         </div>
       </footer>

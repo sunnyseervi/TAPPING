@@ -53,16 +53,16 @@ export default function AdminOverviewTab({
 
   return (
     <div className="space-y-6 text-left">
-      {/* Top Banner with Quick Actions */}
-      <div className="p-6 md:p-8 rounded-4xl bg-gradient-to-r from-[#141518] via-[#1C1E24] to-[#141518] text-white border border-[#2D3036] shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+      {/* Top Banner with Quick Actions in Clean Light Mode */}
+      <div className="p-6 md:p-8 rounded-4xl bg-white text-charcoal border border-black/10 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <span className="text-[10px] font-mono font-black uppercase tracking-wider px-3 py-1 rounded-full bg-white/10 text-[#FDF166] border border-white/10">
+          <span className="text-[10px] font-mono font-black uppercase tracking-wider px-3 py-1 rounded-full bg-[#FAF7F2] text-charcoal border border-black/10">
             SYSTEM MISSION CONTROL
           </span>
-          <h1 className="text-2xl sm:text-3xl font-black mt-3 tracking-tight">
-            TAPPING Platform Central Ledger
+          <h1 className="text-2xl sm:text-3xl font-black mt-3 tracking-tight text-charcoal">
+            Tapping Platform Central Ledger
           </h1>
-          <p className="text-xs text-white/70 mt-1 max-w-xl font-medium">
+          <p className="text-xs text-charcoal/60 mt-1 max-w-xl font-medium">
             Monitor real-time user registrations, bio link engagement metrics, contactless NFC hardware pipelines, and subscription revenue.
           </p>
         </div>
@@ -71,18 +71,18 @@ export default function AdminOverviewTab({
           <button
             type="button"
             onClick={onAddUserClick}
-            className="px-4 py-2.5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+            className="px-4 py-2.5 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-[#FDF166]" />
             <span>Add Creator</span>
           </button>
 
           <button
             type="button"
             onClick={onExportCsv}
-            className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/15 flex items-center gap-2 transition-colors cursor-pointer"
+            className="px-4 py-2.5 rounded-2xl bg-[#FAF7F2] hover:bg-black/5 text-charcoal text-xs font-bold border border-black/10 flex items-center gap-2 transition-colors cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5 text-[#B6F554]" />
+            <Download className="w-3.5 h-3.5 text-[#4F83FF]" />
             <span>Export CSV</span>
           </button>
         </div>

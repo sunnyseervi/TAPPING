@@ -47,12 +47,20 @@ export function generateVCardString(vcard: VCardProfile): string {
 export function downloadVCardFile(vcard: VCardProfile, filename = 'contact.vcf') {
   const vcardText = generateVCardString(vcard);
   const blob = new Blob([vcardText], { type: 'text/vcard;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', filename);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  
+  if (typeof window !== 'undefined') {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    link.setAttribute('rel', 'noopener noreferrer');
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      if (document.body.contains(link)) {
+        document.body.removeChild(link);
+      }
+      URL.revokeObjectURL(url);
+    }, 1500);
+  }
 }

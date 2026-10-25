@@ -17,6 +17,7 @@ import { SystemSettings } from '@/lib/types';
 import { SUPABASE_SQL_SCHEMA, getSupabaseConfig } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
 import { resetAllToDefault } from '@/lib/storage';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 interface AdminSettingsTabProps {
   settings: SystemSettings;
@@ -31,6 +32,7 @@ export default function AdminSettingsTab({
   const [maintenanceMode, setMaintenanceMode] = useState(settings.maintenanceMode);
   const [announcement, setAnnouncement] = useState(settings.globalAnnouncement);
   const [copiedSql, setCopiedSql] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const supabaseConfig = getSupabaseConfig();
 
@@ -54,11 +56,10 @@ export default function AdminSettingsTab({
   };
 
   const handleResetDefaults = () => {
-    if (confirm('WARNING: Are you sure you want to reset all mock databases to default? This will reload initial users and orders.')) {
-      resetAllToDefault();
-      showToast('Database Reset', 'Initialized default profiles, cards, and orders', 'info');
-      window.location.reload();
-    }
+    resetAllToDefault();
+    showToast('Database Reset', 'Initialized default profiles, cards, and orders', 'info');
+    setShowResetConfirm(false);
+    window.location.reload();
   };
 
   return (
@@ -186,7 +187,7 @@ export default function AdminSettingsTab({
         <div className="pt-3 flex items-center justify-between">
           <button
             type="button"
-            onClick={handleResetDefaults}
+            onClick={() => setShowResetConfirm(true)}
             className="px-4 py-2.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-black border border-rose-200 transition-colors cursor-pointer flex items-center gap-1.5"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -202,6 +203,18 @@ export default function AdminSettingsTab({
           </button>
         </div>
       </form>
+
+      {/* Confirmation Modal for Resetting Database */}
+      <ConfirmModal
+        isOpen={showResetConfirm}
+        title="Reset All Mock Databases?"
+        description="Are you sure you want to reset all mock databases to default? This will restore the original demo users, orders, and payments."
+        variant="danger"
+        confirmLabel="Yes, Reset Database"
+        cancelLabel="Cancel"
+        onConfirm={handleResetDefaults}
+        onCancel={() => setShowResetConfirm(false)}
+      />
     </div>
   );
 }

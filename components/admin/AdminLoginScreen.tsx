@@ -29,7 +29,7 @@ export default function AdminLoginScreen({ onLoginSuccess }: AdminLoginScreenPro
         loginTime: new Date().toISOString(),
       };
       saveAdminSession(session);
-      showToast('Superuser Access Granted', `Welcome to TAPPING Central Control`, 'success');
+      showToast('Superuser Access Granted', 'Welcome to Tapping Central Control', 'success');
       onLoginSuccess(session);
     } else {
       showToast('Authentication Failed', 'Invalid administrator email or PIN code', 'error');
@@ -44,23 +44,19 @@ export default function AdminLoginScreen({ onLoginSuccess }: AdminLoginScreenPro
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1013] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden select-none">
-      {/* Background ambient lighting */}
-      <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#4F83FF]/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#B6F554]/15 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Main Login Chassis Card */}
-      <div className="w-full max-w-md bg-[#16181D] rounded-[2.5rem] border border-[#2D3036] p-8 sm:p-10 shadow-2xl relative z-10 text-center animate-in fade-in zoom-in-95 duration-200">
+    <div className="min-h-screen bg-[#FAF7F2] text-charcoal flex flex-col items-center justify-center p-6 select-none">
+      {/* Main Login Card */}
+      <div className="w-full max-w-md bg-white rounded-4xl border border-black/10 p-8 sm:p-10 shadow-card text-center animate-in fade-in zoom-in-95 duration-200">
         
         {/* Logo and Shield Header */}
         <div className="flex flex-col items-center mb-6">
-          <TappingLogo size="lg" variant="markOnly" />
-          <div className="mt-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-[#FDF166] text-[10px] font-mono font-black tracking-wider border border-white/10">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#FDF166]" />
+          <TappingLogo size="lg" />
+          <div className="mt-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF7F2] text-charcoal text-[10px] font-mono font-black tracking-wider border border-black/10">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#4F83FF]" />
             <span>ROOT ADMINISTRATOR GATE</span>
           </div>
-          <h1 className="text-2xl font-black mt-3 tracking-tight">TAPPING Admin Console</h1>
-          <p className="text-xs text-white/60 mt-1 font-medium">
+          <h1 className="text-2xl font-black mt-3 tracking-tight text-charcoal">Tapping Admin Console</h1>
+          <p className="text-xs text-charcoal/60 mt-1 font-medium">
             Central ledger and operations hub for creators, hardware, and payments.
           </p>
         </div>
@@ -69,36 +65,45 @@ export default function AdminLoginScreen({ onLoginSuccess }: AdminLoginScreenPro
         <form onSubmit={handleSubmit} className="space-y-4 text-left">
           {/* Admin Email */}
           <div>
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-white/60 block mb-1.5">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-charcoal/60 block mb-1.5">
               Authorized Administrator Email
             </label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Mail className="w-4 h-4 text-charcoal/40 absolute left-4 top-1/2 -translate-y-1/2" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@tapping.bio"
-                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-[#0F1013] border border-[#2D3036] text-xs font-mono font-bold text-white placeholder:text-white/30 focus:outline-none focus:border-[#4F83FF]"
                 required
+                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-mono font-bold text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-[#4F83FF]/30"
               />
             </div>
           </div>
 
-          {/* Security PIN */}
+          {/* Master PIN */}
           <div>
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-white/60 block mb-1.5">
-              Master Security Key / PIN
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-charcoal/60">
+                Master Security Key / PIN
+              </label>
+              <button
+                type="button"
+                onClick={handleFillCredentials}
+                className="text-[10px] font-mono font-bold text-[#4F83FF] hover:underline cursor-pointer"
+              >
+                Autofill Demo PIN
+              </button>
+            </div>
             <div className="relative">
-              <KeyRound className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Lock className="w-4 h-4 text-charcoal/40 absolute left-4 top-1/2 -translate-y-1/2" />
               <input
                 type="password"
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
-                placeholder="Enter admin PIN or tapping2026"
-                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-[#0F1013] border border-[#2D3036] text-xs font-mono font-bold text-white placeholder:text-white/30 focus:outline-none focus:border-[#4F83FF]"
+                placeholder="Enter PIN (e.g. tapping2026)"
                 required
+                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-mono font-bold text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-[#4F83FF]/30"
               />
             </div>
           </div>
@@ -107,25 +112,22 @@ export default function AdminLoginScreen({ onLoginSuccess }: AdminLoginScreenPro
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full mt-2 py-3.5 px-6 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+            className="w-full mt-2 py-3.5 px-5 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
           >
-            <span>Authenticate Superuser</span>
-            <ArrowRight className="w-4 h-4" />
+            {isSubmitting ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <span>Authenticate Root Session</span>
+                <ArrowRight className="w-4 h-4 text-[#FDF166]" />
+              </>
+            )}
           </button>
         </form>
 
-        {/* Demo Fast Autofill Shortcut */}
-        <div className="mt-6 pt-5 border-t border-white/10 flex flex-col gap-2">
-          <button
-            type="button"
-            onClick={handleFillCredentials}
-            className="text-[11px] font-mono font-bold text-[#FDF166] hover:underline cursor-pointer"
-          >
-            Auto-fill Root Credentials (tapping2026)
-          </button>
-          <p className="text-[10px] text-white/40 font-mono">
-            Default superuser: admin@tapping.bio / tapping2026
-          </p>
+        <div className="mt-6 pt-5 border-t border-black/5 flex items-center justify-center gap-2 text-[11px] font-mono text-charcoal/40">
+          <KeyRound className="w-3.5 h-3.5" />
+          <span>Default Key: admin@tapping.bio / tapping2026</span>
         </div>
       </div>
     </div>

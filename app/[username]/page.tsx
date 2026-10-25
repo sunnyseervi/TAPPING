@@ -434,13 +434,8 @@ export default function PublicProfilePage() {
         {/* SCROLLABLE DATA CONTAINER: Everything scrolls naturally and smoothly together */}
         <div className="flex-1 w-full overflow-y-auto overscroll-contain no-scrollbar relative z-10 flex flex-col items-center">
           
-          {/* TOP ACTION BAR: Scrolls seamlessly with content — never cuts off avatar */}
-          <div className="w-full flex items-center justify-between pt-5 pb-2 px-5 relative z-20 shrink-0">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              contentIsDark ? 'bg-black/40 text-white border border-white/20' : 'bg-white/80 text-charcoal border border-black/10'
-            } backdrop-blur-md shadow-2xs`}>
-              <Globe className="w-4 h-4 opacity-70" />
-            </div>
+          {/* TOP ACTION BAR: Scrolls seamlessly with content — clean right-aligned action buttons */}
+          <div className="w-full flex items-center justify-end pt-5 pb-2 px-5 relative z-20 shrink-0">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {

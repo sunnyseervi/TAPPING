@@ -968,9 +968,71 @@ export function updateStoredUser(userId: string, updates: Partial<UserRecord>): 
     if (activeProfile.id === userId || users[idx].username === activeProfile.username) {
       if (updates.displayName) activeProfile.displayName = updates.displayName;
       if (updates.username) activeProfile.username = updates.username;
+      if (updates.links) saveStoredLinks(updates.links);
       saveStoredProfile(activeProfile);
     }
   }
+}
+
+export function updateUserLink(userId: string, linkId: string, updates: Partial<LinkBlock>): void {
+  const users = getStoredUsers();
+  const user = users.find((u) => u.id === userId);
+  if (user && user.links) {
+    const linkIdx = user.links.findIndex((l) => l.id === linkId);
+    if (linkIdx !== -1) {
+      user.links[linkIdx] = { ...user.links[linkIdx], ...updates };
+      saveStoredUsers(users);
+
+      const activeProfile = getStoredProfile();
+      if (activeProfile.id === userId || user.username === activeProfile.username) {
+        saveStoredLinks(user.links);
+      }
+    }
+  }
+}
+
+export function deleteUserLink(userId: string, linkId: string): void {
+  const users = getStoredUsers();
+  const user = users.find((u) => u.id === userId);
+  if (user && user.links) {
+    user.links = user.links.filter((l) => l.id !== linkId);
+    saveStoredUsers(users);
+
+    const activeProfile = getStoredProfile();
+    if (activeProfile.id === userId || user.username === activeProfile.username) {
+      saveStoredLinks(user.links);
+    }
+  }
+}
+
+export function addUserLink(userId: string, newLink: Partial<LinkBlock>): LinkBlock | null {
+  const users = getStoredUsers();
+  const user = users.find((u) => u.id === userId);
+  if (user) {
+    if (!user.links) user.links = [];
+    const link: LinkBlock = {
+      id: `lnk_${Date.now()}`,
+      userId,
+      type: 'link',
+      title: newLink.title || 'New Link',
+      url: newLink.url || 'https://tapping.bio',
+      icon: newLink.icon || 'globe',
+      styleVariant: newLink.styleVariant || 'peach',
+      isActive: true,
+      sortOrder: user.links.length,
+      clickCount: 0,
+      ...newLink,
+    };
+    user.links.push(link);
+    saveStoredUsers(users);
+
+    const activeProfile = getStoredProfile();
+    if (activeProfile.id === userId || user.username === activeProfile.username) {
+      saveStoredLinks(user.links);
+    }
+    return link;
+  }
+  return null;
 }
 
 export function toggleUserBlock(userId: string): boolean {

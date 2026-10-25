@@ -1,17 +1,14 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { 
   BarChart3, 
   Users, 
   Package, 
   CreditCard, 
   Database, 
-  ArrowLeft,
   ChevronRight,
-  ShieldCheck,
-  Globe
+  ShieldCheck
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -41,21 +38,21 @@ export default function AdminSidebar({
       label: 'User Management',
       icon: Users,
       badge: String(userCount),
-      badgeColor: 'bg-[#FDF166] text-[#141518]',
+      badgeColor: 'bg-[#FDF166] text-charcoal',
     },
     {
       id: 'orders',
       label: 'Metal Card Orders',
       icon: Package,
       badge: String(orderCount),
-      badgeColor: 'bg-[#B6F554] text-[#141518]',
+      badgeColor: 'bg-[#B6F554] text-charcoal',
     },
     {
       id: 'payments',
       label: 'Payments & Passes',
       icon: CreditCard,
       badge: expiringCount > 0 ? `${expiringCount} exp` : null,
-      badgeColor: 'bg-rose-500/20 text-rose-300 border border-rose-500/30',
+      badgeColor: 'bg-rose-100 text-rose-800 border border-rose-300',
     },
     {
       id: 'settings',
@@ -67,12 +64,11 @@ export default function AdminSidebar({
   ] as const;
 
   return (
-    <aside className="w-64 bg-[#141518] text-white border-r border-[#2D3036] flex flex-col justify-between p-4 shrink-0 min-h-[calc(100vh-4.5rem)] select-none">
+    <aside className="w-64 bg-white text-charcoal border-r border-black/10 flex flex-col justify-between p-4 shrink-0 min-h-[calc(100vh-4rem)] select-none shadow-2xs">
       <div className="space-y-6">
-        {/* Navigation Category Label */}
         <div>
-          <p className="text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest px-3 mb-2">
-            CONTROL CENTER
+          <p className="text-[10px] font-mono font-black text-charcoal/40 uppercase tracking-widest px-3 mb-2.5">
+            ADMIN CONTROL
           </p>
 
           <nav className="space-y-1.5">
@@ -85,10 +81,10 @@ export default function AdminSidebar({
                   key={item.id}
                   type="button"
                   onClick={() => onSelectTab(item.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-black transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#4F83FF] text-white shadow-sm'
-                      : 'text-white/70 hover:text-white hover:bg-white/5'
+                      ? 'bg-[#141518] text-white shadow-xs'
+                      : 'text-charcoal/70 hover:text-black hover:bg-[#FAF7F2]'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -98,10 +94,10 @@ export default function AdminSidebar({
 
                   {item.badge && (
                     <span
-                      className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-full ${
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
                         isActive
                           ? 'bg-white/20 text-white'
-                          : item.badgeColor
+                          : item.badgeColor || 'bg-black/5 text-charcoal'
                       }`}
                     >
                       {item.badge}
@@ -112,45 +108,17 @@ export default function AdminSidebar({
             })}
           </nav>
         </div>
-
-        {/* Quick Links Section */}
-        <div>
-          <p className="text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest px-3 mb-2">
-            SHORTCUTS
-          </p>
-          <div className="space-y-1">
-            <Link
-              href="/dashboard"
-              className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-            >
-              <div className="flex items-center gap-2.5">
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Creator Dashboard</span>
-              </div>
-            </Link>
-
-            <Link
-              href="/"
-              className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-            >
-              <div className="flex items-center gap-2.5">
-                <Globe className="w-3.5 h-3.5 text-[#4F83FF]" />
-                <span>Landing Page</span>
-              </div>
-            </Link>
-          </div>
-        </div>
       </div>
 
-      {/* Footer Info Box */}
-      <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-[11px] text-white/70">
-        <div className="flex items-center gap-1.5 font-bold text-white">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#B6F554]" />
-          <span>TAPPING OS v3.2</span>
+      {/* Bottom Superuser Security Badge */}
+      <div className="p-3.5 rounded-3xl bg-[#FAF7F2] border border-black/5 flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-white border border-black/10 flex items-center justify-center text-[#4F83FF] shadow-2xs">
+          <ShieldCheck className="w-4 h-4" />
         </div>
-        <p className="text-[10px] text-white/50 mt-1 font-mono">
-          Encrypted Session &bull; TLS 1.3
-        </p>
+        <div className="min-w-0">
+          <p className="font-black text-[11px] text-charcoal truncate">Master Control Active</p>
+          <p className="text-[10px] text-charcoal/50 font-mono">Role: SuperAdmin</p>
+        </div>
       </div>
     </aside>
   );

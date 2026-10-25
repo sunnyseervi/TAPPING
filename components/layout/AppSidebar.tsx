@@ -116,25 +116,8 @@ export default function AppSidebar({
               );
             })}
 
-            {/* Admin Control Panel Link */}
-            <div className="pt-2">
-              <Link
-                href="/admin"
-                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-black bg-[#141518] hover:bg-black text-white border border-[#2D3036] shadow-sm transition-all"
-                title="Open Dedicated Admin Panel"
-              >
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className="w-4 h-4 text-[#FDF166] stroke-[2.2]" />
-                  <span>Admin Panel</span>
-                </div>
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-[#B6F554]">
-                  Superuser
-                </span>
-              </Link>
-            </div>
-
             {/* Public Landing & Hero Page Link */}
-            <div className="pt-1">
+            <div className="pt-2">
               <Link
                 href="/"
                 className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-black bg-white/70 hover:bg-white text-charcoal/80 hover:text-black border border-black/5 shadow-2xs hover:shadow-xs transition-all"

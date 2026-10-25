@@ -42,6 +42,7 @@ import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/componen
 import ThemesStudio from '@/components/dashboard/ThemesStudio';
 import { compressImageFile, compressAvatarImage, compressLinkCardImage, formatFileSize } from '@/lib/imageCompression';
 import { getStoredStore, saveStoredStore } from '@/lib/storage';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 interface EditProfileSectionProps {
   profile: Profile;
@@ -571,10 +572,21 @@ export default function EditProfileSection({
     );
   };
 
+  const [deleteLinkCandidate, setDeleteLinkCandidate] = useState<LinkBlock | null>(null);
+
   const handleDeleteLink = (id: string) => {
     const target = links.find((l) => l.id === id);
-    onUpdateLinks(links.filter((l) => l.id !== id));
-    showToast('Block Deleted', `Removed "${target?.title}"`, 'info');
+    if (target) {
+      setDeleteLinkCandidate(target);
+    }
+  };
+
+  const confirmDeleteLink = () => {
+    if (!deleteLinkCandidate) return;
+    const target = deleteLinkCandidate;
+    onUpdateLinks(links.filter((l) => l.id !== target.id));
+    showToast('Block Deleted', `Removed "${target.title}"`, 'info');
+    setDeleteLinkCandidate(null);
   };
 
   const handleMove = (index: number, direction: 'up' | 'down') => {
@@ -646,19 +658,6 @@ export default function EditProfileSection({
         >
           <Layers className="w-3.5 h-3.5" />
           <span>Links ({links.length})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleTabSelect('products')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
-            currentTab === 'products'
-              ? 'bg-[#4F83FF] text-white shadow-xs'
-              : 'text-charcoal/70 hover:text-black hover:bg-black/5'
-          }`}
-        >
-          <ShoppingBag className="w-3.5 h-3.5" />
-          <span>Products ({(localStore.products || []).length})</span>
         </button>
 
         <button
@@ -1202,7 +1201,18 @@ export default function EditProfileSection({
               Reorder links and product carousels to arrange your bio page exactly how you want
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => {
+                onUpdateLinks(links);
+                showToast('Links Saved Successfully', 'Your link order and configuration have been saved', 'success');
+              }}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-sm transition-transform active:scale-95 cursor-pointer shrink-0"
+              title="Save all link changes directly"
+            >
+              <Check className="w-4 h-4 stroke-[3]" />
+              <span>Save Links</span>
+            </button>
             <button
               onClick={openAddProductSliderModal}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black shadow-sm transition-transform active:scale-95 cursor-pointer shrink-0"
@@ -1426,6 +1436,26 @@ export default function EditProfileSection({
               <h4 className="mt-4 text-sm font-black text-charcoal">Add your first link</h4>
               <p className="mt-1 max-w-sm text-xs font-semibold leading-relaxed text-charcoal/50">Add a website, WhatsApp, Instagram, portfolio, booking page or any custom URL.</p>
               <button onClick={openAddLinkModal} className="mt-4 flex items-center gap-2 rounded-2xl bg-[#4F83FF] px-5 py-3 text-xs font-black text-white"><Plus className="h-4 w-4" /> Add link</button>
+            </div>
+          )}
+
+          {links.length > 0 && (
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-3xl bg-[#FAF7F2] border border-black/10">
+              <div className="text-left">
+                <p className="text-xs font-bold text-charcoal">Save Links Order & Changes</p>
+                <p className="text-[11px] text-charcoal/60">Saves your active block ordering and links to your live bio.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onUpdateLinks(links);
+                  showToast('Links Saved', 'All links and block orders have been saved.', 'success');
+                }}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-sm transition-transform active:scale-95"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Save Links Order & Changes</span>
+              </button>
             </div>
           )}
         </div>
@@ -2398,6 +2428,17 @@ export default function EditProfileSection({
           </div>
         </div>
       )}
+
+      {/* CONFIRM DELETE LINK MODAL */}
+      <ConfirmModal
+        isOpen={Boolean(deleteLinkCandidate)}
+        title="Delete Link Block"
+        description={deleteLinkCandidate ? `Are you sure you want to delete "${deleteLinkCandidate.title}"? This cannot be undone.` : ''}
+        confirmLabel="Delete Block"
+        variant="danger"
+        onConfirm={confirmDeleteLink}
+        onCancel={() => setDeleteLinkCandidate(null)}
+      />
     </div>
   );
 }
