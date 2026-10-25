@@ -35,6 +35,7 @@ import { useToast } from '@/components/ui/Toast';
 import confetti from 'canvas-confetti';
 import { THEMES } from '@/lib/themes';
 import { CARD_FONTS, CardFont, findCardFont } from '@/lib/cardFonts';
+import { compressWallpaperImage, formatFileSize } from '@/lib/imageCompression';
 
 interface ThemesStudioProps {
   profile: Profile;
@@ -49,6 +50,7 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
   const [activeStudioTab, setActiveStudioTab] = useState<'themes' | 'typography' | 'cards' | 'background'>('themes');
   const [fontCategory, setFontCategory] = useState<string>('All');
   const [fontSearch, setFontSearch] = useState<string>('');
+  const [compressingWallpaper, setCompressingWallpaper] = useState<boolean>(false);
   const bannerInputRef = React.useRef<HTMLInputElement>(null);
 
   // Synchronize saved data without overwriting an active draft preview.
@@ -66,8 +68,9 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
     onLivePreviewChange?.(updated);
   };
 
-  const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
@@ -75,12 +78,12 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
+    setCompressingWallpaper(true);
+    try {
+      const result = await compressWallpaperImage(file);
       const updated: Profile = {
         ...draftProfile,
-        customHeaderImage: dataUrl,
+        customHeaderImage: result.dataUrl,
         showHeaderBackground: true,
         cardBehindContent: draftProfile.cardBehindContent ?? false,
         cardContainerStyle: draftProfile.cardContainerStyle || 'glass',
@@ -94,9 +97,16 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
       setDraftProfile(updated);
       setHasUnsavedChanges(true);
       onLivePreviewChange?.(updated);
-      showToast('Wallpaper Uploaded', 'Background image active. Configure zoom, fit & card backing below.', 'success');
-    };
-    reader.readAsDataURL(file);
+      showToast(
+        'Wallpaper Compressed & Applied',
+        `Reduced from ${formatFileSize(result.originalBytes)} to ${formatFileSize(result.compressedBytes)} (${result.savingsPercent}% data saved)! Loads instantly on mobile.`,
+        'success'
+      );
+    } catch (error) {
+      showToast('Wallpaper upload failed', error instanceof Error ? error.message : 'Please try another image.', 'error');
+    } finally {
+      setCompressingWallpaper(false);
+    }
   };
 
   const themeList = Object.values(THEMES);
@@ -865,11 +875,18 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                disabled={compressingWallpaper}
                 onClick={() => bannerInputRef.current?.click()}
-                className="py-2.5 px-4 rounded-2xl bg-white hover:bg-gray-50 border border-black/10 text-xs font-black text-charcoal flex items-center justify-center gap-2 shadow-2xs cursor-pointer transition-colors"
+                className="py-2.5 px-4 rounded-2xl bg-white hover:bg-gray-50 border border-black/10 text-xs font-black text-charcoal flex items-center justify-center gap-2 shadow-2xs cursor-pointer transition-colors disabled:opacity-50"
               >
                 <Upload className="w-4 h-4 text-[#4F83FF]" />
-                <span>{draftProfile.customHeaderImage ? 'Replace Wallpaper Image' : 'Upload Wallpaper Image from Device (PNG/JPG)'}</span>
+                <span>
+                  {compressingWallpaper 
+                    ? 'Compressing Wallpaper...' 
+                    : draftProfile.customHeaderImage 
+                      ? 'Replace Wallpaper Image' 
+                      : 'Upload Wallpaper Image from Device (PNG/JPG)'}
+                </span>
               </button>
             </div>
 

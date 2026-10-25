@@ -37,7 +37,7 @@ import QRCode from 'qrcode';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 import ThemesStudio from '@/components/dashboard/ThemesStudio';
-import { compressImageFile } from '@/lib/imageCompression';
+import { compressImageFile, compressAvatarImage, compressLinkCardImage, formatFileSize } from '@/lib/imageCompression';
 
 interface EditProfileSectionProps {
   profile: Profile;
@@ -167,21 +167,26 @@ export default function EditProfileSection({
     }
 
     try {
-      const result = await compressImageFile(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.8 });
+      const result = await compressAvatarImage(file);
       setAvatarUrl(result.dataUrl);
       setAvatarFit('contain');
       setAvatarZoom(100);
       setAvatarPosX(0);
       setAvatarPosY(0);
       notifyLive({ avatarUrl: result.dataUrl, avatarFit: 'contain', avatarZoom: 100, avatarPosX: 0, avatarPosY: 0 });
-      showToast('Profile photo uploaded', 'The full photo is visible. Choose Fill frame if you prefer a cropped portrait.', 'success');
+      showToast(
+        'Profile photo compressed',
+        `Compressed to ${formatFileSize(result.compressedBytes)} (${result.savingsPercent}% saved). Fits avatar & browser favicon with near-zero storage!`,
+        'success'
+      );
     } catch (error) {
       showToast('Photo upload failed', error instanceof Error ? error.message : 'Please try another image.', 'error');
     }
   };
 
-  const handleLinkImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLinkImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
@@ -189,14 +194,18 @@ export default function EditProfileSection({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      setLinkBgImage(dataUrl);
+    try {
+      const result = await compressLinkCardImage(file);
+      setLinkBgImage(result.dataUrl);
       setLinkTextColor('#FFFFFF');
-      showToast('Link Background Uploaded', 'Custom artwork applied to link card', 'success');
-    };
-    reader.readAsDataURL(file);
+      showToast(
+        'Link Background Compressed',
+        `Optimized to ${formatFileSize(result.compressedBytes)} (${result.savingsPercent}% data saved)`,
+        'success'
+      );
+    } catch (error) {
+      showToast('Link artwork failed', error instanceof Error ? error.message : 'Please try another image.', 'error');
+    }
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {

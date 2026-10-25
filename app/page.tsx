@@ -969,7 +969,6 @@ export default function LandingPage() {
           </div>
           <span className="font-black text-charcoal">TAPPING &bull; Production Platform</span>
         </div>
-        <p>Built for modern creators and teams. Zero emojis. Zero double gradients.</p>
         <Link href="/dashboard" className="text-charcoal hover:underline">
           Go to Workspace &rarr;
         </Link>

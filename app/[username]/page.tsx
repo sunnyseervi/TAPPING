@@ -97,6 +97,24 @@ export default function PublicProfilePage() {
     };
   }, [usernameParam]);
 
+  // Set page document title and dynamic favicon using compressed profile avatar
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (profile.displayName) {
+        document.title = `${profile.displayName} (@${profile.username}) • TAPPING`;
+      }
+      if (profile.avatarUrl) {
+        let favicon: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
+        if (!favicon) {
+          favicon = document.createElement('link');
+          favicon.rel = 'icon';
+          document.head.appendChild(favicon);
+        }
+        favicon.href = profile.avatarUrl;
+      }
+    }
+  }, [profile.displayName, profile.username, profile.avatarUrl]);
+
   // Clean skeleton to prevent ANY millisecond flash of fake profile during load
   if (!isHydrated) {
     return (
