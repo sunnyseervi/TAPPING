@@ -126,6 +126,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     textColor: nfcCard.frontSide?.textColor || '#FFFFFF',
     textAlign: nfcCard.frontSide?.textAlign || 'left',
     customNote: nfcCard.frontSide?.customNote || '',
+    isPlain: nfcCard.frontSide?.isPlain ?? false,
   });
 
   // Back Side Config
@@ -153,12 +154,13 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     primaryText: nfcCard.backSide?.primaryText || 'TAP ANY PHONE TO CONNECT',
     secondaryText: nfcCard.backSide?.secondaryText || `${displayHost}/${username}`,
     topLabel: nfcCard.backSide?.topLabel || 'TAPPING SMART CARD',
-    bottomLabel: nfcCard.backSide?.bottomLabel || `UID: ${nfcCard.cardUid || 'TAP-9482-BLK'}`,
+    bottomLabel: nfcCard.backSide?.bottomLabel || `UID: ${nfcCard.cardUid || 'TAP-IN-9482'}`,
     showChip: nfcCard.backSide?.showChip ?? false,
     showQrCode: nfcCard.backSide?.showQrCode ?? true,
     textColor: nfcCard.backSide?.textColor || '#FFFFFF',
     textAlign: nfcCard.backSide?.textAlign || 'left',
     customNote: nfcCard.backSide?.customNote || 'Encrypted NTAG216 Chip',
+    isPlain: nfcCard.backSide?.isPlain ?? (nfcCard.sideMode === 'single_sided'),
   });
 
   const COLOR_SPECTRUM = [
@@ -219,6 +221,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
 
   const currentMat = materials.find((m) => m.id === material) || materials[0];
 
+  const isBackPlain = backSide.isPlain ?? (sideMode === 'single_sided');
   const currentConfig = activeSide === 'front' ? frontSide : backSide;
   const updateCurrentConfig = (partial: Partial<CardSideConfig>) => {
     if (activeSide === 'front') {
@@ -579,6 +582,33 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
               </button>
             </div>
 
+            {/* Quick Plain Back Toggle when Back Side is Active */}
+            {activeSide === 'back' && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const newPlain = !isBackPlain;
+                  setBackSide((prev) => ({ ...prev, isPlain: newPlain }));
+                  showToast(
+                    newPlain ? 'Plain Back Activated' : 'Laser Text Back Activated',
+                    newPlain
+                      ? 'Back side is now plain (pure design/artwork with zero text)'
+                      : 'Back side text is now visible',
+                    'info'
+                  );
+                }}
+                className={`px-2.5 py-1 rounded-xl text-xs font-black border transition-all cursor-pointer flex items-center gap-1.5 ${
+                  isBackPlain
+                    ? 'bg-emerald-500 text-white border-emerald-600 shadow-2xs'
+                    : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                }`}
+                title="Toggle plain clean back side (no text, markings or QR)"
+              >
+                <Check className="w-3 h-3 stroke-[3]" />
+                <span>Plain Back</span>
+              </button>
+            )}
 
             <div className="flex items-center gap-1 text-[11px] font-bold text-charcoal/70">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -771,8 +801,11 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                 {/* 5mm Safe Print Area Boundary Guide (Back) */}
 
                 <div className="absolute inset-[18px] z-10 pointer-events-none">
-                  {sideMode === 'single_sided' ? (
-                    /* Single-Sided: Pristine Minimalist Reverse */
+                  {isBackPlain ? (
+                    /* 100% PLAIN CLEAN BACK SIDE: NO TEXT, NO LOGOS, NO QR - ONLY PURE FINISH OR ARTWORK */
+                    <div className="w-full h-full pointer-events-none select-none" />
+                  ) : sideMode === 'single_sided' ? (
+                    /* Single-Sided: Pristine Minimalist Reverse (only when Plain is explicitly toggled OFF) */
                     <div className="flex flex-col items-center justify-center h-full text-center">
                       <span 
                         onMouseDown={(e) => startDrag(e, 'brand')}
@@ -879,9 +912,15 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             <div className="flex items-center justify-between text-[11px] text-charcoal/70 font-semibold">
               <span className="flex items-center gap-1.5">
                 <Move className="w-3.5 h-3.5 text-[#4F83FF]" />
-                <span>Drag any text, QR, or logo directly &bull; Click empty area to flip</span>
+                <span>
+                  {activeSide === 'back' && isBackPlain
+                    ? (currentConfig.artworkUrl ? 'Drag photo to position \u2022 Click empty card to flip' : 'Click card to flip')
+                    : 'Drag any text, QR, or logo directly \u2022 Click empty area to flip'}
+                </span>
               </span>
-              <span className="text-[10px] font-mono font-bold text-charcoal/50">Contained layout</span>
+              <span className="text-[10px] font-mono font-bold text-charcoal/50">
+                {activeSide === 'back' && isBackPlain ? 'Plain clean surface' : 'Contained layout'}
+              </span>
             </div>
 
             {activeElement && (
@@ -1001,7 +1040,8 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                 type="button"
                 onClick={() => {
                   setSideMode('single_sided');
-                  showToast('Single-Sided Mode', 'All data & QR placed together on one side', 'info');
+                  setBackSide((prev) => ({ ...prev, isPlain: true }));
+                  showToast('Single-Sided Mode', 'Front has all data; back side is plain clean design', 'info');
                 }}
                 className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer ${
                   sideMode === 'single_sided'
@@ -1010,12 +1050,99 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                 }`}
               >
                 <p className="font-black text-xs">Single-Sided (All Data)</p>
-                <p className="text-[10px] opacity-70 mt-0.5">Name, QR, and chip on 1 side; clean back</p>
+                <p className="text-[10px] opacity-70 mt-0.5">Name, QR, and chip on 1 side; plain clean back</p>
               </button>
             </div>
           </div>
 
-          {/* Section 2: Card Fonts Dropdown with Authentic Typography Rendering */}
+          {/* Back Side Design Mode Selector (When Back Side is Active) */}
+          {activeSide === 'back' && (
+            <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="font-black text-charcoal uppercase tracking-wider block">
+                    Back Side Design Style
+                  </label>
+                  <p className="text-[11px] text-charcoal/60 mt-0.5">
+                    Choose whether the back side should be completely plain or laser-engraved
+                  </p>
+                </div>
+                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                  isBackPlain ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-blue-100 text-blue-800 border border-blue-300'
+                }`}>
+                  {isBackPlain ? 'Plain Back' : 'Engraved Text'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBackSide((prev) => ({ ...prev, isPlain: true }));
+                    showToast('Plain Back Activated', 'Zero text or markings on back; pure finish or custom art', 'info');
+                  }}
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col gap-1.5 ${
+                    isBackPlain
+                      ? 'bg-[#141518] text-white border-black shadow-xs'
+                      : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Check className={`w-3.5 h-3.5 ${isBackPlain ? 'text-emerald-400 stroke-[3]' : 'text-charcoal/40'}`} />
+                    <p className="font-black text-xs">Plain (No Content)</p>
+                  </div>
+                  <p className={`text-[10px] leading-relaxed ${isBackPlain ? 'text-gray-300' : 'text-charcoal/60'}`}>
+                    100% clean. Zero text, no QR code, no brand labels. Only your metallic finish or uploaded artwork.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBackSide((prev) => ({ ...prev, isPlain: false }));
+                    showToast('Laser Engraved Back Activated', 'You can now customize text, labels, and QR code', 'info');
+                  }}
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col gap-1.5 ${
+                    !isBackPlain
+                      ? 'bg-[#141518] text-white border-black shadow-xs'
+                      : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Type className={`w-3.5 h-3.5 ${!isBackPlain ? 'text-[#4F83FF]' : 'text-charcoal/40'}`} />
+                    <p className="font-black text-xs">Laser-Engraved Text</p>
+                  </div>
+                  <p className={`text-[10px] leading-relaxed ${!isBackPlain ? 'text-gray-300' : 'text-charcoal/60'}`}>
+                    Engrave custom name, website URL, brand mark, or scannable QR code on the back.
+                  </p>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Section 2 & 3: Typography & Element Sizing (Hidden when Back Side is Plain) */}
+          {activeSide === 'back' && isBackPlain ? (
+            <div className="p-3.5 rounded-2xl bg-white border border-black/10 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                  <Check className="w-4 h-4 stroke-[2.5]" />
+                </div>
+                <div>
+                  <p className="font-bold text-charcoal">Clean Minimalist Surface</p>
+                  <p className="text-[11px] text-charcoal/60">Font and sizing controls are hidden because this side has no text markings</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBackSide((prev) => ({ ...prev, isPlain: false }))}
+                className="text-[11px] font-bold text-[#4F83FF] hover:underline cursor-pointer"
+              >
+                Add Text
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Section 2: Card Fonts Dropdown with Authentic Typography Rendering */}
           <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
             <div>
               <label className="font-black text-charcoal uppercase tracking-wider block">
@@ -1565,6 +1692,8 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
               </div>
             </div>
           </div>
+            </>
+          )}
 
           {/* Section 4: Metal Alloy Finish */}
           <div>
@@ -1638,10 +1767,34 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
           </div>
 
           {/* Section 6: Laser Engraved Text on Current Side */}
-          <div className="space-y-3">
-            <h4 className="font-black text-charcoal uppercase tracking-wider text-xs">
-              Laser Engraving & Text ({activeSide.toUpperCase()} Side)
-            </h4>
+          {activeSide === 'back' && isBackPlain ? (
+            <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600 stroke-[3]" />
+                <h4 className="font-black text-charcoal uppercase tracking-wider text-xs">
+                  Back Side is Plain &bull; Zero Text or Markings
+                </h4>
+              </div>
+              <p className="text-[11px] text-charcoal/70 leading-relaxed">
+                Only your chosen metallic finish or uploaded custom picture will be printed. No brand labels, headings, or QR code will interfere with your design.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setBackSide((prev) => ({ ...prev, isPlain: false }));
+                  showToast('Engraving Enabled', 'Enter your custom text and details for the back side', 'info');
+                }}
+                className="w-full py-2.5 px-3 rounded-2xl bg-white hover:bg-gray-50 border border-black/10 font-black text-xs text-charcoal flex items-center justify-center gap-2 shadow-2xs cursor-pointer transition-colors"
+              >
+                <Type className="w-4 h-4 text-[#4F83FF]" />
+                <span>+ Add Laser-Engraved Text to Back Side</span>
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <h4 className="font-black text-charcoal uppercase tracking-wider text-xs">
+                Laser Engraving & Text ({activeSide.toUpperCase()} Side)
+              </h4>
 
             <div>
               <label className="font-bold text-charcoal/70 block mb-1 text-[11px]">
@@ -1780,6 +1933,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
               </div>
             </div>
           </div>
+        )}
 
           {/* Save Blueprint Action */}
           <button

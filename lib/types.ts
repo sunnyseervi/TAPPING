@@ -197,6 +197,7 @@ export interface CardSideConfig {
   textColor?: string; // Laser etch color
   textAlign?: 'left' | 'center' | 'right';
   customNote?: string; // Additional free-form custom etch
+  isPlain?: boolean; // When true, no text, brand, UID, or QR code will be rendered on this side; only the pure material finish or custom artwork
 }
 
 export interface NFCCardDesign {

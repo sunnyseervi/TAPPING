@@ -95,6 +95,7 @@ export const initialNFCCard: NFCCardDesign = {
     brandOffsetY: 0,
     textAlign: 'left',
     customNote: 'Lifetime Hardware Warranty',
+    isPlain: false,
   },
   engravedName: 'AARAV SHARMA',
   engravedTagline: 'FOUNDER & ARCHITECT',
