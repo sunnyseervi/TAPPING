@@ -168,6 +168,18 @@ export interface CardSideConfig {
   qrPosition?: 'bottom-right' | 'top-right' | 'bottom-left' | 'top-left' | 'center';
   chipPosition?: 'top-right' | 'top-left' | 'bottom-right' | 'hidden';
 
+  // Element Sizing & Precision Pixel Offsets
+  primaryTextSize?: number; // 12 to 36 px (default: 18)
+  secondaryTextSize?: number; // 8 to 22 px (default: 9)
+  brandSize?: number; // 10 to 26 px (default: 14)
+  qrSize?: number; // 36 to 90 px (default: 56)
+  nameOffsetX?: number; // -100 to 100 px
+  nameOffsetY?: number; // -100 to 100 px
+  qrOffsetX?: number; // -100 to 100 px
+  qrOffsetY?: number; // -100 to 100 px
+  brandOffsetX?: number; // -100 to 100 px
+  brandOffsetY?: number; // -100 to 100 px
+
   primaryText?: string; // Main title / engraved name
   secondaryText?: string; // Tagline / role / company
   topLabel?: string; // Brand header (e.g. 'TAPPING' or custom brand)

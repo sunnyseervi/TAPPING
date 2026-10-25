@@ -8,7 +8,6 @@ import {
   QrCode, 
   RefreshCw, 
   Check, 
-  Truck, 
   ShieldCheck, 
   ShoppingBag, 
   X, 
@@ -22,7 +21,15 @@ import {
   Layers, 
   Copy, 
   ExternalLink,
-  ChevronDown
+  ChevronDown,
+  ArrowUp,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  RotateCcw,
+  Search,
+  SlidersHorizontal,
+  Palette
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import confetti from 'canvas-confetti';
@@ -43,6 +50,11 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [saveConfirmModalOpen, setSaveConfirmModalOpen] = useState(false);
   const [displayHost, setDisplayHost] = useState('tapping.bio');
+
+  // Font Popover Dropdown Filter States
+  const [isFontDropdownOpen, setIsFontDropdownOpen] = useState(false);
+  const [fontSearch, setFontSearch] = useState('');
+  const [fontCategory, setFontCategory] = useState('All');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cardDragRef = useRef<{ isDragging: boolean; startX: number; startY: number; initPosX: number; initPosY: number }>({
@@ -71,6 +83,16 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     namePosition: nfcCard.frontSide?.namePosition || 'bottom-left',
     chipPosition: nfcCard.frontSide?.chipPosition || 'top-right',
     qrPosition: nfcCard.frontSide?.qrPosition || 'bottom-right',
+    primaryTextSize: nfcCard.frontSide?.primaryTextSize ?? 18,
+    secondaryTextSize: nfcCard.frontSide?.secondaryTextSize ?? 9,
+    brandSize: nfcCard.frontSide?.brandSize ?? 13,
+    qrSize: nfcCard.frontSide?.qrSize ?? 56,
+    nameOffsetX: nfcCard.frontSide?.nameOffsetX ?? 0,
+    nameOffsetY: nfcCard.frontSide?.nameOffsetY ?? 0,
+    qrOffsetX: nfcCard.frontSide?.qrOffsetX ?? 0,
+    qrOffsetY: nfcCard.frontSide?.qrOffsetY ?? 0,
+    brandOffsetX: nfcCard.frontSide?.brandOffsetX ?? 0,
+    brandOffsetY: nfcCard.frontSide?.brandOffsetY ?? 0,
     primaryText: nfcCard.frontSide?.primaryText || nfcCard.engravedName || username.toUpperCase(),
     secondaryText: nfcCard.frontSide?.secondaryText || nfcCard.engravedTagline || 'DIGITAL CREATOR & FOUNDER',
     topLabel: nfcCard.frontSide?.topLabel || 'TAPPING',
@@ -94,6 +116,16 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     namePosition: nfcCard.backSide?.namePosition || 'bottom-left',
     chipPosition: nfcCard.backSide?.chipPosition || 'hidden',
     qrPosition: nfcCard.backSide?.qrPosition || 'bottom-right',
+    primaryTextSize: nfcCard.backSide?.primaryTextSize ?? 14,
+    secondaryTextSize: nfcCard.backSide?.secondaryTextSize ?? 10,
+    brandSize: nfcCard.backSide?.brandSize ?? 14,
+    qrSize: nfcCard.backSide?.qrSize ?? 64,
+    nameOffsetX: nfcCard.backSide?.nameOffsetX ?? 0,
+    nameOffsetY: nfcCard.backSide?.nameOffsetY ?? 0,
+    qrOffsetX: nfcCard.backSide?.qrOffsetX ?? 0,
+    qrOffsetY: nfcCard.backSide?.qrOffsetY ?? 0,
+    brandOffsetX: nfcCard.backSide?.brandOffsetX ?? 0,
+    brandOffsetY: nfcCard.backSide?.brandOffsetY ?? 0,
     primaryText: nfcCard.backSide?.primaryText || 'TAP ANY PHONE TO CONNECT',
     secondaryText: nfcCard.backSide?.secondaryText || `${displayHost}/${username}`,
     topLabel: nfcCard.backSide?.topLabel || 'TAPPING SMART CARD',
@@ -104,6 +136,31 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     textAlign: nfcCard.backSide?.textAlign || 'left',
     customNote: nfcCard.backSide?.customNote || 'Encrypted NTAG216 Chip',
   });
+
+  const COLOR_SPECTRUM = [
+    { name: 'Pure White', hex: '#FFFFFF' },
+    { name: 'Ghost White', hex: '#F8FAFC' },
+    { name: 'Brushed Silver', hex: '#E2E8F0' },
+    { name: 'Titanium Grey', hex: '#94A3B8' },
+    { name: 'Graphite', hex: '#475569' },
+    { name: 'Charcoal Black', hex: '#141518' },
+    { name: 'Obsidian', hex: '#000000' },
+    { name: '24K Mirror Gold', hex: '#FFD700' },
+    { name: 'Bright Brass', hex: '#FACC15' },
+    { name: 'Champagne Gold', hex: '#F5E6C8' },
+    { name: 'Rose Gold', hex: '#E0A899' },
+    { name: 'Copper Bronze', hex: '#CD7F32' },
+    { name: 'Electric Cobalt', hex: '#3B82F6' },
+    { name: 'Sky Cyan', hex: '#38BDF8' },
+    { name: 'Laser Turquoise', hex: '#14B8A6' },
+    { name: 'Emerald Green', hex: '#10B981' },
+    { name: 'Lime Glow', hex: '#84CC16' },
+    { name: 'Neon Amber', hex: '#F59E0B' },
+    { name: 'Sunset Coral', hex: '#F97316' },
+    { name: 'Laser Crimson', hex: '#EF4444' },
+    { name: 'Neon Pink', hex: '#EC4899' },
+    { name: 'Ultra Violet', hex: '#8B5CF6' },
+  ];
 
   const materials: { id: CardMaterial; name: string; class: string; desc: string; textDefault: string }[] = [
     {
@@ -148,6 +205,35 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   };
 
   const currentFontObj = CARD_FONTS.find((f) => f.family === currentConfig.fontFamily) || CARD_FONTS[0];
+
+  const filteredFonts = CARD_FONTS.filter((font) => {
+    const matchCat = fontCategory === 'All' || font.category === fontCategory;
+    const matchSearch =
+      !fontSearch ||
+      font.name.toLowerCase().includes(fontSearch.toLowerCase()) ||
+      font.category.toLowerCase().includes(fontSearch.toLowerCase());
+    return matchCat && matchSearch;
+  });
+
+  const nudgeOffset = (
+    fieldX: 'nameOffsetX' | 'qrOffsetX' | 'brandOffsetX',
+    fieldY: 'nameOffsetY' | 'qrOffsetY' | 'brandOffsetY',
+    deltaX: number,
+    deltaY: number
+  ) => {
+    const currentX = currentConfig[fieldX] ?? 0;
+    const currentY = currentConfig[fieldY] ?? 0;
+    const newX = Math.max(-60, Math.min(60, currentX + deltaX));
+    const newY = Math.max(-60, Math.min(60, currentY + deltaY));
+    updateCurrentConfig({ [fieldX]: newX, [fieldY]: newY });
+  };
+
+  const resetOffset = (
+    fieldX: 'nameOffsetX' | 'qrOffsetX' | 'brandOffsetX',
+    fieldY: 'nameOffsetY' | 'qrOffsetY' | 'brandOffsetY'
+  ) => {
+    updateCurrentConfig({ [fieldX]: 0, [fieldY]: 0 });
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -438,14 +524,29 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                 {/* Content Elements Positioned Strictly within 5mm Safe Print Area */}
                 <div className="absolute inset-[18px] z-10 pointer-events-none">
                   {/* Brand Label (TAPPING) */}
-                  <div className={`absolute z-10 ${getBrandPositionClass(frontSide.brandPosition)}`}>
+                  <div 
+                    className={`absolute z-10 ${getBrandPositionClass(frontSide.brandPosition)}`}
+                    style={{
+                      transform: `translate(${frontSide.brandOffsetX || 0}px, ${frontSide.brandOffsetY || 0}px)`,
+                    }}
+                  >
                     <span 
-                      className="font-extrabold text-xs sm:text-sm tracking-widest uppercase block"
-                      style={{ color: frontSide.textColor || '#FFFFFF' }}
+                      className="font-extrabold tracking-widest uppercase block"
+                      style={{ 
+                        color: frontSide.textColor || '#FFFFFF',
+                        fontSize: `${frontSide.brandSize || 13}px`,
+                        lineHeight: 1.15
+                      }}
                     >
                       {frontSide.topLabel || 'TAPPING'}
                     </span>
-                    <span className="text-[9px] font-mono opacity-70 block">
+                    <span 
+                      className="font-mono opacity-70 block"
+                      style={{ 
+                        fontSize: `${Math.max(7, Math.round((frontSide.brandSize || 13) * 0.65))}px`,
+                        color: frontSide.textColor || '#FFFFFF'
+                      }}
+                    >
                       {frontSide.bottomLabel || 'NFC 13.56MHz'}
                     </span>
                   </div>
@@ -461,24 +562,53 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                   )}
 
                   {/* Primary Name & Tagline */}
-                  <div className={`absolute z-10 ${getNamePositionClass(frontSide.namePosition)} max-w-[210px]`}>
-                    <p className="text-[9px] tracking-widest uppercase opacity-80 truncate">
+                  <div 
+                    className={`absolute z-10 ${getNamePositionClass(frontSide.namePosition)} max-w-[210px]`}
+                    style={{
+                      transform: `translate(${frontSide.nameOffsetX || 0}px, ${frontSide.nameOffsetY || 0}px)`,
+                    }}
+                  >
+                    <p 
+                      className="tracking-widest uppercase opacity-80 truncate"
+                      style={{ 
+                        color: frontSide.textColor || '#FFFFFF',
+                        fontSize: `${frontSide.secondaryTextSize || 9}px`,
+                        lineHeight: 1.2
+                      }}
+                    >
                       {frontSide.secondaryText || 'DIGITAL CREATOR & FOUNDER'}
                     </p>
                     <h3 
-                      className="font-bold text-base md:text-lg tracking-widest mt-0.5 uppercase truncate"
-                      style={{ color: frontSide.textColor || '#FFFFFF' }}
+                      className="font-bold tracking-widest mt-0.5 uppercase truncate"
+                      style={{ 
+                        color: frontSide.textColor || '#FFFFFF',
+                        fontSize: `${frontSide.primaryTextSize || 18}px`,
+                        lineHeight: 1.15
+                      }}
                     >
                       {frontSide.primaryText || username.toUpperCase()}
                     </h3>
-                    <p className="text-[9px] opacity-80 mt-0.5 truncate">
+                    <p 
+                      className="opacity-80 mt-0.5 truncate"
+                      style={{ 
+                        color: frontSide.textColor || '#FFFFFF',
+                        fontSize: `${Math.max(7, Math.round((frontSide.secondaryTextSize || 9) * 0.9))}px`
+                      }}
+                    >
                       {displayHost}/{username}
                     </p>
                   </div>
 
                   {/* Dynamic QR Code */}
                   {(sideMode === 'single_sided' || frontSide.showQrCode) && (
-                    <div className={`absolute z-10 ${getQrPositionClass(frontSide.qrPosition)} w-14 h-14 bg-white p-1 rounded-xl shadow-md flex items-center justify-center`}>
+                    <div 
+                      className={`absolute z-10 ${getQrPositionClass(frontSide.qrPosition)} bg-white p-1 rounded-xl shadow-md flex items-center justify-center`}
+                      style={{
+                        width: `${frontSide.qrSize || 56}px`,
+                        height: `${frontSide.qrSize || 56}px`,
+                        transform: `translate(${frontSide.qrOffsetX || 0}px, ${frontSide.qrOffsetY || 0}px)`,
+                      }}
+                    >
                       <QrCode className="w-full h-full text-black" />
                     </div>
                   )}
@@ -519,35 +649,70 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                     /* Single-Sided: Pristine Minimalist Reverse */
                     <div className="flex flex-col items-center justify-center h-full text-center">
                       <span 
-                        className="font-extrabold text-sm tracking-widest uppercase"
-                        style={{ color: backSide.textColor || '#FFFFFF' }}
+                        className="font-extrabold tracking-widest uppercase"
+                        style={{ 
+                          color: backSide.textColor || '#FFFFFF',
+                          fontSize: `${backSide.brandSize || 14}px`
+                        }}
                       >
                         {backSide.topLabel || 'TAPPING'}
                       </span>
-                      <p className="text-[10px] font-mono opacity-70 mt-1">
+                      <p 
+                        className="font-mono opacity-70 mt-1"
+                        style={{ 
+                          color: backSide.textColor || '#FFFFFF',
+                          fontSize: `${backSide.secondaryTextSize || 10}px` 
+                        }}
+                      >
                         PRECISION MILLED CONTACTLESS HARDWARE
                       </p>
-                      <div className="mt-3 text-[9px] font-mono opacity-50">
+                      <div 
+                        className="mt-3 font-mono opacity-50"
+                        style={{ 
+                          color: backSide.textColor || '#FFFFFF',
+                          fontSize: '9px' 
+                        }}
+                      >
                         UID: {nfcCard.cardUid || 'TAP-9482-BLK'} &bull; NTAG216
                       </div>
                     </div>
                   ) : (
                     /* Dual-Sided Back with QR & Connection details strictly within 5mm zone */
                     <div className="flex items-center justify-between h-full">
-                      <div className="flex flex-col justify-between h-full min-w-0 pr-4">
+                      <div 
+                        className="flex flex-col justify-between h-full min-w-0 pr-4"
+                        style={{
+                          transform: `translate(${backSide.nameOffsetX || 0}px, ${backSide.nameOffsetY || 0}px)`,
+                        }}
+                      >
                         <div>
                           <span 
-                            className="font-bold text-xs uppercase tracking-wider block"
-                            style={{ color: backSide.textColor || '#FFFFFF' }}
+                            className="font-bold uppercase tracking-wider block"
+                            style={{ 
+                              color: backSide.textColor || '#FFFFFF',
+                              fontSize: `${backSide.primaryTextSize || 13}px`
+                            }}
                           >
                             {backSide.primaryText || 'TAP ANY PHONE TO CONNECT'}
                           </span>
-                          <p className="text-xs mt-1.5 opacity-90 truncate">
+                          <p 
+                            className="mt-1.5 opacity-90 truncate"
+                            style={{ 
+                              color: backSide.textColor || '#FFFFFF',
+                              fontSize: `${backSide.secondaryTextSize || 11}px`
+                            }}
+                          >
                             {backSide.secondaryText || `${displayHost}/${username}`}
                           </p>
                         </div>
 
-                        <div className="text-[10px] font-mono opacity-70">
+                        <div 
+                          className="font-mono opacity-70"
+                          style={{ 
+                            color: backSide.textColor || '#FFFFFF',
+                            fontSize: '10px' 
+                          }}
+                        >
                           {backSide.bottomLabel || `UID: ${nfcCard.cardUid || 'TAP-9482-BLK'}`}
                           <br />
                           {backSide.customNote || 'Encrypted NTAG216 Chip'}
@@ -555,7 +720,14 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                       </div>
 
                       {backSide.showQrCode && (
-                        <div className="w-16 h-16 bg-white p-1 rounded-xl flex items-center justify-center shrink-0 shadow-md">
+                        <div 
+                          className="bg-white p-1 rounded-xl flex items-center justify-center shrink-0 shadow-md"
+                          style={{
+                            width: `${backSide.qrSize || 64}px`,
+                            height: `${backSide.qrSize || 64}px`,
+                            transform: `translate(${backSide.qrOffsetX || 0}px, ${backSide.qrOffsetY || 0}px)`,
+                          }}
+                        >
                           <QrCode className="w-full h-full text-black" />
                         </div>
                       )}
@@ -624,22 +796,6 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
               </div>
             </div>
           )}
-
-          {/* Production Status Pill */}
-          <div className="w-full max-w-[390px] mt-4 p-3.5 rounded-2xl bg-[#FAF7F2] border border-black/5 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#B6F554] flex items-center justify-center">
-                <Truck className="w-4 h-4 text-charcoal" />
-              </div>
-              <div>
-                <p className="font-bold text-charcoal">Status: Ready for Laser Milled Queue</p>
-                <p className="text-[10px] text-charcoal/60 font-mono">{nfcCard.trackingNumber || 'TAP-TRK-78401'}</p>
-              </div>
-            </div>
-            <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-[#FDF166] text-charcoal border border-black/10 shadow-2xs">
-              Milling Ready
-            </span>
-          </div>
         </div>
 
         {/* Right Column: Customization Controls */}
@@ -685,47 +841,139 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             </div>
           </div>
 
-          {/* Section 2: 100+ Card Fonts Dropdown / Modal Selector */}
-          <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-2.5">
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="font-black text-charcoal uppercase tracking-wider block">
-                  Card Typography Font (100 Styles)
-                </label>
-                <p className="text-[11px] text-charcoal/60">
-                  Every font renders in its own font style so you can preview it immediately
-                </p>
-              </div>
-
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white border border-black/10">
-                {currentFontObj.category}
-              </span>
+          {/* Section 2: Card Fonts Dropdown with Authentic Typography Rendering */}
+          <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
+            <div>
+              <label className="font-black text-charcoal uppercase tracking-wider block">
+                Card Typography Font
+              </label>
+              <p className="text-[11px] text-charcoal/60 mt-0.5">
+                Every font renders in its own authentic typeface style so you can choose the exact look
+              </p>
             </div>
 
-            {/* In-Page Dropdown Selector (No Screen-Covering Modal) */}
+            {/* Custom Interactive Dropdown Popover Button */}
             <div className="relative">
-              <select
-                value={currentConfig.fontFamily || "'Plus Jakarta Sans', sans-serif"}
-                onChange={(e) => {
-                  updateCurrentConfig({ fontFamily: e.target.value });
-                  const selectedFont = CARD_FONTS.find(f => f.family === e.target.value);
-                  if (selectedFont) {
-                    showToast('Font Applied', `${selectedFont.name} applied to card`, 'success');
-                  }
-                }}
-                className="w-full px-4 py-3 rounded-2xl bg-white border border-black/10 font-bold text-xs text-charcoal appearance-none focus:outline-none focus:ring-2 focus:ring-[#4F83FF]/30 cursor-pointer shadow-2xs pr-10"
+              <button
+                type="button"
+                onClick={() => setIsFontDropdownOpen(!isFontDropdownOpen)}
+                className="w-full px-4 py-3 rounded-2xl bg-white border border-black/10 flex items-center justify-between hover:border-black/30 transition-all shadow-2xs cursor-pointer text-left"
               >
-                {categories.filter(c => c !== 'All').map(cat => (
-                  <optgroup key={cat} label={`── ${cat} ──`}>
-                    {CARD_FONTS.filter(f => f.category === cat).map(font => (
-                      <option key={font.id} value={font.family}>
-                        {font.name}
-                      </option>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-[#EFF4FF] text-[#4F83FF] flex items-center justify-center shrink-0">
+                    <Type className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-sm text-charcoal truncate" style={{ fontFamily: currentConfig.fontFamily }}>
+                      {currentFontObj.name}
+                    </p>
+                    <p className="text-[11px] text-charcoal/50 truncate mt-0.5" style={{ fontFamily: currentConfig.fontFamily }}>
+                      {currentConfig.primaryText || 'ALEX MORGAN'} &bull; Aa Bb 123
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <ChevronDown className={`w-4 h-4 text-charcoal/50 transition-transform duration-200 ${isFontDropdownOpen ? 'rotate-180' : ''}`} />
+                </div>
+              </button>
+
+              {/* Popover Dropdown Panel */}
+              {isFontDropdownOpen && (
+                <div className="mt-2 p-3 bg-white rounded-3xl border border-black/15 shadow-float flex flex-col gap-2.5 z-30">
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <Search className="w-4 h-4 text-charcoal/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={fontSearch}
+                      onChange={(e) => setFontSearch(e.target.value)}
+                      placeholder="Search font by name or style..."
+                      className="w-full pl-9 pr-8 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4F83FF]/30"
+                    />
+                    {fontSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setFontSearch('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-charcoal cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Category Pills */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setFontCategory(cat)}
+                        className={`px-2.5 py-1 rounded-xl text-[10px] font-bold shrink-0 transition-colors cursor-pointer ${
+                          fontCategory === cat
+                            ? 'bg-[#141518] text-white shadow-2xs'
+                            : 'bg-[#FAF7F2] text-charcoal/70 hover:bg-gray-100 border border-black/5'
+                        }`}
+                      >
+                        {cat}
+                      </button>
                     ))}
-                  </optgroup>
-                ))}
-              </select>
-              <ChevronDown className="w-4 h-4 text-charcoal/50 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+
+                  {/* Scrollable Font List: Each font in ITS OWN authentic style */}
+                  <div className="max-h-72 overflow-y-auto space-y-1.5 pr-1">
+                    {filteredFonts.length === 0 ? (
+                      <div className="text-center py-6 text-charcoal/50 text-xs">
+                        No fonts matching &ldquo;{fontSearch}&rdquo;
+                      </div>
+                    ) : (
+                      filteredFonts.map((font) => {
+                        const isSelected = currentConfig.fontFamily === font.family;
+                        return (
+                          <button
+                            key={font.id}
+                            type="button"
+                            onClick={() => {
+                              updateCurrentConfig({ fontFamily: font.family });
+                              setIsFontDropdownOpen(false);
+                              showToast('Font Applied', `${font.name} applied to card`, 'success');
+                            }}
+                            className={`w-full p-2.5 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-[#EFF4FF] border-[#4F83FF] shadow-2xs ring-1 ring-[#4F83FF]'
+                                : 'bg-white border-black/5 hover:border-black/20 hover:bg-[#FAF7F2]'
+                            }`}
+                          >
+                            <div className="flex flex-col min-w-0 pr-2">
+                              <span
+                                className="text-sm font-bold text-charcoal truncate"
+                                style={{ fontFamily: font.family }}
+                              >
+                                {font.name}
+                              </span>
+                              <span
+                                className="text-xs text-charcoal/70 truncate mt-0.5"
+                                style={{ fontFamily: font.family }}
+                              >
+                                {currentConfig.primaryText || 'ALEX MORGAN'} &bull; Aa Bb 123
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-[9px] font-mono uppercase px-2 py-0.5 rounded-md bg-[#FAF7F2] border border-black/5 text-charcoal/50">
+                                {font.category}
+                              </span>
+                              {isSelected && (
+                                <Check className="w-4 h-4 text-[#4F83FF]" />
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Live Typography Preview Strip */}
@@ -737,94 +985,409 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             </div>
           </div>
 
-          {/* Section 3: Element Positions (Brand "TAPPING", Name, QR, Chip Placement) */}
-          <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
-            <label className="font-black text-charcoal uppercase tracking-wider block">
-              Element Placement on Card (5mm Safe Zone)
-            </label>
-
-            {/* Brand "TAPPING" Position */}
+          {/* Section 3: Element Sizing & Precision Placement (5mm Safe Margin) */}
+          <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-4">
             <div>
-              <span className="text-[11px] font-bold text-charcoal/70 block mb-1">
-                Brand Name &ldquo;TAPPING&rdquo; Position
-              </span>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
-                {[
-                  { id: 'top-left', label: 'Top Left' },
-                  { id: 'top-center', label: 'Top Center' },
-                  { id: 'top-right', label: 'Top Right' },
-                  { id: 'bottom-left', label: 'Bottom Left' },
-                  { id: 'bottom-right', label: 'Bottom Right' },
-                ].map((pos) => (
+              <label className="font-black text-charcoal uppercase tracking-wider block">
+                Element Sizing & Placement ({activeSide.toUpperCase()} Side)
+              </label>
+              <p className="text-[11px] text-charcoal/60 mt-0.5">
+                Control text sizes, QR dimension, and nudge positions strictly within the 5mm print-safe margin
+              </p>
+            </div>
+
+            {/* Sub-section A: Primary Name / Heading */}
+            <div className="p-3 bg-white rounded-2xl border border-black/5 flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-charcoal">
+                  Primary Name Font Size
+                </span>
+                <span className="text-xs font-mono font-black text-[#4F83FF] bg-[#EFF4FF] px-2 py-0.5 rounded-md">
+                  {currentConfig.primaryTextSize ?? 18}px
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="12"
+                  max="32"
+                  value={currentConfig.primaryTextSize ?? 18}
+                  onChange={(e) => updateCurrentConfig({ primaryTextSize: Number(e.target.value) })}
+                  className="w-full accent-[#4F83FF] cursor-pointer"
+                />
+              </div>
+
+              {/* Quick size presets */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {[14, 18, 22, 26, 30].map((sz) => (
                   <button
-                    key={pos.id}
+                    key={sz}
                     type="button"
-                    onClick={() => updateCurrentConfig({ brandPosition: pos.id as any })}
-                    className={`py-1.5 px-2 rounded-xl border text-[10px] font-bold transition-all cursor-pointer ${
-                      currentConfig.brandPosition === pos.id
-                        ? 'bg-[#4F83FF] text-white border-[#4F83FF] shadow-2xs'
-                        : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                    onClick={() => updateCurrentConfig({ primaryTextSize: sz })}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer ${
+                      (currentConfig.primaryTextSize ?? 18) === sz
+                        ? 'bg-[#141518] text-white border-black'
+                        : 'bg-[#FAF7F2] text-charcoal/70 border-black/10 hover:bg-gray-100'
                     }`}
                   >
-                    {pos.label}
+                    {sz}px
+                  </button>
+                ))}
+              </div>
+
+              {/* Position Placement Preset */}
+              <div className="pt-1 border-t border-black/5">
+                <span className="text-[10px] font-bold text-charcoal/60 block mb-1">Position on Card</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  {[
+                    { id: 'bottom-left', label: 'Bottom Left' },
+                    { id: 'bottom-center', label: 'Bottom Center' },
+                    { id: 'center', label: 'Center Card' },
+                    { id: 'top-left', label: 'Top Left' },
+                  ].map((pos) => (
+                    <button
+                      key={pos.id}
+                      type="button"
+                      onClick={() => updateCurrentConfig({ namePosition: pos.id as any })}
+                      className={`py-1 px-2 rounded-xl border text-[10px] font-bold transition-all cursor-pointer ${
+                        currentConfig.namePosition === pos.id
+                          ? 'bg-[#4F83FF] text-white border-[#4F83FF] shadow-2xs'
+                          : 'bg-[#FAF7F2] text-charcoal border-black/10 hover:bg-gray-100'
+                      }`}
+                    >
+                      {pos.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fine Nudge Controls */}
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[10px] font-bold text-charcoal/60">Position Nudge:</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('nameOffsetX', 'nameOffsetY', -4, 0)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Left"
+                  >
+                    <ArrowLeft className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('nameOffsetX', 'nameOffsetY', 4, 0)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Right"
+                  >
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('nameOffsetX', 'nameOffsetY', 0, -4)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Up"
+                  >
+                    <ArrowUp className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('nameOffsetX', 'nameOffsetY', 0, 4)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Down"
+                  >
+                    <ArrowDown className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => resetOffset('nameOffsetX', 'nameOffsetY')}
+                    className="px-2 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 text-[10px] font-bold cursor-pointer flex items-center gap-1"
+                    title="Reset Position"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                    <span>Reset</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Sub-section B: Tagline / Secondary Text */}
+            <div className="p-3 bg-white rounded-2xl border border-black/5 flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-charcoal">
+                  Tagline / Title Font Size
+                </span>
+                <span className="text-xs font-mono font-black text-[#4F83FF] bg-[#EFF4FF] px-2 py-0.5 rounded-md">
+                  {currentConfig.secondaryTextSize ?? 9}px
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="7"
+                  max="18"
+                  value={currentConfig.secondaryTextSize ?? 9}
+                  onChange={(e) => updateCurrentConfig({ secondaryTextSize: Number(e.target.value) })}
+                  className="w-full accent-[#4F83FF] cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {[8, 9, 11, 13, 16].map((sz) => (
+                  <button
+                    key={sz}
+                    type="button"
+                    onClick={() => updateCurrentConfig({ secondaryTextSize: sz })}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer ${
+                      (currentConfig.secondaryTextSize ?? 9) === sz
+                        ? 'bg-[#141518] text-white border-black'
+                        : 'bg-[#FAF7F2] text-charcoal/70 border-black/10 hover:bg-gray-100'
+                    }`}
+                  >
+                    {sz}px
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Name & Tagline Position */}
-            <div>
-              <span className="text-[11px] font-bold text-charcoal/70 block mb-1">
-                Engraved Name &amp; Title Position
-              </span>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                {[
-                  { id: 'bottom-left', label: 'Bottom Left' },
-                  { id: 'bottom-center', label: 'Bottom Center' },
-                  { id: 'center', label: 'Center Card' },
-                  { id: 'top-left', label: 'Top Left' },
-                ].map((pos) => (
+            {/* Sub-section C: Brand "TAPPING" Sizing & Placement */}
+            <div className="p-3 bg-white rounded-2xl border border-black/5 flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-charcoal">
+                  Brand &ldquo;TAPPING&rdquo; Font Size
+                </span>
+                <span className="text-xs font-mono font-black text-[#4F83FF] bg-[#EFF4FF] px-2 py-0.5 rounded-md">
+                  {currentConfig.brandSize ?? 13}px
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="9"
+                  max="22"
+                  value={currentConfig.brandSize ?? 13}
+                  onChange={(e) => updateCurrentConfig({ brandSize: Number(e.target.value) })}
+                  className="w-full accent-[#4F83FF] cursor-pointer"
+                />
+              </div>
+
+              <div className="pt-1 border-t border-black/5">
+                <span className="text-[10px] font-bold text-charcoal/60 block mb-1">Brand Position</span>
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                  {[
+                    { id: 'top-left', label: 'Top Left' },
+                    { id: 'top-center', label: 'Top Center' },
+                    { id: 'top-right', label: 'Top Right' },
+                    { id: 'bottom-left', label: 'Bottom Left' },
+                    { id: 'bottom-right', label: 'Bottom Right' },
+                  ].map((pos) => (
+                    <button
+                      key={pos.id}
+                      type="button"
+                      onClick={() => updateCurrentConfig({ brandPosition: pos.id as any })}
+                      className={`py-1 px-1.5 rounded-xl border text-[10px] font-bold transition-all cursor-pointer ${
+                        currentConfig.brandPosition === pos.id
+                          ? 'bg-[#4F83FF] text-white border-[#4F83FF] shadow-2xs'
+                          : 'bg-[#FAF7F2] text-charcoal border-black/10 hover:bg-gray-100'
+                      }`}
+                    >
+                      {pos.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fine Nudge Controls for Brand */}
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[10px] font-bold text-charcoal/60">Brand Nudge:</span>
+                <div className="flex items-center gap-1">
                   <button
-                    key={pos.id}
                     type="button"
-                    onClick={() => updateCurrentConfig({ namePosition: pos.id as any })}
-                    className={`py-1.5 px-2 rounded-xl border text-[10px] font-bold transition-all cursor-pointer ${
-                      currentConfig.namePosition === pos.id
-                        ? 'bg-[#4F83FF] text-white border-[#4F83FF] shadow-2xs'
-                        : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
-                    }`}
+                    onClick={() => nudgeOffset('brandOffsetX', 'brandOffsetY', -4, 0)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Left"
                   >
-                    {pos.label}
+                    <ArrowLeft className="w-3 h-3" />
                   </button>
-                ))}
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('brandOffsetX', 'brandOffsetY', 4, 0)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Right"
+                  >
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('brandOffsetX', 'brandOffsetY', 0, -4)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Up"
+                  >
+                    <ArrowUp className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('brandOffsetX', 'brandOffsetY', 0, 4)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Down"
+                  >
+                    <ArrowDown className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => resetOffset('brandOffsetX', 'brandOffsetY')}
+                    className="px-2 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 text-[10px] font-bold cursor-pointer flex items-center gap-1"
+                    title="Reset Position"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                    <span>Reset</span>
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Dynamic QR Code Position */}
-            <div>
-              <span className="text-[11px] font-bold text-charcoal/70 block mb-1">
-                Dynamic QR Code Position
-              </span>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+            {/* Sub-section D: QR Code Sizing & Placement */}
+            <div className="p-3 bg-white rounded-2xl border border-black/5 flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-charcoal">
+                  Dynamic QR Code Size
+                </span>
+                <span className="text-xs font-mono font-black text-[#4F83FF] bg-[#EFF4FF] px-2 py-0.5 rounded-md">
+                  {currentConfig.qrSize ?? 56}px
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="36"
+                  max="80"
+                  value={currentConfig.qrSize ?? 56}
+                  onChange={(e) => updateCurrentConfig({ qrSize: Number(e.target.value) })}
+                  className="w-full accent-[#4F83FF] cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5 flex-wrap">
                 {[
-                  { id: 'bottom-right', label: 'Bottom Right' },
-                  { id: 'top-right', label: 'Top Right' },
-                  { id: 'bottom-left', label: 'Bottom Left' },
-                  { id: 'center', label: 'Center Card' },
-                ].map((pos) => (
+                  { sz: 44, label: 'Compact (44px)' },
+                  { sz: 56, label: 'Standard (56px)' },
+                  { sz: 72, label: 'Large (72px)' },
+                ].map((item) => (
                   <button
-                    key={pos.id}
+                    key={item.sz}
                     type="button"
-                    onClick={() => updateCurrentConfig({ qrPosition: pos.id as any })}
-                    className={`py-1.5 px-2 rounded-xl border text-[10px] font-bold transition-all cursor-pointer ${
-                      currentConfig.qrPosition === pos.id
-                        ? 'bg-[#4F83FF] text-white border-[#4F83FF] shadow-2xs'
-                        : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                    onClick={() => updateCurrentConfig({ qrSize: item.sz })}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer ${
+                      (currentConfig.qrSize ?? 56) === item.sz
+                        ? 'bg-[#141518] text-white border-black'
+                        : 'bg-[#FAF7F2] text-charcoal/70 border-black/10 hover:bg-gray-100'
                     }`}
                   >
-                    {pos.label}
+                    {item.label}
                   </button>
                 ))}
+              </div>
+
+              <div className="pt-1 border-t border-black/5">
+                <span className="text-[10px] font-bold text-charcoal/60 block mb-1">QR Code Position</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  {[
+                    { id: 'bottom-right', label: 'Bottom Right' },
+                    { id: 'top-right', label: 'Top Right' },
+                    { id: 'bottom-left', label: 'Bottom Left' },
+                    { id: 'center', label: 'Center Card' },
+                  ].map((pos) => (
+                    <button
+                      key={pos.id}
+                      type="button"
+                      onClick={() => updateCurrentConfig({ qrPosition: pos.id as any })}
+                      className={`py-1 px-2 rounded-xl border text-[10px] font-bold transition-all cursor-pointer ${
+                        currentConfig.qrPosition === pos.id
+                          ? 'bg-[#4F83FF] text-white border-[#4F83FF] shadow-2xs'
+                          : 'bg-[#FAF7F2] text-charcoal border-black/10 hover:bg-gray-100'
+                      }`}
+                    >
+                      {pos.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fine Nudge Controls for QR */}
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[10px] font-bold text-charcoal/60">QR Nudge:</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('qrOffsetX', 'qrOffsetY', -4, 0)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Left"
+                  >
+                    <ArrowLeft className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('qrOffsetX', 'qrOffsetY', 4, 0)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Right"
+                  >
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('qrOffsetX', 'qrOffsetY', 0, -4)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Up"
+                  >
+                    <ArrowUp className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => nudgeOffset('qrOffsetX', 'qrOffsetY', 0, 4)}
+                    className="w-6 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 flex items-center justify-center text-xs font-bold cursor-pointer"
+                    title="Nudge Down"
+                  >
+                    <ArrowDown className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => resetOffset('qrOffsetX', 'qrOffsetY')}
+                    className="px-2 h-6 rounded-lg bg-[#FAF7F2] hover:bg-gray-200 border border-black/10 text-[10px] font-bold cursor-pointer flex items-center gap-1"
+                    title="Reset Position"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                    <span>Reset</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Sub-section E: Contactless Chip Graphic Toggle */}
+            <div className="p-3 bg-white rounded-2xl border border-black/5 flex items-center justify-between">
+              <div>
+                <span className="font-bold text-xs text-charcoal block">
+                  Contactless Gold Microchip Graphic
+                </span>
+                <span className="text-[10px] text-charcoal/60">
+                  Toggle the aesthetic hardware microchip icon on the card
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateCurrentConfig({ showChip: !currentConfig.showChip })}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
+                    currentConfig.showChip !== false
+                      ? 'bg-[#4F83FF] text-white border-[#4F83FF]'
+                      : 'bg-[#FAF7F2] text-charcoal/60 border-black/10'
+                  }`}
+                >
+                  {currentConfig.showChip !== false ? 'Visible' : 'Hidden'}
+                </button>
               </div>
             </div>
           </div>
@@ -948,35 +1511,98 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
               />
             </div>
 
-            {/* Laser Contrast Colors */}
-            <div>
-              <label className="font-bold text-charcoal/70 block mb-1 text-[11px]">
-                Laser Contrast Color
-              </label>
-              <div className="flex items-center gap-2 flex-wrap">
-                {[
-                  { name: 'Pure White', hex: '#FFFFFF' },
-                  { name: 'Charcoal Black', hex: '#141518' },
-                  { name: 'Brushed Gold', hex: '#FACC15' },
-                  { name: 'Electric Cyan', hex: '#38BDF8' },
-                  { name: 'Soft Rose', hex: '#F472B6' },
-                  { name: 'Neon Amber', hex: '#F59E0B' },
-                ].map((c) => (
-                  <button
-                    key={c.hex}
-                    type="button"
-                    onClick={() => updateCurrentConfig({ textColor: c.hex })}
-                    className={`w-7 h-7 rounded-full border border-black/20 flex items-center justify-center transition-transform active:scale-90 cursor-pointer ${
-                      currentConfig.textColor === c.hex ? 'ring-2 ring-charcoal scale-110' : ''
-                    }`}
-                    style={{ backgroundColor: c.hex }}
-                    title={c.name}
-                  >
-                    {currentConfig.textColor === c.hex && (
-                      <Check className={`w-3.5 h-3.5 ${c.hex === '#FFFFFF' ? 'text-black' : 'text-white'}`} />
-                    )}
-                  </button>
-                ))}
+            {/* Laser Contrast Colors - Full Spectrum Picker */}
+            <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="font-black text-charcoal uppercase tracking-wider block">
+                    Laser Engraving & Text Color
+                  </label>
+                  <p className="text-[11px] text-charcoal/60 mt-0.5">
+                    Choose from the full color spectrum, input HEX code, or select a metallic preset
+                  </p>
+                </div>
+
+                {/* Color preview pill */}
+                <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-white border border-black/10 shadow-2xs">
+                  <div
+                    className="w-4 h-4 rounded-full border border-black/20"
+                    style={{ backgroundColor: currentConfig.textColor || '#FFFFFF' }}
+                  />
+                  <span className="text-xs font-mono font-bold text-charcoal">
+                    {currentConfig.textColor || '#FFFFFF'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Full Spectrum Input + Custom HEX Text Field */}
+              <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-black/5">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={currentConfig.textColor || '#FFFFFF'}
+                    onChange={(e) => updateCurrentConfig({ textColor: e.target.value.toUpperCase() })}
+                    className="w-10 h-10 rounded-xl border border-black/20 cursor-pointer p-0.5 bg-white shadow-2xs"
+                    title="Click to open full color spectrum wheel"
+                  />
+                  <div>
+                    <span className="text-[10px] font-bold text-charcoal/60 block">Full Spectrum Wheel</span>
+                    <span className="text-[11px] font-medium text-charcoal">Select any RGB / HEX</span>
+                  </div>
+                </div>
+
+                <div className="h-8 w-px bg-black/10 mx-1" />
+
+                <div className="flex-1">
+                  <span className="text-[10px] font-bold text-charcoal/60 block mb-0.5">Hex Code</span>
+                  <input
+                    type="text"
+                    value={currentConfig.textColor || '#FFFFFF'}
+                    onChange={(e) => {
+                      let val = e.target.value.toUpperCase();
+                      if (!val.startsWith('#')) val = '#' + val;
+                      updateCurrentConfig({ textColor: val });
+                    }}
+                    placeholder="#FFFFFF"
+                    className="w-full px-2.5 py-1 rounded-lg border border-black/10 font-mono text-xs font-bold uppercase focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                  />
+                </div>
+              </div>
+
+              {/* 22-Color Spectrum & Metallic Presets Grid */}
+              <div>
+                <span className="text-[10px] font-bold text-charcoal/60 block mb-1.5 uppercase tracking-wider">
+                  Metallic & Vibrant Presets
+                </span>
+                <div className="grid grid-cols-6 sm:grid-cols-11 gap-1.5">
+                  {COLOR_SPECTRUM.map((c) => {
+                    const isSelected = (currentConfig.textColor || '#FFFFFF').toUpperCase() === c.hex.toUpperCase();
+                    return (
+                      <button
+                        key={c.hex}
+                        type="button"
+                        onClick={() => updateCurrentConfig({ textColor: c.hex })}
+                        className={`w-7 h-7 rounded-xl border flex items-center justify-center transition-transform active:scale-90 cursor-pointer relative group ${
+                          isSelected
+                            ? 'ring-2 ring-black scale-110 shadow-xs z-10'
+                            : 'border-black/15 hover:scale-105'
+                        }`}
+                        style={{ backgroundColor: c.hex }}
+                        title={`${c.name} (${c.hex})`}
+                      >
+                        {isSelected && (
+                          <Check
+                            className={`w-3.5 h-3.5 ${
+                              c.hex === '#FFFFFF' || c.hex === '#F8FAFC' || c.hex === '#E2E8F0' || c.hex === '#F5E6C8'
+                                ? 'text-black'
+                                : 'text-white'
+                            }`}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
