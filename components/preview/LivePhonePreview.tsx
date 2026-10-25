@@ -311,10 +311,11 @@ export default function LivePhonePreview({
                 </div>
               ) : (
                 activeLinks.map((link) => {
+                  const cardStyle = link.linkTheme || profile.linkCardStyle;
                   const cardClasses = resolveLinkCardClasses(
                     profile.theme,
                     link.styleVariant,
-                    profile.linkCardStyle
+                    cardStyle
                   );
                   const hasCustomBg = !!link.bgImage || !!link.bgColor;
                   return (

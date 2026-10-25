@@ -251,8 +251,8 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
       {/* Main Grid Workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-6">
         
-        {/* Left Column: 3D Interactive Card Preview with Custom Uploaded Artwork */}
-        <div className="lg:col-span-6 flex flex-col items-center">
+        {/* Left Column: 3D Interactive Card Preview with Custom Uploaded Artwork (Sticky on Scroll) */}
+        <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-8 self-start flex flex-col items-center">
           
           {/* Side Mode Selector & Active Side Pills */}
           <div className="w-full max-w-[390px] flex items-center justify-between mb-3 text-xs">
@@ -494,7 +494,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
         </div>
 
         {/* Right Column: Comprehensive Customization Controls */}
-        <div className="lg:col-span-6 flex flex-col gap-5 text-left text-xs">
+        <div className="lg:col-span-7 xl:col-span-7 flex flex-col gap-5 text-left text-xs">
           
           {/* Section 1: Side Configuration Mode (Single-Sided vs Dual-Sided) */}
           <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-2.5">

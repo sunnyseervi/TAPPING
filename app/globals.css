@@ -173,4 +173,29 @@ body {
   background-image: repeating-linear-gradient(45deg, #334155 0, #334155 2px, transparent 0, transparent 16px);
 }
 
+.pattern-cyber-matrix {
+  background-color: #050B14;
+  background-image: 
+    radial-gradient(#00FF66 10%, transparent 11%), 
+    linear-gradient(rgba(0, 255, 102, 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.pattern-japanese-seigaiha {
+  background-color: #0F172A;
+  background-image: 
+    radial-gradient(circle at 50% 100%, transparent 12px, #BE185D 13px, #BE185D 15px, transparent 16px),
+    radial-gradient(circle at 50% 100%, transparent 22px, #F43F5E 23px, #F43F5E 25px, transparent 26px);
+  background-size: 40px 20px;
+}
+
+.pattern-y2k-grid {
+  background-color: #F1F5F9;
+  background-image: 
+    linear-gradient(#94A3B8 1px, transparent 1px),
+    linear-gradient(90deg, #94A3B8 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+
 

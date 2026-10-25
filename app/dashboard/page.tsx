@@ -186,7 +186,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Right Column: Sticky Live Mobile Phone Preview with Real-time Updates */}
-                <div className={`lg:col-span-5 xl:col-span-4 lg:sticky lg:top-6 flex flex-col items-center justify-center ${
+                <div className={`lg:col-span-5 xl:col-span-4 lg:sticky lg:top-8 self-start flex flex-col items-center justify-center ${
                   profileViewMode === 'form' ? 'hidden lg:flex' : 'flex'
                 }`}>
                   <LivePhonePreview
@@ -229,7 +229,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Right Column: Sticky Live Mobile Phone Preview with Real-time Updates */}
-              <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-6 flex flex-col items-center justify-center">
+              <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-8 self-start flex flex-col items-center justify-center">
                 <LivePhonePreview
                   profile={profile}
                   vcard={vcard}

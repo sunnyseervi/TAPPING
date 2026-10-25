@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Profile, LinkBlock, StyleVariant, VCardProfile } from '@/lib/types';
+import { Profile, LinkBlock, StyleVariant, VCardProfile, LinkCardStyleType } from '@/lib/types';
+import { resolveLinkCardClasses } from '@/lib/themes';
 import { 
   User, 
   Plus, 
@@ -25,7 +26,8 @@ import {
   Building2,
   MapPin,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Sparkles
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
@@ -108,6 +110,7 @@ export default function EditProfileSection({
   const [linkUrl, setLinkUrl] = useState('');
   const [linkIcon, setLinkIcon] = useState('globe');
   const [linkStyle, setLinkStyle] = useState<StyleVariant>('peach');
+  const [selectedLinkTheme, setSelectedLinkTheme] = useState<LinkCardStyleType | undefined>(undefined);
   const [linkBgImage, setLinkBgImage] = useState('');
   const [linkBgColor, setLinkBgColor] = useState('');
   const [linkTextColor, setLinkTextColor] = useState('#141518');
@@ -193,6 +196,7 @@ export default function EditProfileSection({
     setLinkUrl('https://');
     setLinkIcon('globe');
     setLinkStyle('peach');
+    setSelectedLinkTheme(undefined);
     setLinkBgImage('');
     setLinkBgColor('');
     setLinkTextColor('#141518');
@@ -206,6 +210,7 @@ export default function EditProfileSection({
     setLinkUrl(link.url);
     setLinkIcon(link.icon || 'globe');
     setLinkStyle(link.styleVariant || 'peach');
+    setSelectedLinkTheme(link.linkTheme);
     setLinkBgImage(link.bgImage || '');
     setLinkBgColor(link.bgColor || '');
     setLinkTextColor(link.textColor || (link.bgImage ? '#FFFFFF' : '#141518'));
@@ -229,6 +234,7 @@ export default function EditProfileSection({
               url: linkUrl, 
               icon: linkIcon, 
               styleVariant: linkStyle,
+              linkTheme: selectedLinkTheme,
               bgImage: linkBgImage,
               bgColor: linkBgColor,
               textColor: linkTextColor,
@@ -247,6 +253,7 @@ export default function EditProfileSection({
         url: linkUrl,
         icon: linkIcon,
         styleVariant: linkStyle,
+        linkTheme: selectedLinkTheme,
         bgImage: linkBgImage,
         bgColor: linkBgColor,
         textColor: linkTextColor,
@@ -773,34 +780,44 @@ export default function EditProfileSection({
               <p className="text-[10px] font-black uppercase tracking-wider text-charcoal/50 mb-1.5">
                 Live Card Preview
               </p>
-              <div
-                className="p-3.5 rounded-2xl border border-black/10 shadow-2xs relative overflow-hidden flex items-center justify-between"
-                style={{
-                  backgroundImage: linkBgImage ? `url(${linkBgImage})` : undefined,
-                  backgroundSize: linkBgImage ? 'cover' : undefined,
-                  backgroundPosition: linkBgImage ? 'center' : undefined,
-                  backgroundColor: linkBgColor || (linkStyle === 'sky' ? '#4F83FF' : linkStyle === 'yellow' ? '#FDF166' : linkStyle === 'mint' ? '#B6F554' : linkStyle === 'peach' ? '#EFF4FF' : '#FFFFFF'),
-                  color: linkTextColor,
-                }}
-              >
-                {linkBgImage && (
-                  <div className="absolute inset-0 bg-black/45 backdrop-blur-[0.5px] pointer-events-none z-0" />
-                )}
-                <div className="flex items-center gap-3 min-w-0 relative z-10">
-                  <div className="w-8 h-8 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center shrink-0 shadow-2xs text-charcoal">
-                    {renderIcon(linkIcon)}
+              {(() => {
+                const previewThemeClass = resolveLinkCardClasses(profile.theme, linkStyle, selectedLinkTheme);
+                const hasCustomBg = !!linkBgImage || !!linkBgColor;
+                return (
+                  <div
+                    className={`p-3.5 transition-all relative overflow-hidden flex items-center justify-between ${
+                      hasCustomBg ? 'rounded-2xl border border-black/10 shadow-2xs' : previewThemeClass
+                    }`}
+                    style={{
+                      backgroundImage: linkBgImage ? `url(${linkBgImage})` : undefined,
+                      backgroundSize: linkBgImage ? 'cover' : undefined,
+                      backgroundPosition: linkBgImage ? 'center' : undefined,
+                      backgroundColor: linkBgColor || undefined,
+                      color: linkTextColor,
+                    }}
+                  >
+                    {linkBgImage && (
+                      <div className="absolute inset-0 bg-black/45 backdrop-blur-[0.5px] pointer-events-none z-0" />
+                    )}
+                    <div className="flex items-center gap-3 min-w-0 relative z-10">
+                      <div className="w-8 h-8 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center shrink-0 shadow-2xs text-charcoal">
+                        {renderIcon(linkIcon)}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-black truncate leading-tight" style={{ color: linkTextColor }}>
+                          {linkTitle || 'Your Link Title'}
+                        </p>
+                        {linkSubtitle && (
+                          <p className="text-[10px] opacity-80 truncate mt-0.5 font-medium" style={{ color: linkTextColor }}>
+                            {linkSubtitle}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-80 relative z-10" style={{ color: linkTextColor }} />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-black truncate leading-tight" style={{ color: linkTextColor }}>
-                      {linkTitle || 'Your Link Title'}
-                    </p>
-                    <p className="text-[10px] opacity-80 truncate mt-0.5 font-medium" style={{ color: linkTextColor }}>
-                      {linkSubtitle || 'Subtitle or description preview'}
-                    </p>
-                  </div>
-                </div>
-                <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-80 relative z-10" style={{ color: linkTextColor }} />
-              </div>
+                );
+              })()}
             </div>
 
             <div className="space-y-3.5">
@@ -841,6 +858,55 @@ export default function EditProfileSection({
                   placeholder="https://..."
                   className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-charcoal/20"
                 />
+              </div>
+
+              {/* Individual Link Theme & Card Design Selector */}
+              <div className="p-3.5 rounded-2xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-black text-charcoal uppercase tracking-wider block">
+                    Link Card Design Theme
+                  </label>
+                  <span className="text-[10px] font-mono text-charcoal/60">
+                    {selectedLinkTheme || 'Theme Default'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-48 overflow-y-auto no-scrollbar pr-1">
+                  {[
+                    { id: undefined, name: 'Theme Default', tag: 'Global' },
+                    { id: 'comic-brutalist', name: 'Comic Brutalist', tag: 'Marvel' },
+                    { id: 'comic-halftone', name: 'Comic Halftone', tag: 'Pop Dots' },
+                    { id: 'retro-pixel', name: 'Retro 8-Bit Pixel', tag: 'Arcade' },
+                    { id: 'cyber-terminal', name: 'Cyber Terminal', tag: 'Neon Green' },
+                    { id: 'vaporwave-gradient', name: 'Vaporwave Sunset', tag: 'Gradient' },
+                    { id: 'japanese-wave', name: 'Japanese Wave', tag: 'Indigo' },
+                    { id: 'neobrutal-pastel', name: 'Neo-Brutalist', tag: '3px Border' },
+                    { id: 'glass-glow', name: 'Frosted Glass', tag: 'Luminous' },
+                    { id: 'vintage-ticket', name: 'Vintage Ticket', tag: 'Perforated' },
+                    { id: 'y2k-metallic', name: 'Y2K Millennium', tag: 'Chrome' },
+                    { id: 'sticker-doodle', name: 'Sticker Doodle', tag: 'Anime' },
+                    { id: 'minimal-outline', name: 'Minimal Outline', tag: 'Swiss' },
+                    { id: 'solid', name: 'Pastel Bento Solid', tag: 'Classic' },
+                  ].map((preset) => (
+                    <button
+                      key={preset.name}
+                      type="button"
+                      onClick={() => {
+                        setSelectedLinkTheme(preset.id as any);
+                        if (preset.id === 'cyber-terminal') setLinkTextColor('#00FF66');
+                        else if (preset.id === 'japanese-wave' || preset.id === 'vaporwave-gradient') setLinkTextColor('#FFFFFF');
+                        else setLinkTextColor('#141518');
+                      }}
+                      className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                        selectedLinkTheme === preset.id
+                          ? 'bg-[#141518] text-white border-black shadow-2xs'
+                          : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                      }`}
+                    >
+                      <p className="font-black text-[11px] truncate">{preset.name}</p>
+                      <p className="text-[9px] opacity-70 truncate">{preset.tag}</p>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Custom Uploaded Link Background Image */}

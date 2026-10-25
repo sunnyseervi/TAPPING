@@ -174,10 +174,40 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
       previewClass: 'bg-[#FEF08A] border-2 border-black shadow-[3px_3px_0px_#000] text-black font-black' 
     },
     { 
+      id: 'comic-halftone', 
+      name: 'Comic Halftone Burst', 
+      desc: 'Explosive comic-book halftone dot background with bold outlines', 
+      previewClass: 'bg-[#FFFBEB] border-2 border-black shadow-[3px_3px_0px_#000] pattern-pop-halftone text-black font-black' 
+    },
+    { 
       id: 'retro-pixel', 
       name: 'Retro 8-Bit Pixel', 
       desc: 'Arcade borders with synthwave neon edge glow', 
       previewClass: 'bg-[#111827] border-2 border-[#38BDF8] text-[#38BDF8] shadow-[3px_3px_0px_#0284C7] font-mono' 
+    },
+    { 
+      id: 'cyber-terminal', 
+      name: 'Cyber Terminal HUD', 
+      desc: 'Matrix green terminal with glowing wireframe border', 
+      previewClass: 'bg-[#050B14] border-2 border-[#00FF66] text-[#00FF66] shadow-[0_0_10px_rgba(0,255,102,0.3)] font-mono' 
+    },
+    { 
+      id: 'vaporwave-gradient', 
+      name: 'Vaporwave Sunset Gradient', 
+      desc: 'Pastel violet to hot pink sunset chill with luminous aura', 
+      previewClass: 'bg-gradient-to-r from-[#7E22CE] to-[#EC4899] text-white font-serif border border-white/20' 
+    },
+    { 
+      id: 'japanese-wave', 
+      name: 'Japanese Wave Ukiyo', 
+      desc: 'Deep indigo sea with cyan line art and crest highlights', 
+      previewClass: 'bg-[#0B132B] border border-[#38BDF8]/40 text-white shadow-xs' 
+    },
+    { 
+      id: 'neobrutal-pastel', 
+      name: 'Neo-Brutalist Block', 
+      desc: 'Electric yellow with 3px solid black borders and brutalist offset', 
+      previewClass: 'bg-[#FEF08A] border-3 border-black text-black font-black shadow-[4px_4px_0px_#000]' 
     },
     { 
       id: 'glass-glow', 
@@ -192,6 +222,18 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
       previewClass: 'bg-[#FCFBF8] border border-dashed border-[#CFC6B9] text-[#1C1A17] font-serif' 
     },
     { 
+      id: 'y2k-metallic', 
+      name: 'Y2K Millennium Chrome', 
+      desc: 'Liquid silver chrome sheen with bold futuristic display', 
+      previewClass: 'bg-gradient-to-b from-slate-100 via-slate-200 to-slate-300 border-2 border-slate-400 text-slate-900 font-black' 
+    },
+    { 
+      id: 'sticker-doodle', 
+      name: 'Playful Sticker Doodle', 
+      desc: 'Anime sticker decal with subtle 1deg rotation angle', 
+      previewClass: 'bg-white border-2 border-black text-black font-cartoon shadow-[3px_3px_0px_#000]' 
+    },
+    { 
       id: 'minimal-outline', 
       name: 'Minimal Clean Outline', 
       desc: 'Zero background with razor-sharp 1px neutral border', 
@@ -204,7 +246,10 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
     { id: 'comic-sunburst', name: 'Comic Halftone Sunburst', desc: 'Explosive radial comic rays (from reference)', previewClass: 'pattern-comic-sunburst' },
     { id: 'pop-halftone', name: 'Retro Pop Halftone Dots', desc: 'Classic comic-book printing dot grid', previewClass: 'pattern-pop-halftone' },
     { id: 'retro-grid', name: '80s Synthwave Grid', desc: 'Arcade purple cyber perspective grid', previewClass: 'pattern-retro-grid' },
+    { id: 'cyber-matrix', name: 'Cyber Matrix Grid', desc: 'Matrix green terminal digital points', previewClass: 'pattern-cyber-matrix' },
     { id: 'doodle-waves', name: 'Japanese Doodle Waves', desc: 'Ukiyo-e wave & geometric doodle curves', previewClass: 'pattern-doodle-waves' },
+    { id: 'japanese-seigaiha', name: 'Seigaiha Wave Arches', desc: 'Traditional Japanese geometric arches', previewClass: 'pattern-japanese-seigaiha' },
+    { id: 'y2k-grid', name: 'Y2K Chrome Grid', desc: 'Millennium minimal silver grid', previewClass: 'pattern-y2k-grid' },
     { id: 'cloud-burst', name: 'Anime Cloud Burst', desc: 'Soft pastel comic cloud accents', previewClass: 'pattern-cloud-burst' },
     { id: 'tribal-glyphs', name: 'Tribal Glyph Doodle', desc: 'Geometric glyphs and doodle textures', previewClass: 'pattern-tribal-glyphs' },
   ];
@@ -244,7 +289,7 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
           }`}
         >
           <Palette className="w-3.5 h-3.5" />
-          <span>Themes (9 Presets)</span>
+          <span>Themes (13 Systems)</span>
         </button>
 
         <button
@@ -264,7 +309,7 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>Card & Link Styles</span>
+          <span>Card & Link Styles (13 Designs)</span>
         </button>
 
         <button

@@ -4,6 +4,10 @@ export type ThemeType =
   | 'retro-arcade' 
   | 'cartoon-doodle' 
   | 'vaporwave-chill' 
+  | 'cyberpunk-neon'
+  | 'japanese-ukiyo'
+  | 'y2k-millennium'
+  | 'neobrutalism'
   | 'warm-editorial' 
   | 'minimal-mono' 
   | 'sage-cream' 
@@ -18,15 +22,25 @@ export type BackgroundPatternType =
   | 'retro-grid' 
   | 'doodle-waves' 
   | 'cloud-burst' 
-  | 'tribal-glyphs';
+  | 'tribal-glyphs'
+  | 'cyber-matrix'
+  | 'japanese-seigaiha'
+  | 'y2k-grid';
 
 export type LinkCardStyleType = 
   | 'solid' 
   | 'comic-brutalist' 
+  | 'comic-halftone'
   | 'retro-pixel' 
+  | 'cyber-terminal'
+  | 'vaporwave-gradient'
+  | 'japanese-wave'
+  | 'neobrutal-pastel'
   | 'glass-glow' 
   | 'vintage-ticket' 
-  | 'minimal-outline';
+  | 'minimal-outline'
+  | 'y2k-metallic'
+  | 'sticker-doodle';
 
 export type CardMaterial = 'matte_black' | 'brushed_gold' | 'rose_gold' | 'titanium_silver';
 
@@ -100,6 +114,7 @@ export interface LinkBlock {
   clickCount: number;
 
   // Custom link background & design
+  linkTheme?: LinkCardStyleType; // Custom link card style theme
   bgImage?: string; // Custom uploaded image (data URL or external URL)
   bgColor?: string; // Custom hex/rgb background color
   textColor?: string; // Custom text color for contrast
