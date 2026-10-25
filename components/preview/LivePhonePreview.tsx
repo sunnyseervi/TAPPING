@@ -55,6 +55,29 @@ export default function LivePhonePreview({
   const fontFamilyClass = getFontFamilyClass(profile.fontFamily);
   const patternClass = profile.showHeaderBackground ? getPatternClass(profile.headerBackground) : '';
 
+  const isCardBehindActive = profile.cardBehindContent ?? Boolean(profile.customHeaderImage);
+  const cardStyle = profile.cardContainerStyle || 'glass';
+  const isDark = isDarkTheme(profile.theme);
+
+  let cardContainerClasses = '';
+  let insideCardDark = isDark;
+
+  if (cardStyle === 'solid_white') {
+    cardContainerClasses = 'bg-white text-charcoal border border-black/10 shadow-sm rounded-3xl p-3.5 my-1';
+    insideCardDark = false;
+  } else if (cardStyle === 'solid_dark') {
+    cardContainerClasses = 'bg-[#141518] text-white border border-white/10 shadow-md rounded-3xl p-3.5 my-1';
+    insideCardDark = true;
+  } else if (cardStyle === 'translucent') {
+    cardContainerClasses = 'bg-black/60 text-white backdrop-blur-xl border border-white/20 shadow-md rounded-3xl p-3.5 my-1';
+    insideCardDark = true;
+  } else {
+    // Frosted Glass
+    cardContainerClasses = isDark
+      ? 'bg-[#141A28]/85 text-white backdrop-blur-xl border border-white/20 shadow-md rounded-3xl p-3.5 my-1'
+      : 'bg-white/85 text-charcoal backdrop-blur-xl border border-white/50 shadow-sm rounded-3xl p-3.5 my-1';
+  }
+
   // Font sizing calculations
   const titleSizeClass = 
     profile.fontSize === 'sm' ? 'text-sm' :
@@ -164,51 +187,67 @@ export default function LivePhonePreview({
           {/* Full-Screen Bio Page Theme Pattern or Custom Uploaded Wallpaper */}
           {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
             <div 
-              className={`absolute inset-0 z-0 pointer-events-none transition-all ${
-                profile.customHeaderImage ? 'bg-cover bg-center' : patternClass
+              className={`absolute inset-0 z-0 pointer-events-none transition-all overflow-hidden ${
+                profile.customHeaderImage ? '' : patternClass
               }`}
-              style={profile.customHeaderImage ? { backgroundImage: `url(${profile.customHeaderImage})` } : undefined}
             >
               {profile.customHeaderImage && (
-                <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+                <div
+                  className="absolute inset-0 bg-no-repeat bg-center transition-all duration-75"
+                  style={{
+                    backgroundImage: `url(${profile.customHeaderImage})`,
+                    backgroundSize: profile.bgImageFit === 'contain' ? 'contain' : profile.bgImageFit === 'auto' ? 'auto' : 'cover',
+                    transform: `scale(${(profile.bgImageZoom ?? 100) / 100}) translate(${profile.bgImagePosX ?? 0}px, ${profile.bgImagePosY ?? 0}px)`,
+                    transformOrigin: 'center center',
+                    filter: (profile.bgImageBlur ?? 0) > 0 ? `blur(${profile.bgImageBlur}px)` : undefined,
+                  }}
+                />
+              )}
+              {profile.customHeaderImage && (
+                <div 
+                  className="absolute inset-0 transition-colors pointer-events-none"
+                  style={{
+                    backgroundColor: `rgba(0, 0, 0, ${(profile.bgImageDim ?? 40) / 100})`,
+                  }}
+                />
               )}
             </div>
           )}
 
           {/* Scrollable Phone Bio Page Content */}
-          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-1 pb-6 flex flex-col items-center relative z-10">
-            {/* Circular Avatar with Clean Border & Custom Zoom/Framing */}
-            <div className="relative mt-3">
-              <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-white shadow-soft bg-white relative flex items-center justify-center">
-                <img
-                  src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
-                  alt={profile.displayName}
-                  className={`w-full h-full transition-transform ${profile.avatarFit === 'cover' ? 'object-cover' : 'object-contain'}`}
-                  style={{
-                    transform: `scale(${(profile.avatarZoom ?? 100) / 100}) translate(${profile.avatarPosX ?? 0}px, ${profile.avatarPosY ?? 0}px)`,
-                    transformOrigin: 'center center',
-                  }}
-                />
+          <div className="flex-1 overflow-y-auto no-scrollbar px-3 pt-1 pb-6 flex flex-col items-center relative z-10">
+            <div className={`w-full flex flex-col items-center text-center transition-all ${isCardBehindActive ? cardContainerClasses : ''}`}>
+              {/* Circular Avatar with Clean Border & Custom Zoom/Framing */}
+              <div className="relative mt-2">
+                <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-white shadow-soft bg-white relative flex items-center justify-center">
+                  <img
+                    src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
+                    alt={profile.displayName}
+                    className={`w-full h-full transition-transform ${profile.avatarFit === 'cover' ? 'object-cover' : 'object-contain'}`}
+                    style={{
+                      transform: `scale(${(profile.avatarZoom ?? 100) / 100}) translate(${profile.avatarPosX ?? 0}px, ${profile.avatarPosY ?? 0}px)`,
+                      transformOrigin: 'center center',
+                    }}
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Display Name & Handle */}
-            <h1 
-              className={`${titleSizeClass} font-black mt-2.5 tracking-tight text-center ${fontFamilyClass}`}
-              style={{ 
-                color: profile.fontColor || currentTheme.textHeadingHex || (isDarkTheme(profile.theme) ? '#00FF66' : '#141518'),
-                ...getFontFamilyStyle(profile.fontFamily)
-              }}
-            >
-              {profile.displayName}
-            </h1>
+              {/* Display Name & Handle */}
+              <h1 
+                className={`${titleSizeClass} font-black mt-2.5 tracking-tight text-center ${fontFamilyClass}`}
+                style={{ 
+                  color: profile.fontColor || currentTheme.textHeadingHex || (insideCardDark ? '#FFFFFF' : '#141518'),
+                  ...getFontFamilyStyle(profile.fontFamily)
+                }}
+              >
+                {profile.displayName}
+              </h1>
 
-            <p 
-              className="text-[11px] font-bold opacity-75 mt-0.5 font-mono"
-              style={{ color: currentTheme.textBodyHex || (isDarkTheme(profile.theme) ? '#38BDF8' : '#4A4B50') }}
-            >
-              @{profile.username}
-            </p>
+              <p 
+                className={`text-[11px] font-bold opacity-75 mt-0.5 font-mono ${insideCardDark ? 'text-white/70' : 'text-charcoal/70'}`}
+              >
+                @{profile.username}
+              </p>
 
             {/* Work & Organization Badge */}
             {(profile.badgeTitle || vcard.organization) && (
@@ -385,8 +424,9 @@ export default function LivePhonePreview({
                 })
               )}
             </div>
+          </div>
 
-            {/* Bottom Home Indicator Bar */}
+          {/* Bottom Home Indicator Bar */}
             <div className="w-28 h-1 bg-charcoal/20 rounded-full mx-auto mt-auto shrink-0" />
           </div>
         </div>

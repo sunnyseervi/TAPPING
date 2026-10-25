@@ -207,9 +207,31 @@ export default function PublicProfilePage() {
     return `https://${host}/${value.replace(/^@/, '')}`;
   };
 
+  const isCardBehindActive = profile.cardBehindContent ?? Boolean(profile.customHeaderImage);
+  const cardStyle = profile.cardContainerStyle || 'glass';
+
+  let cardContainerClasses = '';
+  let insideCardDark = dark;
+
+  if (cardStyle === 'solid_white') {
+    cardContainerClasses = 'bg-white text-charcoal border border-black/10 shadow-[0_20px_50px_rgba(0,0,0,0.25)] rounded-[36px] sm:rounded-[40px] p-5 sm:p-7';
+    insideCardDark = false;
+  } else if (cardStyle === 'solid_dark') {
+    cardContainerClasses = 'bg-[#141518] text-white border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.35)] rounded-[36px] sm:rounded-[40px] p-5 sm:p-7';
+    insideCardDark = true;
+  } else if (cardStyle === 'translucent') {
+    cardContainerClasses = 'bg-black/60 text-white backdrop-blur-2xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.35)] rounded-[36px] sm:rounded-[40px] p-5 sm:p-7';
+    insideCardDark = true;
+  } else {
+    // Frosted Glass (default)
+    cardContainerClasses = dark
+      ? 'bg-[#141A28]/85 text-white backdrop-blur-2xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.35)] rounded-[36px] sm:rounded-[40px] p-5 sm:p-7'
+      : 'bg-white/85 text-charcoal backdrop-blur-2xl border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.25)] rounded-[36px] sm:rounded-[40px] p-5 sm:p-7';
+  }
+
   return (
     <div 
-      className={`min-h-screen ${currentTheme.canvasBg} text-charcoal flex flex-col items-center justify-between p-4 sm:p-6 lg:p-10 selection:bg-[#FDF166] selection:text-charcoal transition-colors duration-200 relative overflow-x-hidden`}
+      className={`min-h-screen ${currentTheme.canvasBg} text-charcoal flex flex-col items-center justify-start p-0 sm:py-8 sm:px-4 selection:bg-[#FDF166] selection:text-charcoal transition-colors duration-200 relative overflow-x-hidden`}
       style={{ 
         backgroundColor: profile.customBgColor || currentTheme.canvasBgHex || currentTheme.previewColors[0] || '#FAF7F2', 
         backgroundImage: profile.pageBgImage ? `url(${profile.pageBgImage})` : undefined, 
@@ -221,52 +243,73 @@ export default function PublicProfilePage() {
       {/* Full-Screen Bio Page Theme Pattern or Custom Uploaded Wallpaper */}
       {profile.showHeaderBackground && (profile.customHeaderImage || patternClass) && (
         <div 
-          className={`fixed inset-0 z-0 pointer-events-none transition-all ${
-            profile.customHeaderImage ? 'bg-cover bg-center' : patternClass
+          className={`fixed inset-0 z-0 pointer-events-none transition-all overflow-hidden ${
+            profile.customHeaderImage ? '' : patternClass
           }`}
-          style={profile.customHeaderImage ? { backgroundImage: `url(${profile.customHeaderImage})` } : undefined}
         >
           {profile.customHeaderImage && (
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+            <div
+              className="absolute inset-0 bg-no-repeat bg-center transition-all duration-75"
+              style={{
+                backgroundImage: `url(${profile.customHeaderImage})`,
+                backgroundSize: profile.bgImageFit === 'contain' ? 'contain' : profile.bgImageFit === 'auto' ? 'auto' : 'cover',
+                transform: `scale(${(profile.bgImageZoom ?? 100) / 100}) translate(${profile.bgImagePosX ?? 0}px, ${profile.bgImagePosY ?? 0}px)`,
+                transformOrigin: 'center center',
+                filter: (profile.bgImageBlur ?? 0) > 0 ? `blur(${profile.bgImageBlur}px)` : undefined,
+              }}
+            />
+          )}
+          {profile.customHeaderImage && (
+            <div 
+              className="absolute inset-0 transition-colors pointer-events-none"
+              style={{
+                backgroundColor: `rgba(0, 0, 0, ${(profile.bgImageDim ?? 40) / 100})`,
+              }}
+            />
           )}
         </div>
       )}
 
-      {/* TOP ACTION BAR: Refined Share & QR Actions */}
-      <div className="w-full max-w-[580px] mx-auto flex items-center justify-end py-1.5 mb-2 relative z-20">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              recordQRScan();
-              setShowQRModal(true);
-            }}
-            className={`px-3 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer backdrop-blur-md ${
-              dark 
-                ? 'bg-[#141A28]/85 hover:bg-[#1C2538] text-white border-white/20' 
-                : 'bg-white/85 hover:bg-white text-charcoal border-black/10'
-            }`}
-            title="Scan or View QR Code"
-          >
-            <QrCode className="w-3.5 h-3.5" />
-            <span>QR</span>
-          </button>
-          <button
-            onClick={handleShare}
-            className={`px-3.5 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer backdrop-blur-md ${
-              dark 
-                ? 'bg-[#141A28]/85 hover:bg-[#1C2538] text-white border-white/20' 
-                : 'bg-white/85 hover:bg-white text-charcoal border-black/10'
-            }`}
-            title="Share Contact Profile"
-          >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Share2 className="w-3.5 h-3.5" />}
-            <span>{copied ? 'Copied' : 'Share'}</span>
-          </button>
-        </div>
-      </div>
+      {/* MOBILE-ONLY CONSTRAINED CONTAINER (MAX-W-[430PX] — DESKTOP RETAINS SIDES FOR WALLPAPER) */}
+      <div className="w-full max-w-[430px] mx-auto min-h-screen sm:min-h-auto relative z-10 flex flex-col items-center px-3 sm:px-0">
 
-      {/* MAIN BIO PROFILE STACK (DIRECT THEME INTEGRATION — NO UGLY WHITE BOX) */}
-      <main className="w-full max-w-[580px] mx-auto flex flex-col items-center text-center transition-all relative z-10 px-2 sm:px-4 pt-1 pb-12">
+        {/* TOP ACTION BAR: Refined Share & QR Actions (At Top of Mobile View) */}
+        <div className="w-full flex items-center justify-end py-2 mb-1 px-1">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                recordQRScan();
+                setShowQRModal(true);
+              }}
+              className={`px-3 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer backdrop-blur-md ${
+                dark 
+                  ? 'bg-[#141A28]/85 hover:bg-[#1C2538] text-white border-white/20' 
+                  : 'bg-white/85 hover:bg-white text-charcoal border-black/10'
+              }`}
+              title="Scan or View QR Code"
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              <span>QR</span>
+            </button>
+            <button
+              onClick={handleShare}
+              className={`px-3.5 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer backdrop-blur-md ${
+                dark 
+                  ? 'bg-[#141A28]/85 hover:bg-[#1C2538] text-white border-white/20' 
+                  : 'bg-white/85 hover:bg-white text-charcoal border-black/10'
+              }`}
+              title="Share Contact Profile"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Share2 className="w-3.5 h-3.5" />}
+              <span>{copied ? 'Copied' : 'Share'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* MAIN BIO PROFILE STACK (WRAPPED IN CARD CONTAINER WHEN ACTIVE) */}
+        <main className={`w-full transition-all flex flex-col items-center text-center ${
+          isCardBehindActive ? cardContainerClasses : 'px-1 pt-1 pb-10'
+        }`}>
         
         {/* Avatar with Crisp White Ring & Shadow */}
         <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden ring-4 ring-white shadow-soft bg-white relative flex items-center justify-center shrink-0">
@@ -285,7 +328,7 @@ export default function PublicProfilePage() {
         <h1 
           className={`${titleSizeClass} font-black tracking-tight mt-3 leading-tight`}
           style={{ 
-            color: profile.fontColor || currentTheme.textHeadingHex || (dark ? '#FFFFFF' : '#141518'),
+            color: profile.fontColor || (insideCardDark ? '#FFFFFF' : (currentTheme.textHeadingHex || '#141518')),
             ...getFontFamilyStyle(profile.fontFamily)
           }}
         >
@@ -293,7 +336,7 @@ export default function PublicProfilePage() {
         </h1>
 
         {/* Handle / Username */}
-        <p className={`text-xs font-bold font-mono mt-0.5 ${dark ? 'text-white/60' : 'text-charcoal/60'}`}>
+        <p className={`text-xs font-bold font-mono mt-0.5 ${insideCardDark ? 'text-white/60' : 'text-charcoal/60'}`}>
           @{profile.username}
         </p>
 
@@ -315,7 +358,7 @@ export default function PublicProfilePage() {
 
         {/* Location / Address */}
         {fullAddress && (
-          <div className={`flex items-center justify-center gap-1.5 mt-1.5 text-xs font-semibold ${dark ? 'text-white/70' : 'text-charcoal/70'}`}>
+          <div className={`flex items-center justify-center gap-1.5 mt-1.5 text-xs font-semibold ${insideCardDark ? 'text-white/70' : 'text-charcoal/70'}`}>
             <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
             <span>{fullAddress}</span>
           </div>
@@ -323,7 +366,7 @@ export default function PublicProfilePage() {
 
         {/* Bio Description */}
         {profile.bio && (
-          <p className={`${bodySizeClass} mt-2.5 max-w-md leading-relaxed font-medium ${dark ? 'text-white/85' : 'text-charcoal/75'}`}>
+          <p className={`${bodySizeClass} mt-2.5 max-w-md leading-relaxed font-medium ${insideCardDark ? 'text-white/85' : 'text-charcoal/75'}`}>
             {profile.bio}
           </p>
         )}
@@ -523,17 +566,18 @@ export default function PublicProfilePage() {
         {/* CREATOR PRODUCTS & WHATSAPP COMMERCE STORE (SHOWN DIRECTLY BELOW PROFILE LINKS) */}
         {store.enabled && store.products.some((product) => product.isActive) && (
           <div className="w-full mt-8 pt-6 border-t border-black/10 flex flex-col gap-4 text-left">
-            <PublicStore store={store} sellerName={profile.displayName} dark={dark} />
+            <PublicStore store={store} sellerName={profile.displayName} dark={insideCardDark} />
           </div>
         )}
       </main>
 
       {/* Powered by Tapping Branding Footer */}
-      <footer className="w-full py-4 text-center relative z-10">
-        <span className={`text-[11px] font-bold tracking-wider ${dark ? 'text-white/40' : 'text-charcoal/40'}`}>
+      <footer className="w-full py-4 text-center">
+        <span className={`text-[11px] font-bold tracking-wider ${insideCardDark ? 'text-white/40' : 'text-charcoal/40'}`}>
           Powered by TAPPING &bull; Digital Cards &amp; Bio Space
         </span>
       </footer>
+    </div>
 
       {/* DYNAMIC QR CODE DISPLAY MODAL */}
       {showQRModal && (

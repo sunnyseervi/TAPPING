@@ -22,7 +22,14 @@ import {
   Flame,
   Upload,
   Trash2,
-  Search
+  Search,
+  ZoomIn,
+  ZoomOut,
+  Move,
+  Maximize2,
+  Eye,
+  RotateCcw,
+  SlidersHorizontal
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import confetti from 'canvas-confetti';
@@ -49,6 +56,16 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
     if (!hasUnsavedChanges) setDraftProfile(profile);
   }, [profile, hasUnsavedChanges]);
 
+  const updateDraft = (partial: Partial<Profile>) => {
+    const updated: Profile = {
+      ...draftProfile,
+      ...partial,
+    };
+    setDraftProfile(updated);
+    setHasUnsavedChanges(true);
+    onLivePreviewChange?.(updated);
+  };
+
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -65,10 +82,19 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
         ...draftProfile,
         customHeaderImage: dataUrl,
         showHeaderBackground: true,
+        cardBehindContent: draftProfile.cardBehindContent ?? true,
+        cardContainerStyle: draftProfile.cardContainerStyle || 'glass',
+        bgImageZoom: draftProfile.bgImageZoom ?? 100,
+        bgImageFit: draftProfile.bgImageFit || 'cover',
+        bgImageDim: draftProfile.bgImageDim ?? 35,
+        bgImagePosX: draftProfile.bgImagePosX ?? 0,
+        bgImagePosY: draftProfile.bgImagePosY ?? 0,
+        bgImageBlur: draftProfile.bgImageBlur ?? 0,
       };
       setDraftProfile(updated);
       setHasUnsavedChanges(true);
       onLivePreviewChange?.(updated);
+      showToast('Wallpaper Uploaded', 'Background image active. Configure zoom, fit & card backing below.', 'success');
     };
     reader.readAsDataURL(file);
   };
@@ -718,6 +744,65 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
               );
             })}
           </div>
+
+          {/* Profile Card Container Behind Content */}
+          <div className="p-5 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3.5 mt-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-black text-charcoal flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-[#4F83FF]" />
+                  <span>Card Container Behind Profile Content & Data</span>
+                </p>
+                <p className="text-[11px] text-charcoal/60 mt-0.5">
+                  Wraps your entire profile (avatar, name, bio, buttons, and links) in a stylish floating card
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => updateDraft({ cardBehindContent: !(draftProfile.cardBehindContent ?? true) })}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer ${
+                  (draftProfile.cardBehindContent ?? true)
+                    ? 'bg-emerald-500 text-white border-emerald-600 shadow-2xs'
+                    : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                }`}
+              >
+                {(draftProfile.cardBehindContent ?? true) ? 'Active' : 'Off'}
+              </button>
+            </div>
+
+            {(draftProfile.cardBehindContent ?? true) && (
+              <div className="pt-2 border-t border-black/5 flex flex-col gap-2">
+                <span className="text-[10px] font-bold text-charcoal/70 uppercase tracking-wider">
+                  Select Card Container Material:
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { id: 'glass', name: 'Frosted Glass', preview: 'bg-white/80 backdrop-blur-md border border-white/40' },
+                    { id: 'solid_white', name: 'Solid White', preview: 'bg-white text-black border border-black/10' },
+                    { id: 'solid_dark', name: 'Stealth Black', preview: 'bg-[#141518] text-white border border-white/10' },
+                    { id: 'translucent', name: 'Dark Tint', preview: 'bg-black/60 text-white backdrop-blur-md border border-white/20' },
+                  ].map((style) => (
+                    <button
+                      key={style.id}
+                      type="button"
+                      onClick={() => updateDraft({ cardContainerStyle: style.id as any })}
+                      className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
+                        (draftProfile.cardContainerStyle || 'glass') === style.id
+                          ? 'bg-[#141518] text-white border-black ring-2 ring-[#4F83FF] shadow-2xs'
+                          : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className={`w-full h-7 rounded-lg ${style.preview} flex items-center justify-center text-[9px] font-bold shadow-2xs`}>
+                        Card
+                      </div>
+                      <span className="text-[10px] font-bold truncate">{style.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -745,25 +830,23 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
             </button>
           </div>
 
-          {/* Custom Uploaded Header Banner */}
-          <div className="p-5 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
+          {/* Custom Uploaded Background Image / Wallpaper */}
+          <div className="p-5 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-black text-charcoal">Upload Custom Banner Image</p>
+                <p className="text-xs font-black text-charcoal">Custom Background Wallpaper Image</p>
                 <p className="text-[11px] text-charcoal/60 font-medium">
-                  Upload your own photography, anime, branded banner, or illustration
+                  Upload any photo, portrait, wallpaper, anime art, or brand background
                 </p>
               </div>
 
               {draftProfile.customHeaderImage && (
                 <button
                   onClick={() => {
-                    const updated = { ...draftProfile, customHeaderImage: undefined };
-                    setDraftProfile(updated);
-                    setHasUnsavedChanges(true);
-                    onLivePreviewChange?.(updated);
+                    updateDraft({ customHeaderImage: undefined });
+                    showToast('Wallpaper Removed', 'Default theme background restored', 'info');
                   }}
-                  className="px-2.5 py-1 rounded-xl bg-rose-50 text-rose-600 text-[10px] font-bold border border-rose-200 cursor-pointer flex items-center gap-1"
+                  className="px-2.5 py-1 rounded-xl bg-rose-50 text-rose-600 text-[10px] font-bold border border-rose-200 cursor-pointer flex items-center gap-1 hover:bg-rose-100"
                 >
                   <Trash2 className="w-3 h-3" />
                   <span>Remove Custom</span>
@@ -786,15 +869,255 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
                 className="py-2.5 px-4 rounded-2xl bg-white hover:bg-gray-50 border border-black/10 text-xs font-black text-charcoal flex items-center justify-center gap-2 shadow-2xs cursor-pointer transition-colors"
               >
                 <Upload className="w-4 h-4 text-[#4F83FF]" />
-                <span>Upload Banner from Device (PNG/JPG)</span>
+                <span>{draftProfile.customHeaderImage ? 'Replace Wallpaper Image' : 'Upload Wallpaper Image from Device (PNG/JPG)'}</span>
               </button>
             </div>
 
+            {/* When Background Image is Uploaded: Show Rich Zoom, Fit, Pan, Dim & Card Controls */}
             {draftProfile.customHeaderImage && (
-              <div 
-                className="w-full h-24 rounded-2xl border border-black/10 bg-cover bg-center shadow-xs"
-                style={{ backgroundImage: `url(${draftProfile.customHeaderImage})` }}
-              />
+              <div className="flex flex-col gap-4 pt-2 border-t border-black/10">
+                {/* Live Preview Box */}
+                <div className="relative w-full h-40 rounded-2xl overflow-hidden border border-black/10 bg-black/5 shadow-xs">
+                  <div
+                    className="absolute inset-0 bg-no-repeat bg-center transition-all duration-75"
+                    style={{
+                      backgroundImage: `url(${draftProfile.customHeaderImage})`,
+                      backgroundSize: draftProfile.bgImageFit === 'contain' ? 'contain' : draftProfile.bgImageFit === 'auto' ? 'auto' : 'cover',
+                      transform: `scale(${(draftProfile.bgImageZoom ?? 100) / 100}) translate(${draftProfile.bgImagePosX ?? 0}px, ${draftProfile.bgImagePosY ?? 0}px)`,
+                      transformOrigin: 'center center',
+                      filter: (draftProfile.bgImageBlur ?? 0) > 0 ? `blur(${draftProfile.bgImageBlur}px)` : undefined,
+                    }}
+                  />
+                  <div
+                    className="absolute inset-0 pointer-events-none transition-colors flex items-center justify-center"
+                    style={{
+                      backgroundColor: `rgba(0, 0, 0, ${(draftProfile.bgImageDim ?? 40) / 100})`,
+                    }}
+                  >
+                    <span className="px-3 py-1 rounded-full bg-black/60 text-white text-[10px] font-mono font-bold backdrop-blur-xs">
+                      Live Wallpaper Preview &bull; {draftProfile.bgImageZoom ?? 100}% Zoom
+                    </span>
+                  </div>
+                </div>
+
+                {/* Fit Mode Selector */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-bold text-charcoal/70 uppercase tracking-wider">
+                    Wallpaper Fit Mode
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'cover', label: 'Cover (Full-Bleed)', desc: 'Fills entire viewport' },
+                      { id: 'contain', label: 'Contain (Fit Image)', desc: 'Entire picture visible' },
+                      { id: 'auto', label: 'Auto (Original)', desc: 'Natural dimensions' },
+                    ].map((fit) => (
+                      <button
+                        key={fit.id}
+                        type="button"
+                        onClick={() => updateDraft({ bgImageFit: fit.id as any })}
+                        className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                          (draftProfile.bgImageFit || 'cover') === fit.id
+                            ? 'bg-[#141518] text-white border-black shadow-2xs'
+                            : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                        }`}
+                      >
+                        <p className="font-bold text-xs">{fit.label}</p>
+                        <p className={`text-[9px] mt-0.5 ${
+                          (draftProfile.bgImageFit || 'cover') === fit.id ? 'text-gray-300' : 'text-charcoal/50'
+                        }`}>
+                          {fit.desc}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Zoom Controls */}
+                <div className="p-3 bg-white rounded-2xl border border-black/5 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-charcoal flex items-center gap-1.5">
+                      <ZoomIn className="w-3.5 h-3.5 text-[#4F83FF]" />
+                      <span>Image Zoom</span>
+                    </span>
+                    <span className="text-xs font-mono font-black text-[#4F83FF] bg-[#EFF4FF] px-2 py-0.5 rounded-md">
+                      {draftProfile.bgImageZoom ?? 100}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="50"
+                    max="250"
+                    value={draftProfile.bgImageZoom ?? 100}
+                    onChange={(e) => updateDraft({ bgImageZoom: Number(e.target.value) })}
+                    className="w-full accent-[#4F83FF] cursor-pointer"
+                  />
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {[75, 100, 125, 150, 200].map((z) => (
+                      <button
+                        key={z}
+                        type="button"
+                        onClick={() => updateDraft({ bgImageZoom: z })}
+                        className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer ${
+                          (draftProfile.bgImageZoom ?? 100) === z
+                            ? 'bg-[#141518] text-white border-black'
+                            : 'bg-[#FAF7F2] text-charcoal/70 border-black/10 hover:bg-gray-100'
+                        }`}
+                      >
+                        {z}%
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pan Position Controls (X and Y) */}
+                <div className="p-3 bg-white rounded-2xl border border-black/5 flex flex-col gap-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-charcoal flex items-center gap-1.5">
+                      <Move className="w-3.5 h-3.5 text-[#4F83FF]" />
+                      <span>Pan & Positioning</span>
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => updateDraft({ bgImagePosX: 0, bgImagePosY: 0 })}
+                        className="text-[10px] font-bold text-charcoal/60 hover:text-black underline cursor-pointer"
+                      >
+                        Reset Center
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] font-bold text-charcoal/60 mb-1">
+                        <span>Pan Horizontal (X)</span>
+                        <span className="font-mono">{draftProfile.bgImagePosX ?? 0}px</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="-100"
+                        max="100"
+                        value={draftProfile.bgImagePosX ?? 0}
+                        onChange={(e) => updateDraft({ bgImagePosX: Number(e.target.value) })}
+                        className="w-full accent-black cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] font-bold text-charcoal/60 mb-1">
+                        <span>Pan Vertical (Y)</span>
+                        <span className="font-mono">{draftProfile.bgImagePosY ?? 0}px</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="-100"
+                        max="100"
+                        value={draftProfile.bgImagePosY ?? 0}
+                        onChange={(e) => updateDraft({ bgImagePosY: Number(e.target.value) })}
+                        className="w-full accent-black cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dim Tint & Bokeh Blur Controls */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3 bg-white rounded-2xl border border-black/5 flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-charcoal">Dark Tint Overlay</span>
+                      <span className="text-xs font-mono font-bold text-charcoal/70">
+                        {draftProfile.bgImageDim ?? 40}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="85"
+                      value={draftProfile.bgImageDim ?? 40}
+                      onChange={(e) => updateDraft({ bgImageDim: Number(e.target.value) })}
+                      className="w-full accent-black cursor-pointer"
+                    />
+                    <span className="text-[9px] text-charcoal/50">Dims bright photos for readable contrast</span>
+                  </div>
+
+                  <div className="p-3 bg-white rounded-2xl border border-black/5 flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-charcoal">Bokeh Blur</span>
+                      <span className="text-xs font-mono font-bold text-charcoal/70">
+                        {draftProfile.bgImageBlur ?? 0}px
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="16"
+                      value={draftProfile.bgImageBlur ?? 0}
+                      onChange={(e) => updateDraft({ bgImageBlur: Number(e.target.value) })}
+                      className="w-full accent-black cursor-pointer"
+                    />
+                    <span className="text-[9px] text-charcoal/50">Soft background defocus effect</span>
+                  </div>
+                </div>
+
+                {/* CARD CONTAINER BEHIND CONTENT (FEATURE REQUEST #1) */}
+                <div className="p-4 rounded-2xl bg-[#EFF4FF] border border-[#4F83FF]/30 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-black text-charcoal flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5 text-[#4F83FF]" />
+                        <span>Place Card Behind Profile Content & Data</span>
+                      </p>
+                      <p className="text-[11px] text-charcoal/70 mt-0.5">
+                        Encloses your name, avatar, bio, buttons, and links inside a floating card container so text never clashes with the background
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => updateDraft({ cardBehindContent: !(draftProfile.cardBehindContent ?? true) })}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer ${
+                        (draftProfile.cardBehindContent ?? true)
+                          ? 'bg-emerald-500 text-white border-emerald-600 shadow-2xs'
+                          : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                      }`}
+                    >
+                      {(draftProfile.cardBehindContent ?? true) ? 'Active' : 'Off'}
+                    </button>
+                  </div>
+
+                  {/* Card Container Style Selector */}
+                  {(draftProfile.cardBehindContent ?? true) && (
+                    <div className="pt-2 border-t border-[#4F83FF]/20 flex flex-col gap-2">
+                      <span className="text-[10px] font-bold text-charcoal/70 uppercase tracking-wider">
+                        Choose Card Container Style:
+                      </span>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {[
+                          { id: 'glass', name: 'Frosted Glass', preview: 'bg-white/80 backdrop-blur-md border border-white/40' },
+                          { id: 'solid_white', name: 'Solid White', preview: 'bg-white text-black border border-black/10' },
+                          { id: 'solid_dark', name: 'Stealth Black', preview: 'bg-[#141518] text-white border border-white/10' },
+                          { id: 'translucent', name: 'Dark Tint', preview: 'bg-black/60 text-white backdrop-blur-md border border-white/20' },
+                        ].map((style) => (
+                          <button
+                            key={style.id}
+                            type="button"
+                            onClick={() => updateDraft({ cardContainerStyle: style.id as any })}
+                            className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
+                              (draftProfile.cardContainerStyle || 'glass') === style.id
+                                ? 'bg-[#141518] text-white border-black ring-2 ring-[#4F83FF] shadow-2xs'
+                                : 'bg-white text-charcoal border-black/10 hover:bg-gray-50'
+                            }`}
+                          >
+                            <div className={`w-full h-7 rounded-lg ${style.preview} flex items-center justify-center text-[9px] font-bold shadow-2xs`}>
+                              Card
+                            </div>
+                            <span className="text-[10px] font-bold truncate">{style.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
 

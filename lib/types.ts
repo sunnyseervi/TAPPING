@@ -97,6 +97,18 @@ export interface Profile {
   avatarZoom?: number; // 50 to 250 (%)
   avatarPosX?: number; // -100 to 100 (px)
   avatarPosY?: number; // -100 to 100 (px)
+
+  // Background Wallpaper Customization (Zoom, Fit, Position, Dim & Blur)
+  bgImageZoom?: number; // 50 to 250 (%) default 100
+  bgImageFit?: 'cover' | 'contain' | 'auto'; // default 'cover'
+  bgImagePosX?: number; // -100 to 100 (px) default 0
+  bgImagePosY?: number; // -100 to 100 (px) default 0
+  bgImageDim?: number; // 0 to 90 (%) default 40
+  bgImageBlur?: number; // 0 to 20 (px) default 0
+
+  // Content Card Container (Card Behind Content & Data)
+  cardBehindContent?: boolean; // When true, places a card container behind all content & data
+  cardContainerStyle?: 'glass' | 'solid_white' | 'solid_dark' | 'translucent'; // default 'glass'
 }
 
 export type VisitingCardShape = 'rounded' | 'square';
