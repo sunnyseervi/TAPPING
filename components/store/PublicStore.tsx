@@ -17,11 +17,13 @@ interface PublicStoreProps {
   store: StoreConfig;
   sellerName: string;
   dark: boolean;
+  productIds?: string[];
+  title?: string;
 }
 
 const formatPrice = (value: number) => `₹${value.toLocaleString('en-IN')}`;
 
-export default function PublicStore({ store, sellerName, dark }: PublicStoreProps) {
+export default function PublicStore({ store, sellerName, dark, productIds, title }: PublicStoreProps) {
   const { showToast } = useToast();
   const [cart, setCart] = useState<CartLine[]>([]);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
@@ -39,10 +41,14 @@ export default function PublicStore({ store, sellerName, dark }: PublicStoreProp
     sliderRef.current.scrollBy({ left: offset, behavior: 'smooth' });
   };
 
-  const products = store.products.filter((product) => product.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
+  const products = store.products
+    .filter((product) => product.isActive && (!productIds || productIds.length === 0 || productIds.includes(product.id)))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
   const itemCount = cart.reduce((sum, line) => sum + line.quantity, 0);
   const total = cart.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
-  const panelClass = dark ? 'border-white/15 bg-white/[0.08] text-white' : 'border-[#D9CFC2] bg-white text-charcoal';
+  const panelClass = dark 
+    ? 'border-white/15 bg-[#181920] text-white shadow-xl' 
+    : 'border-black/10 bg-white text-charcoal shadow-md';
 
   useEffect(() => {
     if (visitRecorded.current) return;
@@ -126,15 +132,19 @@ export default function PublicStore({ store, sellerName, dark }: PublicStoreProp
   if (!store.enabled || products.length === 0) return null;
 
   return (
-    <section className="flex flex-col gap-3 text-left">
-      <div className="flex items-center justify-between gap-3 px-1">
-        <div className="flex items-center gap-1.5">
-          <Tag className={`h-3.5 w-3.5 ${dark ? 'text-white/70' : 'text-[#A6462D]'}`} />
-          <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider">Featured Products</h2>
+    <section className="flex flex-col gap-2.5 text-left w-full">
+      <div className={`flex items-center justify-between gap-3 px-3 py-2 rounded-2xl border shadow-2xs backdrop-blur-xl ${
+        dark ? 'bg-black/60 border-white/15 text-white' : 'bg-white/90 border-black/10 text-charcoal'
+      }`}>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <Tag className={`h-3.5 w-3.5 shrink-0 ${dark ? 'text-[#FF8D71]' : 'text-[#A6462D]'}`} />
+          <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider truncate">
+            {title || 'Featured Products'}
+          </h2>
         </div>
         <button 
           onClick={() => setCartOpen(true)} 
-          className="relative flex shrink-0 items-center gap-1.5 rounded-full bg-[#A6462D] px-3.5 py-1.5 text-xs font-black text-white shadow-sm transition-transform hover:-translate-y-0.5 cursor-pointer"
+          className="relative flex shrink-0 items-center gap-1.5 rounded-full bg-[#A6462D] hover:bg-[#8e3822] px-3 py-1.5 text-xs font-black text-white shadow-sm transition-transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
         >
           <ShoppingBag className="h-3.5 w-3.5" />
           <span>Bag</span>
@@ -145,7 +155,7 @@ export default function PublicStore({ store, sellerName, dark }: PublicStoreProp
       <div className="relative w-full">
         {products.length > 1 && (
           <div className="flex items-center justify-between mb-1.5 px-1">
-            <span className={`text-[10px] font-bold ${dark ? 'text-white/60' : 'text-charcoal/60'}`}>
+            <span className={`text-[10px] font-bold ${dark ? 'text-white/70' : 'text-charcoal/70'}`}>
               {products.length} {products.length === 1 ? 'item' : 'items'} &bull; Slidable
             </span>
             <div className="flex items-center gap-1.5">
@@ -153,7 +163,7 @@ export default function PublicStore({ store, sellerName, dark }: PublicStoreProp
                 type="button"
                 onClick={() => scrollProducts('left')}
                 className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${
-                  dark ? 'bg-white/10 hover:bg-white/20 text-white border-white/15' : 'bg-white hover:bg-black/5 text-charcoal border-black/10'
+                  dark ? 'bg-[#181920] hover:bg-white/20 text-white border-white/20' : 'bg-white hover:bg-black/5 text-charcoal border-black/10'
                 }`}
                 aria-label="Previous product"
               >
@@ -163,7 +173,7 @@ export default function PublicStore({ store, sellerName, dark }: PublicStoreProp
                 type="button"
                 onClick={() => scrollProducts('right')}
                 className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${
-                  dark ? 'bg-white/10 hover:bg-white/20 text-white border-white/15' : 'bg-white hover:bg-black/5 text-charcoal border-black/10'
+                  dark ? 'bg-[#181920] hover:bg-white/20 text-white border-white/20' : 'bg-white hover:bg-black/5 text-charcoal border-black/10'
                 }`}
                 aria-label="Next product"
               >
@@ -181,9 +191,9 @@ export default function PublicStore({ store, sellerName, dark }: PublicStoreProp
           {products.map((product) => (
             <article
               key={product.id}
-              className={`w-[145px] sm:w-[160px] shrink-0 snap-start rounded-2xl border overflow-hidden shadow-2xs transition-all flex flex-col justify-between ${panelClass}`}
+              className={`w-[145px] sm:w-[160px] shrink-0 snap-start rounded-2xl border overflow-hidden shadow-md transition-all flex flex-col justify-between ${panelClass}`}
             >
-              <div className={`relative aspect-square w-full overflow-hidden ${dark ? 'bg-white/10' : 'bg-[#EAE1D5]'}`}>
+              <div className={`relative aspect-square w-full overflow-hidden ${dark ? 'bg-black/40' : 'bg-[#EAE1D5]'}`}>
                 {product.imageUrl ? (
                   <img
                     src={product.imageUrl}
@@ -209,30 +219,37 @@ export default function PublicStore({ store, sellerName, dark }: PublicStoreProp
                 )}
               </div>
 
-              <div className="p-2.5 flex flex-col flex-1 justify-between gap-1.5">
+              {/* 100% Solid Opaque Details Box (ZERO transparency against any wallpaper) */}
+              <div className={`p-2.5 flex flex-col flex-1 justify-between gap-1.5 ${
+                dark ? 'bg-[#181920] text-white' : 'bg-white text-charcoal'
+              }`}>
                 <div>
-                  <h3 className="text-xs font-black leading-tight truncate">{product.name}</h3>
+                  <h3 className={`text-xs font-black leading-tight truncate ${dark ? 'text-white' : 'text-charcoal'}`}>
+                    {product.name}
+                  </h3>
                   <div className="flex items-baseline gap-1 mt-0.5">
-                    <span className="text-xs font-black text-[#A6462D]">{formatPrice(product.price)}</span>
+                    <span className={`text-xs font-black ${dark ? 'text-[#FF8D71]' : 'text-[#A6462D]'}`}>
+                      {formatPrice(product.price)}
+                    </span>
                     {product.compareAtPrice && product.compareAtPrice > product.price && (
-                      <span className={`text-[9px] font-bold line-through ${dark ? 'text-white/40' : 'text-charcoal/35'}`}>
+                      <span className={`text-[9px] font-bold line-through ${dark ? 'text-white/45' : 'text-charcoal/35'}`}>
                         {formatPrice(product.compareAtPrice)}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="pt-1.5 border-t border-black/5 dark:border-white/10 flex flex-col gap-1.5">
+                <div className={`pt-1.5 border-t flex flex-col gap-1.5 ${dark ? 'border-white/10' : 'border-black/5'}`}>
                   {product.variants.length > 0 && (
                     <select
                       value={selectedVariants[product.id] || product.variants[0]}
                       onChange={(event) => setSelectedVariants((current) => ({ ...current, [product.id]: event.target.value }))}
                       className={`w-full rounded-lg border px-1.5 py-1 text-[10px] font-bold outline-none ${
-                        dark ? 'border-white/15 bg-white/10 text-white' : 'border-[#D9CFC2] bg-[#FAF7F2] text-charcoal'
+                        dark ? 'border-white/20 bg-[#252834] text-white' : 'border-[#D9CFC2] bg-[#FAF7F2] text-charcoal'
                       }`}
                     >
                       {product.variants.map((variant) => (
-                        <option key={variant} value={variant} className="text-charcoal bg-white">
+                        <option key={variant} value={variant} className={dark ? 'bg-[#252834] text-white' : 'bg-white text-charcoal'}>
                           {variant}
                         </option>
                       ))}

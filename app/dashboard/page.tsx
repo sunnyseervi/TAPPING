@@ -99,7 +99,8 @@ function DashboardContent() {
     } else if (tab === 'digital-card') {
       setActiveTab('digital-card');
     } else if (tab === 'store') {
-      setActiveTab('store');
+      setActiveTab('profile');
+      setEditSectionTab('products');
     } else if (tab === 'dashboard') {
       setActiveTab('dashboard');
     }
@@ -407,29 +408,12 @@ function DashboardContent() {
             />
           )}
 
-          {activeTab === 'store' && (
-            <StoreManager
-              store={store}
-              onUpdateStore={handleUpdateStore}
-              publicUrl={`/${profile.username}/shop`}
-            />
-          )}
-
           {/* TAB: METAL NFC HARDWARE STUDIO */}
           {activeTab === 'nfc' && (
             <NFCCardStudio
               nfcCard={nfcCard}
               username={profile.username}
               onUpdateCard={handleUpdateNFCCard}
-            />
-          )}
-
-          {/* TAB: ORDER NFC TAGS & HARDWARE SHOP */}
-          {(activeTab === 'nfc-shop' || activeTab === 'shop') && (
-            <NFCTagShop
-              profile={profile}
-              vcard={vcard}
-              username={profile.username}
             />
           )}
         </main>

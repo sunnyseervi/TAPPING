@@ -229,9 +229,9 @@ export default function LivePhonePreview({
           {/* Scrollable Phone Bio Page Content */}
           <div className="flex-1 overflow-y-auto no-scrollbar px-3 pt-1 pb-6 flex flex-col items-center relative z-10">
             <div className={`w-full flex flex-col items-center text-center transition-all ${isCardBehindActive ? cardContainerClasses : ''}`}>
-              {/* Squircle Avatar with Clean Border & Custom Zoom/Framing (Rounded Square) */}
+              {/* Squircle Avatar with Clean Thin Border & Custom Zoom/Framing (Rounded Square) */}
               <div className="relative mt-2">
-                <div className="w-20 h-20 rounded-[24px] overflow-hidden ring-4 ring-white/90 shadow-soft bg-white relative flex items-center justify-center">
+                <div className="w-20 h-20 rounded-[24px] overflow-hidden ring-1.5 ring-white/80 border border-black/10 shadow-sm bg-white relative flex items-center justify-center">
                   <img
                     src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
                     alt={profile.displayName}
@@ -256,7 +256,11 @@ export default function LivePhonePreview({
               </h1>
 
               <p 
-                className={`text-[11px] font-bold opacity-75 mt-0.5 font-mono ${contentIsDark ? 'text-white/70' : 'text-charcoal/70'}`}
+                className="text-[11px] font-bold mt-0.5 font-mono"
+                style={{
+                  color: profile.fontColor ? profile.fontColor : (contentIsDark ? 'rgba(255,255,255,0.7)' : 'rgba(20,21,24,0.7)'),
+                  opacity: profile.fontColor ? 0.8 : undefined,
+                }}
               >
                 @{profile.username}
               </p>
@@ -264,11 +268,14 @@ export default function LivePhonePreview({
             {/* Work & Organization Badge (Frosted Blurry Glass) */}
             {(profile.badgeTitle || vcard.jobTitle || vcard.organization) && (
               <div className="mt-1.5 flex items-center justify-center">
-                <span className={`text-[10px] font-black px-3.5 py-1 rounded-full ${
-                  contentIsDark 
-                    ? 'bg-black/50 text-white border border-white/25 shadow-sm' 
-                    : 'bg-white/85 text-charcoal border border-white/60 shadow-sm'
-                } backdrop-blur-xl shadow-2xs flex items-center gap-1`}>
+                <span 
+                  className={`text-[10px] font-black px-3.5 py-1 rounded-full ${
+                    contentIsDark 
+                      ? 'bg-black/50 text-white border border-white/25 shadow-sm' 
+                      : 'bg-white/85 text-charcoal border border-white/60 shadow-sm'
+                  } backdrop-blur-xl shadow-2xs flex items-center gap-1`}
+                  style={profile.fontColor ? { color: profile.fontColor } : undefined}
+                >
                   <span>{profile.badgeTitle || vcard.jobTitle}</span>
                   {vcard.organization && <span>&bull; {vcard.organization}</span>}
                 </span>
@@ -278,11 +285,14 @@ export default function LivePhonePreview({
             {/* Address / Location (Frosted Blurry Glass Pill) */}
             {(vcard.streetAddress || vcard.city || vcard.country) && (
               <div className="mt-1 flex items-center justify-center">
-                <div className={`px-3.5 py-1 rounded-full backdrop-blur-xl shadow-sm flex items-center gap-1 text-[9px] font-semibold border ${
-                  contentIsDark 
-                    ? 'bg-black/50 text-white/95 border-white/20' 
-                    : 'bg-white/85 text-charcoal/85 border-white/60'
-                }`}>
+                <div 
+                  className={`px-3.5 py-1 rounded-full backdrop-blur-xl shadow-sm flex items-center gap-1 text-[9px] font-semibold border ${
+                    contentIsDark 
+                      ? 'bg-black/50 text-white/95 border-white/20' 
+                      : 'bg-white/85 text-charcoal/85 border-white/60'
+                  }`}
+                  style={profile.fontColor ? { color: profile.fontColor } : undefined}
+                >
                   <MapPin className="w-2.5 h-2.5 text-rose-500" />
                   <span>{[vcard.streetAddress, vcard.city, vcard.country].filter(Boolean).join(', ')}</span>
                 </div>
@@ -291,11 +301,14 @@ export default function LivePhonePreview({
 
             {/* Bio Description (Frosted Blurry Glass Capsule) */}
             {profile.bio && (
-              <div className={`mt-2 max-w-[270px] px-3.5 py-1.5 rounded-xl backdrop-blur-xl border shadow-sm text-center leading-relaxed font-medium ${bodySizeClass} ${
-                contentIsDark 
-                  ? 'bg-black/45 text-white/95 border-white/20' 
-                  : 'bg-white/85 text-charcoal/90 border-white/70'
-              }`}>
+              <div 
+                className={`mt-2 max-w-[270px] px-3.5 py-1.5 rounded-xl backdrop-blur-xl border shadow-sm text-center leading-relaxed font-medium ${bodySizeClass} ${
+                  contentIsDark 
+                    ? 'bg-black/45 text-white/95 border-white/20' 
+                    : 'bg-white/85 text-charcoal/90 border-white/70'
+                }`}
+                style={profile.fontColor ? { color: profile.fontColor } : undefined}
+              >
                 {profile.bio}
               </div>
             )}
@@ -388,21 +401,75 @@ export default function LivePhonePreview({
               )}
             </div>
 
-            {/* Active Link Blocks Stack */}
-            <div className="w-full flex flex-col gap-2 mt-1 pb-4">
+            {/* Active Link & Product Slider Blocks Stack */}
+            <div className="w-full flex flex-col gap-2 mt-1 pb-2">
               {activeLinks.length === 0 ? (
                 <div className="bg-white rounded-2xl p-4 text-center border border-black/5">
                   <p className="text-xs text-charcoal/60 font-bold">No blocks active</p>
                 </div>
               ) : (
                 activeLinks.map((link) => {
+                  if (link.type === 'product_slider') {
+                    const sliderProducts = (store?.products || [])
+                      .filter((p) => p.isActive && (!link.productIds || link.productIds.length === 0 || link.productIds.includes(p.id)))
+                      .sort((a, b) => a.sortOrder - b.sortOrder);
+                    
+                    if (sliderProducts.length === 0) return null;
+
+                    return (
+                      <div key={link.id} className="w-full my-1.5 flex flex-col gap-1.5 text-left">
+                        <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-xl border shadow-2xs backdrop-blur-md ${
+                          contentIsDark ? 'bg-black/60 border-white/15 text-white' : 'bg-white/90 border-black/10 text-charcoal'
+                        }`}>
+                          <span className={`text-[9px] font-black uppercase tracking-wider flex items-center gap-1 ${contentIsDark ? 'text-[#FF8D71]' : 'text-[#A6462D]'}`}>
+                            <ShoppingBag className="w-2.5 h-2.5" />
+                            <span>{link.title || 'Store Products'}</span>
+                          </span>
+                          <span className="text-[8px] font-bold opacity-60">
+                            {sliderProducts.length} items &bull; Slidable
+                          </span>
+                        </div>
+
+                        <div 
+                          className="flex overflow-x-auto snap-x snap-mandatory gap-2 pb-1 px-0.5 no-scrollbar scroll-smooth"
+                          style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+                        >
+                          {sliderProducts.map((product) => (
+                            <div
+                              key={product.id}
+                              className={`w-[140px] shrink-0 snap-start rounded-2xl border p-2 flex flex-col justify-between shadow-md ${
+                                contentIsDark ? 'bg-[#181920] border-white/15 text-white' : 'bg-white border-black/10 text-charcoal'
+                              }`}
+                            >
+                              <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/5 mb-1.5">
+                                {product.imageUrl ? (
+                                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full bg-[#E3DFF8] flex items-center justify-center text-[8px] font-bold text-charcoal/40">Item</div>
+                                )}
+                                <span className="absolute left-1 top-1 rounded-full bg-[#A6462D] px-1.5 py-0.5 text-[8px] font-black text-white shadow-2xs">
+                                  ₹{product.price}
+                                </span>
+                              </div>
+                              <p className={`text-[10px] font-black truncate leading-tight ${contentIsDark ? 'text-white' : 'text-charcoal'}`}>{product.name}</p>
+                              <div className="mt-1.5 flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/10">
+                                <span className={`text-[9px] font-black ${contentIsDark ? 'text-[#FF8D71]' : 'text-[#A6462D]'}`}>₹{product.price}</span>
+                                <span className="text-[8px] font-black px-1.5 py-0.5 rounded-md bg-[#A6462D] text-white">Bag</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+
                   const cardStyle = link.linkTheme || profile.linkCardStyle;
                   const cardClasses = resolveLinkCardClasses(
                     profile.theme,
                     link.styleVariant,
                     cardStyle
                   );
-                  const hasCustomBg = !!link.bgImage || !!link.bgColor;
+                  const effectiveTextColor = link.textColor || (link.bgImage ? '#FFFFFF' : profile.fontColor || undefined);
                   return (
                     <div
                       key={link.id}
@@ -414,7 +481,7 @@ export default function LivePhonePreview({
                         backgroundRepeat: link.bgImage ? 'no-repeat' : undefined,
                         backgroundPosition: link.bgImage ? 'center' : undefined,
                         backgroundColor: link.bgColor || undefined,
-                        color: link.textColor || (link.bgImage ? '#FFFFFF' : undefined),
+                        color: effectiveTextColor,
                       }}
                     >
                       {link.bgImage && (
@@ -427,14 +494,14 @@ export default function LivePhonePreview({
                         <div className="text-left min-w-0">
                           <p 
                             className={`${bodySizeClass} font-black truncate leading-tight ${fontFamilyClass}`}
-                            style={link.textColor ? { color: link.textColor } : (link.bgImage ? { color: '#FFFFFF' } : undefined)}
+                            style={effectiveTextColor ? { color: effectiveTextColor } : undefined}
                           >
                             {link.title}
                           </p>
                           {link.subtitle && (
                             <p 
                               className="text-[10px] opacity-80 truncate mt-0.5 font-medium"
-                              style={link.textColor ? { color: link.textColor } : (link.bgImage ? { color: '#FFFFFF' } : undefined)}
+                              style={effectiveTextColor ? { color: effectiveTextColor } : undefined}
                             >
                               {link.subtitle}
                             </p>
@@ -443,7 +510,7 @@ export default function LivePhonePreview({
                       </div>
                       <ArrowUpRight 
                         className="w-4 h-4 opacity-75 shrink-0 ml-1 stroke-[2.2] relative z-10" 
-                        style={link.textColor ? { color: link.textColor } : (link.bgImage ? { color: '#FFFFFF' } : undefined)}
+                        style={effectiveTextColor ? { color: effectiveTextColor } : undefined}
                       />
                     </div>
                   );
@@ -451,8 +518,8 @@ export default function LivePhonePreview({
               )}
             </div>
 
-            {/* Creator Products & Store (Slidable Carousel) */}
-            {store?.enabled && store.products.some((p) => p.isActive) && (
+            {/* Creator Products & Store Fallback (Slidable Carousel) — only if not placed in link blocks */}
+            {!activeLinks.some((l) => l.type === 'product_slider') && store?.enabled && store.products.some((p) => p.isActive) && (
               <div className="w-full mt-2 pt-3 border-t border-black/10 flex flex-col gap-2 text-left">
                 <div className="flex items-center justify-between px-0.5">
                   <span className={`text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${contentIsDark ? 'text-white/70' : 'text-[#A6462D]'}`}>
@@ -471,29 +538,24 @@ export default function LivePhonePreview({
                   {store.products.filter(p => p.isActive).map((product) => (
                     <div
                       key={product.id}
-                      className={`w-[170px] shrink-0 snap-start rounded-2xl border p-2.5 flex flex-col justify-between shadow-2xs ${
-                        contentIsDark ? 'bg-black/40 border-white/15 text-white' : 'bg-white/90 border-black/10 text-charcoal'
-                      } backdrop-blur-md`}
+                      className={`w-[140px] shrink-0 snap-start rounded-2xl border p-2 flex flex-col justify-between shadow-md ${
+                        contentIsDark ? 'bg-[#181920] border-white/15 text-white' : 'bg-white border-black/10 text-charcoal'
+                      }`}
                     >
-                      <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-black/5 mb-2">
+                      <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/5 mb-1.5">
                         {product.imageUrl ? (
                           <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full bg-[#E3DFF8] flex items-center justify-center text-[9px] font-bold text-charcoal/40">Item</div>
                         )}
-                        <span className="absolute left-1.5 top-1.5 rounded-full bg-white/90 dark:bg-black/80 px-1.5 py-0.5 text-[8px] font-black uppercase text-charcoal dark:text-white">
+                        <span className="absolute left-1 top-1 rounded-full bg-[#A6462D] px-1.5 py-0.5 text-[8px] font-black text-white shadow-2xs">
                           ₹{product.price}
                         </span>
                       </div>
-                      <p className="text-[11px] font-black truncate leading-tight">{product.name}</p>
-                      {product.description && (
-                        <p className="text-[9px] opacity-70 truncate mt-0.5">{product.description}</p>
-                      )}
-                      <div className="mt-2 flex items-center justify-between pt-1.5 border-t border-black/5 dark:border-white/10">
-                        <span className="text-[9px] font-bold text-[#A6462D]">Buy &bull; ₹{product.price}</span>
-                        {product.linkUrl && (
-                          <span className="text-[9px] font-mono opacity-60">↗</span>
-                        )}
+                      <p className={`text-[10px] font-black truncate leading-tight ${contentIsDark ? 'text-white' : 'text-charcoal'}`}>{product.name}</p>
+                      <div className="mt-1.5 flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/10">
+                        <span className={`text-[9px] font-black ${contentIsDark ? 'text-[#FF8D71]' : 'text-[#A6462D]'}`}>₹{product.price}</span>
+                        <span className="text-[8px] font-black px-1.5 py-0.5 rounded-md bg-[#A6462D] text-white">Bag</span>
                       </div>
                     </div>
                   ))}

@@ -40,10 +40,8 @@ export default function AppSidebar({
   const navItems = [
     { id: 'dashboard', label: 'Creator Space', icon: LayoutGrid, count: null, color: null },
     { id: 'profile', label: 'Edit Profile & Links', icon: UserCheck, count: String(linkCount), color: 'bg-[#FDF166] text-charcoal' },
-    { id: 'store', label: 'WhatsApp Store', icon: Store, count: 'NEW', color: 'bg-[#FFD5C2] text-charcoal' },
     { id: 'digital-card', label: 'Digital Card & QR', icon: CreditCard, count: 'QR', color: 'bg-[#EFF4FF] text-[#4F83FF]' },
     { id: 'nfc', label: 'Metal NFC Studio', icon: Layers, count: 'NFC', color: 'bg-[#B6F554] text-charcoal' },
-    { id: 'nfc-shop', label: 'Order NFC Tags & Shop', icon: ShoppingBag, count: 'NEW', color: 'bg-[#B6F554] text-charcoal' },
   ];
 
   return (

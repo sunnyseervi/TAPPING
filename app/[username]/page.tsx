@@ -357,8 +357,8 @@ export default function PublicProfilePage() {
             isCardBehindActive ? cardContainerClasses : ''
           }`}>
         
-        {/* Avatar with Crisp White Ring & Shadow (Modern Rounded Square / Squircle) */}
-        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] sm:rounded-[32px] overflow-hidden ring-4 ring-white/90 shadow-soft bg-white relative flex items-center justify-center shrink-0">
+        {/* Avatar with Crisp Thin Ring & Shadow (Modern Rounded Square / Squircle) */}
+        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] sm:rounded-[32px] overflow-hidden ring-1.5 ring-white/80 border border-black/10 shadow-sm bg-white relative flex items-center justify-center shrink-0">
           <img
             src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
             alt={profile.displayName}
@@ -382,18 +382,27 @@ export default function PublicProfilePage() {
         </h1>
 
         {/* Handle / Username */}
-        <p className={`text-xs font-bold font-mono mt-0.5 ${contentIsDark ? 'text-white/70' : 'text-charcoal/60'}`}>
+        <p 
+          className="text-xs font-bold font-mono mt-0.5"
+          style={{
+            color: profile.fontColor ? profile.fontColor : undefined,
+            opacity: profile.fontColor ? 0.8 : undefined,
+          }}
+        >
           @{profile.username}
         </p>
 
         {/* Professional Work / Title / Company Badge (Frosted Blurry Glass) */}
         {(jobTitleText || organizationName) && (
           <div className="mt-2.5 flex items-center justify-center">
-            <span className={`text-xs font-black px-4 py-1.5 rounded-full ${
-              contentIsDark 
-                ? 'bg-black/50 text-white border border-white/25 shadow-sm' 
-                : 'bg-white/85 text-charcoal border border-white/60 shadow-sm'
-            } backdrop-blur-xl shadow-2xs flex items-center gap-1.5`}>
+            <span 
+              className={`text-xs font-black px-4 py-1.5 rounded-full ${
+                contentIsDark 
+                  ? 'bg-black/50 text-white border border-white/25 shadow-sm' 
+                  : 'bg-white/85 text-charcoal border border-white/60 shadow-sm'
+              } backdrop-blur-xl shadow-2xs flex items-center gap-1.5`}
+              style={profile.fontColor ? { color: profile.fontColor } : undefined}
+            >
               <Briefcase className="w-3.5 h-3.5 shrink-0 text-[#4F83FF]" />
               <span>{jobTitleText}</span>
               {organizationName && (
@@ -409,11 +418,14 @@ export default function PublicProfilePage() {
         {/* Location / Address (Frosted Blurry Glass Pill) */}
         {fullAddress && (
           <div className="mt-2 flex items-center justify-center">
-            <div className={`px-4 py-1.5 rounded-full backdrop-blur-xl shadow-sm flex items-center justify-center gap-1.5 text-xs font-semibold border ${
-              contentIsDark 
-                ? 'bg-black/50 text-white/95 border-white/20' 
-                : 'bg-white/85 text-charcoal/85 border-white/60'
-            }`}>
+            <div 
+              className={`px-4 py-1.5 rounded-full backdrop-blur-xl shadow-sm flex items-center justify-center gap-1.5 text-xs font-semibold border ${
+                contentIsDark 
+                  ? 'bg-black/50 text-white/95 border-white/20' 
+                  : 'bg-white/85 text-charcoal/85 border-white/60'
+              }`}
+              style={profile.fontColor ? { color: profile.fontColor } : undefined}
+            >
               <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
               <span>{fullAddress}</span>
             </div>
@@ -422,11 +434,14 @@ export default function PublicProfilePage() {
 
         {/* Bio Description (Frosted Blurry Glass Capsule) */}
         {profile.bio && (
-          <div className={`mt-3 max-w-sm px-4 py-2.5 rounded-2xl backdrop-blur-xl border shadow-sm text-center leading-relaxed font-medium ${bodySizeClass} ${
-            contentIsDark 
-              ? 'bg-black/45 text-white/95 border-white/20' 
-              : 'bg-white/85 text-charcoal/90 border-white/70'
-          }`}>
+          <div 
+            className={`mt-3 max-w-sm px-4 py-2.5 rounded-2xl backdrop-blur-xl border shadow-sm text-center leading-relaxed font-medium ${bodySizeClass} ${
+              contentIsDark 
+                ? 'bg-black/45 text-white/95 border-white/20' 
+                : 'bg-white/85 text-charcoal/90 border-white/70'
+            }`}
+            style={profile.fontColor ? { color: profile.fontColor } : undefined}
+          >
             {profile.bio}
           </div>
         )}
@@ -570,14 +585,28 @@ export default function PublicProfilePage() {
           )}
         </div>
 
-        {/* ACTIVE LINK BLOCKS STACK */}
+        {/* ACTIVE LINK & PRODUCT SLIDER BLOCKS STACK */}
         <div className="w-full flex flex-col gap-3 text-left">
           {activeLinks.length === 0 ? (
             <div className={`p-5 rounded-3xl text-center text-xs font-bold ${contentIsDark ? 'bg-white/5 text-white/50 border border-white/10' : 'bg-white/60 text-charcoal/50 border border-black/5'}`}>
-              No active links published yet.
+              No active blocks published yet.
             </div>
           ) : (
             activeLinks.map((link) => {
+              if (link.type === 'product_slider') {
+                return (
+                  <div key={link.id} className="w-full my-1">
+                    <PublicStore 
+                      store={store} 
+                      sellerName={profile.displayName} 
+                      dark={contentIsDark} 
+                      productIds={link.productIds}
+                      title={link.title}
+                    />
+                  </div>
+                );
+              }
+
               const cardStyle = link.linkTheme || profile.linkCardStyle;
               const cardClasses = resolveLinkCardClasses(
                 profile.theme,
@@ -595,7 +624,7 @@ export default function PublicProfilePage() {
                     backgroundRepeat: link.bgImage ? 'no-repeat' : undefined,
                     backgroundPosition: link.bgImage ? 'center' : undefined,
                     backgroundColor: link.bgColor || undefined,
-                    color: link.textColor || (link.bgImage ? '#FFFFFF' : undefined),
+                    color: link.textColor || (link.bgImage ? '#FFFFFF' : profile.fontColor || undefined),
                   }}
                 >
                   {link.bgImage && (
@@ -623,8 +652,8 @@ export default function PublicProfilePage() {
           )}
         </div>
 
-        {/* CREATOR PRODUCTS & WHATSAPP COMMERCE STORE (SHOWN DIRECTLY BELOW PROFILE LINKS) */}
-        {store.enabled && store.products.some((product) => product.isActive) && (
+        {/* CREATOR PRODUCTS FALLBACK: Only shown if NO product_slider block was explicitly positioned in link blocks */}
+        {!activeLinks.some((l) => l.type === 'product_slider') && store.enabled && store.products.some((product) => product.isActive) && (
           <div className="w-full mt-8 pt-6 border-t border-black/10 flex flex-col gap-4 text-left">
             <PublicStore store={store} sellerName={profile.displayName} dark={contentIsDark} />
           </div>

@@ -279,6 +279,9 @@ export default function EditProfileSection({
   // Links Form State
   const [isAddingLink, setIsAddingLink] = useState(false);
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
+  const [modalBlockType, setModalBlockType] = useState<'link' | 'product_slider'>('link');
+  const [sliderProductIds, setSliderProductIds] = useState<string[]>([]);
+  const [sliderAllProducts, setSliderAllProducts] = useState(true);
   const [linkTitle, setLinkTitle] = useState('');
   const [linkSubtitle, setLinkSubtitle] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
@@ -409,6 +412,7 @@ export default function EditProfileSection({
   };
 
   const openAddLinkModal = () => {
+    setModalBlockType('link');
     setLinkTitle('');
     setLinkSubtitle('');
     setLinkUrl('https://');
@@ -423,7 +427,31 @@ export default function EditProfileSection({
     setIsAddingLink(true);
   };
 
+  const openAddProductSliderModal = () => {
+    setModalBlockType('product_slider');
+    setLinkTitle('Featured Products');
+    setLinkSubtitle('Slidable Product Showcase');
+    setLinkUrl('');
+    setLinkIcon('shopping-bag');
+    setSliderAllProducts(true);
+    setSliderProductIds([]);
+    setEditingLinkId(null);
+    setIsAddingLink(true);
+  };
+
   const openEditLinkModal = (link: LinkBlock) => {
+    if (link.type === 'product_slider') {
+      setModalBlockType('product_slider');
+      setLinkTitle(link.title || 'Featured Products');
+      setLinkSubtitle(link.subtitle || '');
+      setSliderProductIds(link.productIds || []);
+      setSliderAllProducts(!link.productIds || link.productIds.length === 0);
+      setEditingLinkId(link.id);
+      setIsAddingLink(true);
+      return;
+    }
+
+    setModalBlockType('link');
     setLinkTitle(link.title);
     setLinkSubtitle(link.subtitle || '');
     setLinkUrl(link.url);
@@ -444,11 +472,51 @@ export default function EditProfileSection({
       return;
     }
 
+    if (modalBlockType === 'product_slider') {
+      const selectedIds = sliderAllProducts ? [] : sliderProductIds;
+      if (editingLinkId) {
+        const updated = links.map((l) =>
+          l.id === editingLinkId
+            ? {
+                ...l,
+                type: 'product_slider' as const,
+                title: linkTitle.trim(),
+                subtitle: linkSubtitle.trim() || undefined,
+                productIds: selectedIds,
+              }
+            : l
+        );
+        onUpdateLinks(updated);
+        showToast('Product Slider Updated', `"${linkTitle}" updated`, 'success');
+      } else {
+        const newBlock: LinkBlock = {
+          id: `blk_slider_${Date.now()}`,
+          userId: 'current_user',
+          type: 'product_slider',
+          title: linkTitle.trim(),
+          subtitle: linkSubtitle.trim() || undefined,
+          url: '',
+          icon: 'shopping-bag',
+          styleVariant: 'peach',
+          isActive: true,
+          sortOrder: links.length,
+          clickCount: 0,
+          productIds: selectedIds,
+        };
+        onUpdateLinks([...links, newBlock]);
+        showToast('Product Slider Block Created', `"${linkTitle}" added to your bio page!`, 'success');
+      }
+      setIsAddingLink(false);
+      setEditingLinkId(null);
+      return;
+    }
+
     if (editingLinkId) {
       const updated = links.map((l) =>
         l.id === editingLinkId
           ? { 
               ...l, 
+              type: 'link' as const,
               title: linkTitle, 
               subtitle: linkSubtitle, 
               url: linkUrl, 
@@ -1049,10 +1117,10 @@ export default function EditProfileSection({
                 <div>
                   <h4 className="text-sm font-black text-charcoal tracking-tight flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#4F83FF]" />
-                    <span>Bio Page Font &amp; Text Color</span>
+                    <span>Bio Page Entire Font &amp; Text Color</span>
                   </h4>
                   <p className="text-[11px] text-charcoal/60 font-medium">
-                    Customize your profile heading and text color with presets or any custom color
+                    Sets font &amp; text color across your entire public Bio page (Name, @handle, work badge, location, bio text, and blocks)
                   </p>
                 </div>
                 {fontColor && (
@@ -1119,25 +1187,123 @@ export default function EditProfileSection({
       {currentTab === 'links' && (
         <>
           <div className="bg-white rounded-4xl p-6 md:p-8 border border-black/5 shadow-soft">
-        <div className="flex items-center justify-between pb-4 border-b border-black/5 mb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-black/5 mb-5 gap-3">
           <div>
-            <h3 className="text-xl font-black text-charcoal tracking-tight">Active Link Blocks</h3>
+            <h3 className="text-xl font-black text-charcoal tracking-tight">Active Link &amp; Product Blocks</h3>
             <p className="text-xs text-charcoal/60 mt-0.5 font-medium">
-              Reorder and style your content tiles with high-contrast color blocks
+              Reorder links and product carousels to arrange your bio page exactly how you want
             </p>
           </div>
-          <button
-            onClick={openAddLinkModal}
-            className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-sm transition-transform active:scale-95"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Add Block</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={openAddProductSliderModal}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black shadow-sm transition-transform active:scale-95 cursor-pointer shrink-0"
+              title="Add slidable product carousel block between links"
+            >
+              <ShoppingBag className="w-4 h-4 text-[#FDF166]" />
+              <span>+ Product Slider</span>
+            </button>
+            <button
+              onClick={openAddLinkModal}
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-sm transition-transform active:scale-95 cursor-pointer shrink-0"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>+ Add Link</span>
+            </button>
+          </div>
         </div>
 
-        {/* Link Blocks List */}
+        {/* Link & Product Blocks List */}
         <div className="flex flex-col gap-3">
           {links.map((link, idx) => {
+            if (link.type === 'product_slider') {
+              const activeStoreCount = (localStore.products || []).filter(p => p.isActive).length;
+              const productCountLabel = link.productIds && link.productIds.length > 0 
+                ? `${link.productIds.length} chosen products` 
+                : `All ${activeStoreCount} active products`;
+              return (
+                <div
+                  key={link.id}
+                  className={`p-3.5 sm:p-4 rounded-3xl border transition-all flex items-center justify-between gap-3 relative overflow-hidden ${
+                    link.isActive 
+                      ? 'bg-gradient-to-r from-[#FAF7F2] to-[#FFF9F5] border-[#D9CFC2] shadow-2xs' 
+                      : 'bg-gray-50/80 border-black/5 opacity-60'
+                  }`}
+                >
+                  {/* Left: Reorder buttons + Icon + Info */}
+                  <div className="flex items-center gap-3 min-w-0 relative z-10">
+                    <div className="flex flex-col gap-0.5 shrink-0">
+                      <button
+                        onClick={() => handleMove(idx, 'up')}
+                        disabled={idx === 0}
+                        className="p-1 rounded-lg hover:bg-white/80 disabled:opacity-20 text-charcoal transition-colors cursor-pointer"
+                        title="Move up"
+                      >
+                        <ArrowUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleMove(idx, 'down')}
+                        disabled={idx === links.length - 1}
+                        className="p-1 rounded-lg hover:bg-white/80 disabled:opacity-20 text-charcoal transition-colors cursor-pointer"
+                        title="Move down"
+                      >
+                        <ArrowDown className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="w-10 h-10 rounded-2xl bg-[#A6462D] text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <ShoppingBag className="w-5 h-5" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-xs sm:text-sm font-black text-charcoal truncate">
+                          {link.title || 'Featured Products'}
+                        </p>
+                        <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-[#A6462D]/10 text-[#A6462D] border border-[#A6462D]/20 shrink-0">
+                          Product Slider
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white text-charcoal/70 border border-black/10 shrink-0">
+                          {productCountLabel}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-charcoal/60 truncate mt-0.5 font-medium">
+                        {link.subtitle || 'Slidable horizontal carousel positioned directly here on your bio page'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right: Actions */}
+                  <div className="flex items-center gap-1.5 shrink-0 relative z-10">
+                    <button
+                      onClick={() => handleToggleLinkActive(link.id)}
+                      className={`p-2 rounded-xl transition-colors cursor-pointer ${
+                        link.isActive ? 'hover:bg-white text-charcoal' : 'hover:bg-white text-charcoal/40'
+                      }`}
+                      title={link.isActive ? 'Hide block' : 'Show block'}
+                    >
+                      {link.isActive ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </button>
+
+                    <button
+                      onClick={() => openEditLinkModal(link)}
+                      className="px-3 py-1.5 rounded-xl bg-white hover:bg-gray-50 text-charcoal text-xs font-bold border border-black/10 shadow-xs transition-colors cursor-pointer"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => handleDeleteLink(link.id)}
+                      className="p-2 rounded-xl hover:bg-rose-100 text-charcoal/60 hover:text-rose-600 transition-colors cursor-pointer"
+                      title="Delete block"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+
             const hasCustomBg = !!link.bgImage || !!link.bgColor;
             return (
               <div
@@ -1263,7 +1429,9 @@ export default function EditProfileSection({
           <div className="bg-white rounded-4xl p-6 w-full max-w-md shadow-2xl border border-black/10 max-h-[90vh] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between pb-3 border-b border-black/5 mb-4">
               <h3 className="text-base font-black text-charcoal">
-                {editingLinkId ? 'Edit Block' : 'Add Link Block'}
+                {modalBlockType === 'product_slider'
+                  ? (editingLinkId ? 'Edit Product Slider Block' : 'Add Product Slider Block')
+                  : (editingLinkId ? 'Edit Link Block' : 'Add Link Block')}
               </h3>
               <button
                 onClick={() => {
@@ -1276,8 +1444,154 @@ export default function EditProfileSection({
               </button>
             </div>
 
-            {/* Live Mini Preview of Link Card */}
-            <div className="mb-4">
+            {modalBlockType === 'product_slider' ? (
+              /* PRODUCT SLIDER BLOCK CONFIGURATION FORM */
+              <div className="space-y-4">
+                <div className="p-3.5 rounded-2xl bg-[#FFF9F5] border border-[#A6462D]/20 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-[#A6462D] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <ShoppingBag className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-charcoal">Horizontal Product Slider</h4>
+                    <p className="text-[11px] text-charcoal/60 mt-0.5">
+                      Renders your store products in a touch-friendly carousel at this exact position.
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1">
+                    Slider Heading / Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={linkTitle}
+                    onChange={(e) => setLinkTitle(e.target.value)}
+                    placeholder="e.g. Featured Products, Best Sellers, Merch Drop..."
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1">
+                    Subtitle (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={linkSubtitle}
+                    onChange={(e) => setLinkSubtitle(e.target.value)}
+                    placeholder="e.g. Swipe through our newest products and collections"
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-charcoal/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1.5">
+                    Products to Include in this Slider
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 mb-2">
+                    <button
+                      type="button"
+                      onClick={() => setSliderAllProducts(true)}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
+                        sliderAllProducts 
+                          ? 'bg-[#141518] text-white shadow-2xs' 
+                          : 'bg-[#FAF7F2] text-charcoal/70 border border-black/10 hover:bg-white'
+                      }`}
+                    >
+                      All Active ({(localStore.products || []).filter(p => p.isActive).length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSliderAllProducts(false)}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
+                        !sliderAllProducts 
+                          ? 'bg-[#141518] text-white shadow-2xs' 
+                          : 'bg-[#FAF7F2] text-charcoal/70 border border-black/10 hover:bg-white'
+                      }`}
+                    >
+                      Choose Specific
+                    </button>
+                  </div>
+
+                  {!sliderAllProducts && (
+                    <div className="space-y-1.5 max-h-48 overflow-y-auto no-scrollbar p-2 rounded-2xl bg-[#FAF7F2] border border-black/10">
+                      {(localStore.products || []).length === 0 ? (
+                        <p className="text-center text-xs text-charcoal/50 py-3">No products created in store yet.</p>
+                      ) : (
+                        (localStore.products || []).map((prod) => {
+                          const isChecked = sliderProductIds.includes(prod.id);
+                          return (
+                            <label key={prod.id} className="flex items-center gap-2.5 p-2 rounded-xl bg-white hover:bg-black/5 transition-colors cursor-pointer border border-black/5">
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => {
+                                  if (isChecked) {
+                                    setSliderProductIds(sliderProductIds.filter(id => id !== prod.id));
+                                  } else {
+                                    setSliderProductIds([...sliderProductIds, prod.id]);
+                                  }
+                                }}
+                                className="w-4 h-4 rounded text-[#4F83FF] cursor-pointer"
+                              />
+                              <div className="w-9 h-9 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                                {prod.imageUrl ? (
+                                  <img src={prod.imageUrl} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-[8px] text-charcoal/40">Item</div>
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-black text-charcoal truncate">{prod.name}</p>
+                                <p className="text-[10px] text-[#A6462D] font-black">₹{prod.price}</p>
+                              </div>
+                            </label>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-3 rounded-2xl bg-[#EFF4FF] border border-[#4F83FF]/20 flex items-center justify-between">
+                  <span className="text-xs font-bold text-charcoal">Manage store products &amp; images</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddingLink(false);
+                      handleTabSelect('products');
+                    }}
+                    className="text-xs font-black text-[#4F83FF] hover:underline cursor-pointer"
+                  >
+                    Open Products Tab &rarr;
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 border-t border-black/5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddingLink(false);
+                      setEditingLinkId(null);
+                    }}
+                    className="flex-1 py-2.5 rounded-2xl border border-black/10 text-xs font-bold text-charcoal/70 hover:bg-black/5 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveLink}
+                    className="flex-1 py-2.5 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black shadow-xs transition-transform active:scale-95 cursor-pointer"
+                  >
+                    {editingLinkId ? 'Save Slider Changes' : 'Add Product Slider'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Live Mini Preview of Link Card */}
+                <div className="mb-4">
               <p className="text-[10px] font-black uppercase tracking-wider text-charcoal/50 mb-1.5">
                 Live Card Preview
               </p>
@@ -1632,6 +1946,8 @@ export default function EditProfileSection({
                 </button>
               </div>
             </div>
+              </>
+            )}
           </div>
         </div>
       )}

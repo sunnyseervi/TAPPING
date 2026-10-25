@@ -149,7 +149,7 @@ export interface VCardProfile {
   visitingCard?: VisitingCardConfig;
 }
 
-export type BlockType = 'link' | 'header' | 'social' | 'vcard_cta' | 'media' | 'highlight';
+export type BlockType = 'link' | 'header' | 'social' | 'vcard_cta' | 'media' | 'highlight' | 'product_slider';
 
 export type StyleVariant = 'peach' | 'lavender' | 'yellow' | 'mint' | 'sky' | 'white' | 'dark';
 
@@ -174,6 +174,10 @@ export interface LinkBlock {
   bgColor?: string; // Custom hex/rgb background color
   textColor?: string; // Custom text color for contrast
   bgPattern?: string; // Custom pattern preset class
+
+  // Product Slider Block properties
+  productIds?: string[]; // IDs of products to display, or empty/undefined for all active products
+  sliderTitle?: string; // Optional custom heading for slider
 }
 
 export type CardSideMode = 'double_sided' | 'single_sided';
