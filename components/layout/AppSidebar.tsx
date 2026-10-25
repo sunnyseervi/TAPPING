@@ -131,7 +131,7 @@ export default function AppSidebar({
         {/* Bottom User Section with Plan Name */}
         <div className="p-3 border-t border-black/5">
           <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-[#FAF7F2] border border-black/5">
-            <div className="w-10 h-10 rounded-xl overflow-hidden bg-pastel-peach shrink-0 border border-white shadow-xs">
+            <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#FAF7F2] shrink-0 border border-black/10 shadow-xs">
               <img
                 src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
                 alt={profile.displayName}
@@ -143,7 +143,7 @@ export default function AppSidebar({
                 <p className="text-xs font-black text-charcoal truncate leading-tight">
                   {profile.displayName}
                 </p>
-                <span className="text-[9px] font-black tracking-wide px-1.5 py-0.2 rounded-md bg-pastel-yellow border border-pastel-yellow-border text-charcoal shrink-0">
+                <span className="text-[9px] font-black tracking-wide px-1.5 py-0.2 rounded-md bg-[#FDF166] border border-black/10 text-charcoal shrink-0">
                   PRO
                 </span>
               </div>

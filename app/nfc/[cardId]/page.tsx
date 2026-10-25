@@ -38,21 +38,27 @@ export default function NFCTapPage() {
   }, [cardId, router]);
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex flex-col items-center justify-center p-6 text-center select-none">
-      <div className="w-full max-w-sm bg-white rounded-4xl p-8 border border-black/5 shadow-card flex flex-col items-center">
-        <div className="w-16 h-16 rounded-3xl bg-pastel-peach border border-pastel-peach-border flex items-center justify-center mb-4">
-          <CreditCard className="w-8 h-8 text-charcoal" />
+    <div className="min-h-screen bg-[#F7F5EE] flex flex-col items-center justify-center p-6 text-center select-none">
+      <div className="w-full max-w-sm bg-white rounded-[40px] p-8 border border-black/5 shadow-card flex flex-col items-center text-center">
+        <div className="w-16 h-16 rounded-3xl bg-[#EFF4FF] flex items-center justify-center mb-5 shadow-xs">
+          <CreditCard className="w-8 h-8 text-[#4F83FF] stroke-[2.2]" />
         </div>
 
-        <span className="text-[10px] font-mono font-bold tracking-widest text-charcoal-muted uppercase">
-          NFC Tap Detected : {cardId || 'TAP-9482'}
+        <span className="text-[10px] font-mono font-black tracking-widest px-3 py-1 rounded-full bg-[#FDF166] text-charcoal border border-black/10 uppercase mb-3">
+          NFC Tap : {cardId || 'TAP-9482'}
         </span>
 
-        <h1 className="text-xl font-black text-charcoal mt-2">Connecting</h1>
-        <p className="text-xs text-charcoal/70 mt-1 font-medium">{status}</p>
+        <h1 className="text-3xl font-black text-charcoal tracking-tight leading-none">
+          Check Your
+        </h1>
+        <h2 className="text-3xl font-black text-charcoal/35 tracking-tight leading-none mt-1">
+          Smart Space
+        </h2>
 
-        <div className="w-full h-1.5 bg-black/5 rounded-full overflow-hidden mt-6">
-          <div className="h-full bg-charcoal rounded-full animate-pulse w-3/4" />
+        <p className="text-xs text-charcoal/70 mt-3 font-semibold">{status}</p>
+
+        <div className="w-full h-2 bg-black/5 rounded-full overflow-hidden mt-6">
+          <div className="h-full bg-[#4F83FF] rounded-full animate-pulse w-3/4" />
         </div>
       </div>
     </div>

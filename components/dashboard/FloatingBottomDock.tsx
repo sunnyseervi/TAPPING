@@ -43,10 +43,10 @@ export default function FloatingBottomDock({
           <UserCheck className="w-5 h-5 stroke-[2.2]" />
         </button>
 
-        {/* Big White Center Action Plus Button */}
+        {/* Big Cobalt Center Action Plus Button */}
         <button
           onClick={onQuickAdd}
-          className="w-11 h-11 rounded-full bg-white text-[#1A1B1F] flex items-center justify-center shadow-lg transition-transform active:scale-95 hover:scale-105 mx-1"
+          className="w-11 h-11 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white flex items-center justify-center shadow-lg transition-transform active:scale-95 hover:scale-105 mx-1"
           title="Add Block"
         >
           <Plus className="w-6 h-6 stroke-[3]" />

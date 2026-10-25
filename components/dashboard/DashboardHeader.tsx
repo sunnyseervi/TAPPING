@@ -76,10 +76,10 @@ export default function DashboardHeader({
           href={`/${profile.username}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="px-4 py-2.5 rounded-full bg-[#1A1B1F] hover:bg-black text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
+          className="px-4 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
         >
           <span>View Public</span>
-          <ExternalLink className="w-3.5 h-3.5 text-pastel-yellow stroke-[2.5]" />
+          <ExternalLink className="w-3.5 h-3.5 text-[#FDF166] stroke-[2.5]" />
         </a>
       </div>
     </header>

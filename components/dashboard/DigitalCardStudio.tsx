@@ -108,33 +108,36 @@ export default function DigitalCardStudio({
   };
 
   const presetColors = [
-    { name: 'Charcoal', hex: '#1F2024' },
-    { name: 'Terracotta', hex: '#C0512F' },
-    { name: 'Indigo', hex: '#4F46E5' },
+    { name: 'Charcoal', hex: '#141518' },
+    { name: 'Cobalt', hex: '#4F83FF' },
     { name: 'Emerald', hex: '#059669' },
-    { name: 'Navy', hex: '#1E3A8A' },
+    { name: 'Amber', hex: '#EAB308' },
+    { name: 'Crimson', hex: '#EA4335' },
   ];
 
   return (
-    <div className="bg-white rounded-4xl p-5 md:p-7 border border-black/5 shadow-soft">
+    <div className="bg-white rounded-4xl p-6 md:p-8 border border-black/5 shadow-soft">
       {/* Header with Segmented Navigation Pill */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-black/5">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-black/5">
         <div>
-          <h2 className="text-lg font-black text-charcoal tracking-tight">
-            Digital Business Card & Permanent QR
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-charcoal tracking-tight leading-none">
+            Check Your
+          </h1>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-charcoal/35 tracking-tight leading-none mt-1">
+            Digital Space
           </h2>
-          <p className="text-xs text-charcoal/60 mt-0.5">
-            1-tap contactless phonebook import and permanent dynamic vector QR code
+          <p className="text-xs text-charcoal/60 mt-2 font-medium">
+            Contactless smartphone phonebook import via vCard 3.0 and permanent vector QR code
           </p>
         </div>
 
         {/* Tab Switcher: vCard vs QR Studio */}
-        <div className="flex items-center bg-[#FAF7F2] p-1 rounded-2xl border border-black/5 self-start sm:self-auto">
+        <div className="flex items-center bg-[#FAF7F2] p-1.5 rounded-2xl border border-black/5 self-start sm:self-auto shrink-0">
           <button
             onClick={() => setActiveSection('vcard')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeSection === 'vcard'
-                ? 'bg-white text-charcoal shadow-xs'
+                ? 'bg-[#141518] text-white shadow-xs'
                 : 'text-charcoal/60 hover:text-charcoal'
             }`}
           >
@@ -143,9 +146,9 @@ export default function DigitalCardStudio({
           </button>
           <button
             onClick={() => setActiveSection('qr')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeSection === 'qr'
-                ? 'bg-white text-charcoal shadow-xs'
+                ? 'bg-[#141518] text-white shadow-xs'
                 : 'text-charcoal/60 hover:text-charcoal'
             }`}
           >
@@ -165,14 +168,14 @@ export default function DigitalCardStudio({
             <div className="flex items-center gap-2">
               <button
                 onClick={handleTestDownloadVCard}
-                className="px-3.5 py-1.5 rounded-full bg-pastel-lavender/60 hover:bg-pastel-lavender text-charcoal text-xs font-bold flex items-center gap-1.5 border border-pastel-lavender-border transition-colors shadow-xs"
+                className="px-3.5 py-2 rounded-full bg-[#FAF7F2] hover:bg-white text-charcoal text-xs font-bold flex items-center gap-1.5 border border-black/10 transition-colors shadow-xs"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Test .vcf Download</span>
               </button>
               <button
                 onClick={handleSaveVCard}
-                className="px-4 py-1.5 rounded-full bg-[#1A1B1F] hover:bg-black text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-transform active:scale-95"
+                className="px-5 py-2 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>Save Card</span>
@@ -297,7 +300,7 @@ export default function DigitalCardStudio({
         <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
           {/* Left: Vector QR Preview Card */}
           <div className="bg-[#FAF7F2] rounded-3xl p-6 border border-black/5 flex flex-col items-center justify-center relative">
-            <span className="text-[10px] font-bold px-3 py-0.5 rounded-full bg-pastel-mint text-charcoal border border-pastel-mint-border mb-4">
+            <span className="text-[10px] font-black px-3 py-1 rounded-full bg-[#B6F554] text-charcoal border border-black/10 mb-4">
               PERMANENT DYNAMIC QR
             </span>
 
@@ -359,7 +362,7 @@ export default function DigitalCardStudio({
 
               <button
                 onClick={downloadPNG}
-                className="w-full sm:w-auto flex-1 py-2.5 px-4 rounded-full bg-[#1A1B1F] hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-transform active:scale-95"
+                className="w-full sm:w-auto flex-1 py-2.5 px-4 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-sm transition-transform active:scale-95"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Download High-Res PNG</span>

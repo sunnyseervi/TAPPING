@@ -172,15 +172,15 @@ export default function EditProfileSection({
   const getStyleClass = (variant: StyleVariant) => {
     switch (variant) {
       case 'peach':
-        return 'bg-pastel-peach/40 border-pastel-peach-border text-charcoal';
+        return 'bg-[#EFF4FF] border-[#4F83FF]/30 text-charcoal';
       case 'lavender':
-        return 'bg-pastel-lavender/40 border-pastel-lavender-border text-charcoal';
+        return 'bg-[#FDF166] border-black/10 text-charcoal';
       case 'yellow':
-        return 'bg-pastel-yellow/40 border-pastel-yellow-border text-charcoal';
+        return 'bg-[#FDF166] border-black/10 text-charcoal';
       case 'mint':
-        return 'bg-pastel-mint/40 border-pastel-mint-border text-charcoal';
+        return 'bg-[#B6F554] border-black/10 text-charcoal';
       case 'sky':
-        return 'bg-pastel-sky/40 border-pastel-sky-border text-charcoal';
+        return 'bg-[#4F83FF] border-black/10 text-white';
       default:
         return 'bg-white border-black/10 text-charcoal';
     }
@@ -204,17 +204,22 @@ export default function EditProfileSection({
   return (
     <div className="flex flex-col gap-6">
       {/* SECTION 1: PROFILE DETAILS FORM */}
-      <form onSubmit={handleSaveProfile} className="bg-white rounded-4xl p-5 md:p-7 border border-black/5 shadow-soft">
-        <div className="flex items-center justify-between pb-4 border-b border-black/5 mb-5">
+      <form onSubmit={handleSaveProfile} className="bg-white rounded-4xl p-6 md:p-8 border border-black/5 shadow-soft">
+        <div className="flex items-start justify-between pb-6 border-b border-black/5 mb-6">
           <div>
-            <h2 className="text-lg font-black text-charcoal tracking-tight">Profile Details</h2>
-            <p className="text-xs text-charcoal/60 mt-0.5">
-              Customize your public creator identity, username, and bio
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-charcoal tracking-tight leading-none">
+              Check Your
+            </h1>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-charcoal/35 tracking-tight leading-none mt-1">
+              Profile Space
+            </h2>
+            <p className="text-xs text-charcoal/60 mt-2 font-medium">
+              Configure your public creator identity, username, and contact handles
             </p>
           </div>
           <button
             type="submit"
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#1A1B1F] hover:bg-black text-white text-xs font-bold shadow-xs transition-transform active:scale-95"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-sm transition-transform active:scale-95 shrink-0"
           >
             <Save className="w-3.5 h-3.5" />
             <span>Save Profile</span>
@@ -224,7 +229,7 @@ export default function EditProfileSection({
         <div className="flex flex-col md:flex-row gap-6">
           {/* Avatar Column */}
           <div className="flex flex-col items-center gap-3 shrink-0">
-            <div className="w-24 h-24 rounded-3xl overflow-hidden bg-pastel-peach border-2 border-white shadow-soft relative group">
+            <div className="w-24 h-24 rounded-3xl overflow-hidden bg-[#FDF166] border-2 border-white shadow-soft relative group">
               <img
                 src={avatarUrl}
                 alt={displayName}
@@ -382,17 +387,17 @@ export default function EditProfileSection({
       </form>
 
       {/* SECTION 2: LINKS & CONTENT BLOCKS */}
-      <div className="bg-white rounded-4xl p-5 md:p-7 border border-black/5 shadow-soft">
-        <div className="flex items-center justify-between pb-4 border-b border-black/5 mb-4">
+      <div className="bg-white rounded-4xl p-6 md:p-8 border border-black/5 shadow-soft">
+        <div className="flex items-center justify-between pb-4 border-b border-black/5 mb-5">
           <div>
-            <h2 className="text-lg font-black text-charcoal tracking-tight">Links & Content Blocks</h2>
-            <p className="text-xs text-charcoal/60 mt-0.5">
-              Drag, order, and style your cards with soft bento pastels
+            <h3 className="text-xl font-black text-charcoal tracking-tight">Active Link Blocks</h3>
+            <p className="text-xs text-charcoal/60 mt-0.5 font-medium">
+              Reorder and style your content tiles with high-contrast color blocks
             </p>
           </div>
           <button
             onClick={openAddLinkModal}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1A1B1F] hover:bg-black text-white text-xs font-bold shadow-xs transition-transform active:scale-95"
+            className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-sm transition-transform active:scale-95"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Add Block</span>
@@ -546,29 +551,28 @@ export default function EditProfileSection({
 
               <div>
                 <label className="text-[11px] font-bold text-charcoal/80 uppercase tracking-wider block mb-1.5">
-                  Pastel Style Palette
+                  Color Theme Block
                 </label>
                 <div className="grid grid-cols-5 gap-2">
-                  {(['peach', 'lavender', 'yellow', 'mint', 'sky'] as StyleVariant[]).map((v) => (
+                  {[
+                    { id: 'sky' as StyleVariant, name: 'Cobalt', bg: 'bg-[#4F83FF]' },
+                    { id: 'yellow' as StyleVariant, name: 'Butter', bg: 'bg-[#FDF166]' },
+                    { id: 'mint' as StyleVariant, name: 'Lime', bg: 'bg-[#B6F554]' },
+                    { id: 'peach' as StyleVariant, name: 'Soft Blue', bg: 'bg-[#EFF4FF]' },
+                    { id: 'lavender' as StyleVariant, name: 'White', bg: 'bg-white' },
+                  ].map((v) => (
                     <button
-                      key={v}
+                      key={v.id}
                       type="button"
-                      onClick={() => setLinkStyle(v)}
-                      className={`h-9 rounded-xl border flex items-center justify-center transition-all ${
-                        linkStyle === v ? 'ring-2 ring-charcoal scale-105 shadow-xs' : 'opacity-70 hover:opacity-100'
-                      } ${
-                        v === 'peach'
-                          ? 'bg-pastel-peach border-pastel-peach-border'
-                          : v === 'lavender'
-                          ? 'bg-pastel-lavender border-pastel-lavender-border'
-                          : v === 'yellow'
-                          ? 'bg-pastel-yellow border-pastel-yellow-border'
-                          : v === 'mint'
-                          ? 'bg-pastel-mint border-pastel-mint-border'
-                          : 'bg-pastel-sky border-pastel-sky-border'
+                      onClick={() => setLinkStyle(v.id)}
+                      className={`h-9 rounded-xl border border-black/10 flex items-center justify-center transition-all ${v.bg} ${
+                        linkStyle === v.id ? 'ring-2 ring-charcoal scale-105 shadow-xs' : 'opacity-80 hover:opacity-100'
                       }`}
+                      title={v.name}
                     >
-                      {linkStyle === v && <Check className="w-4 h-4 text-charcoal" />}
+                      {linkStyle === v.id && (
+                        <Check className={`w-4 h-4 ${v.id === 'sky' ? 'text-white' : 'text-charcoal'}`} />
+                      )}
                     </button>
                   ))}
                 </div>
@@ -588,7 +592,7 @@ export default function EditProfileSection({
                 <button
                   type="button"
                   onClick={handleSaveLink}
-                  className="flex-1 py-2.5 rounded-2xl bg-[#1A1B1F] hover:bg-black text-white text-xs font-bold shadow-xs"
+                  className="flex-1 py-2.5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-xs transition-transform active:scale-95"
                 >
                   {editingLinkId ? 'Save Changes' : 'Create Block'}
                 </button>

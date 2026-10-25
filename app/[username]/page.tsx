@@ -28,12 +28,15 @@ import {
   Layers, 
   UserCheck, 
   Calendar, 
-  Headphones,
-  Mail,
-  X,
-  CreditCard,
-  ShieldCheck,
-  ArrowLeft
+  Headphones, 
+  Mail, 
+  X, 
+  CreditCard, 
+  ArrowLeft,
+  Bell,
+  Sparkles,
+  MoreVertical,
+  ArrowUpRight
 } from 'lucide-react';
 import { downloadVCardFile } from '@/lib/vcard';
 import QRCode from 'qrcode';
@@ -98,45 +101,47 @@ export default function PublicProfilePage() {
     setTimeout(() => setNfcTapped(false), 2500);
   };
 
+  const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(new Date());
+
+  const teamAvatars = [
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120',
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120',
+    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120',
+    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120',
+    'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=120',
+  ];
+
   const renderIcon = (iconName: string) => {
     switch (iconName) {
       case 'briefcase':
-        return <Briefcase className="w-4 h-4 text-charcoal" />;
-      case 'layers':
-        return <Layers className="w-4 h-4 text-charcoal" />;
-      case 'user-check':
-        return <UserCheck className="w-4 h-4 text-charcoal" />;
+        return <Briefcase className="w-4 h-4 text-charcoal stroke-[2.2]" />;
       case 'calendar':
-        return <Calendar className="w-4 h-4 text-charcoal" />;
+        return <Calendar className="w-4 h-4 text-charcoal stroke-[2.2]" />;
+      case 'user-check':
+        return <UserCheck className="w-4 h-4 text-charcoal stroke-[2.2]" />;
       case 'headphones':
-        return <Headphones className="w-4 h-4 text-charcoal" />;
+        return <Headphones className="w-4 h-4 text-charcoal stroke-[2.2]" />;
       default:
-        return <Globe className="w-4 h-4 text-charcoal" />;
+        return <Globe className="w-4 h-4 text-charcoal stroke-[2.2]" />;
     }
   };
 
-  const currentTheme = THEMES[profile.theme] || THEMES['pastel-bento'];
-
-  const getStyleClasses = (variant: string) => {
-    return currentTheme.linkVariantClass(variant);
-  };
-
   return (
-    <div className={`min-h-screen ${currentTheme.canvasBg} ${currentTheme.textHeading} flex flex-col items-center justify-start p-4 transition-colors duration-300`}>
-      {/* Top Floating Controls */}
-      <div className="w-full max-w-md flex items-center justify-between py-2 mb-2">
+    <div className="min-h-screen bg-[#F7F5EE] text-charcoal flex flex-col items-center justify-start p-4 sm:p-6 selection:bg-[#FDF166] selection:text-charcoal transition-colors duration-300">
+      {/* Top Floating Navigation Bar */}
+      <div className="w-full max-w-md flex items-center justify-between py-2 mb-3">
         <a
           href="/dashboard"
-          className="text-xs font-bold text-charcoal/80 hover:text-black bg-white/80 px-3 py-1.5 rounded-full border border-black/5 shadow-xs flex items-center gap-1.5"
+          className="text-xs font-bold text-charcoal/80 hover:text-black bg-white px-3.5 py-2 rounded-full border border-black/10 shadow-xs flex items-center gap-1.5 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Creator Dashboard</span>
+          <span>Dashboard</span>
         </a>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <button
             onClick={simulateNFCTap}
-            className="px-2.5 py-1.5 rounded-full bg-pastel-yellow text-charcoal text-[11px] font-bold border border-pastel-yellow-border flex items-center gap-1.5 shadow-xs"
+            className="px-3 py-1.5 rounded-full bg-[#FDF166] text-charcoal text-[11px] font-black border border-black/10 flex items-center gap-1.5 shadow-xs"
             title="Simulate NFC Hardware Tap"
           >
             <CreditCard className="w-3 h-3 text-charcoal" />
@@ -159,181 +164,293 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
-      {/* Main Profile Card */}
-      <div className={`w-full max-w-md ${currentTheme.containerBg} rounded-4xl p-6 md:p-8 shadow-card border border-black/5 flex flex-col items-center text-center relative overflow-hidden transition-colors`}>
-        <div className={`w-28 h-4 ${currentTheme.badgeBg} ${currentTheme.badgeBorder} rounded-b-2xl mb-4 shadow-xs border-b flex items-center justify-center`}>
-          <span className={`text-[9px] font-bold ${currentTheme.badgeText} tracking-widest uppercase`}>TAPPING</span>
+      {/* MAIN CONTAINER: THE TEAM SPACE BENTO CARD */}
+      <div className="w-full max-w-md bg-white rounded-[40px] p-6 shadow-card border border-black/5 flex flex-col gap-5 text-left relative overflow-hidden">
+        {/* Top Header Row matching Reference */}
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-black text-charcoal leading-none">
+              Check Your
+            </h1>
+            <h2 className="text-3xl font-black text-charcoal/35 leading-none mt-1">
+              Team Space
+            </h2>
+          </div>
+
+          <button
+            onClick={() => setShowQRModal(true)}
+            className="w-11 h-11 rounded-full bg-[#EFF4FF] hover:bg-[#E2ECFF] flex items-center justify-center shadow-xs transition-colors shrink-0"
+            title="Open QR"
+          >
+            <Bell className="w-5 h-5 text-[#4F83FF] stroke-[2.4]" />
+          </button>
         </div>
 
-        {/* NFC Alert Banner */}
-        {nfcTapped && (
-          <div className="w-full bg-[#1F2024] text-white p-3 rounded-2xl shadow-float flex items-center gap-2.5 mb-4">
-            <CreditCard className="w-4 h-4 text-pastel-yellow shrink-0" />
-            <div className="text-left text-xs">
-              <p className="font-bold">NFC Hardware Tapped</p>
-              <p className="text-[10px] text-white/70">Contact ready to save</p>
+        {/* Sub-header row */}
+        <div className="flex items-center justify-between pt-1">
+          <span className="text-xs font-bold text-charcoal/70">
+            {dayName}
+          </span>
+          <div className="flex items-center gap-1">
+            <span className="text-xs font-black text-charcoal">
+              {activeLinks.length} Links Active
+            </span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-charcoal stroke-[2.5]" />
+          </div>
+        </div>
+
+        {/* Action Button & 8/10 Score */}
+        <div className="flex items-center justify-between gap-2 pt-1">
+          <button
+            onClick={() => {
+              downloadVCardFile(vcard, `${profile.username}_contact.vcf`);
+              showToast('Contact Saved', 'Directly imported into phonebook', 'success');
+            }}
+            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-full bg-[#FAF7F2] hover:bg-gray-100 border border-black/10 shadow-xs transition-all text-left group"
+          >
+            <div className="w-8 h-8 rounded-full bg-[#141518] text-white flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4 stroke-[2.2]" />
+            </div>
+            <div>
+              <span className="block text-xs font-black text-charcoal leading-tight">
+                Save Contact
+              </span>
+              <span className="block text-[10px] font-semibold text-charcoal/50">
+                tapping.bio/{profile.username}
+              </span>
+            </div>
+          </button>
+
+          <div className="text-right">
+            <span className="text-[9px] font-bold text-charcoal/50 block">Overall score yesterday</span>
+            <span className="text-3xl font-black text-charcoal leading-none">
+              8<span className="text-xl font-black text-charcoal/30">/10</span>
+            </span>
+          </div>
+        </div>
+
+        {/* BENTO GRID (Cobalt Blue Card + White Tiles + Team) */}
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          {/* Cobalt Blue Card */}
+          <div
+            onClick={() => {
+              downloadVCardFile(vcard, `${profile.username}_contact.vcf`);
+              showToast('Contact Saved', 'Directly imported into phonebook', 'success');
+            }}
+            className="bg-[#4F83FF] hover:bg-[#4375EE] text-white rounded-3xl p-4 flex flex-col justify-between h-40 shadow-xs cursor-pointer transition-all"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-xs font-black leading-tight block">
+                  {profile.displayName}
+                </span>
+                <span className="text-[10px] font-semibold text-white/75 mt-0.5 block">
+                  {profile.badgeTitle || 'Product Designer'}
+                </span>
+              </div>
+              <MoreVertical className="w-3.5 h-3.5 text-white/80 shrink-0" />
+            </div>
+
+            <div>
+              <p className="text-2xl font-black leading-none">09:45</p>
+              <p className="text-[10px] font-bold text-white/80 mt-1">20 min &bull; Tap vCard</p>
             </div>
           </div>
-        )}
 
-        {/* Avatar */}
-        <div className="relative">
-          <div className="w-24 h-24 rounded-3xl overflow-hidden border-3 border-white shadow-soft bg-pastel-peach">
-            <img
-              src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
-              alt={profile.displayName}
-              className="w-full h-full object-cover"
-            />
+          {/* Right Column: 2 App Tiles + Team Avatars */}
+          <div className="flex flex-col gap-2.5">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => {
+                  downloadVCardFile(vcard, `${profile.username}_contact.vcf`);
+                  showToast('Contact Saved', 'Saved to contacts', 'success');
+                }}
+                className="bg-[#FAF7F2] hover:bg-white rounded-2xl p-2.5 shadow-2xs border border-black/5 flex flex-col items-center justify-center transition-all"
+                title="Download vCard"
+              >
+                <UserCheck className="w-5 h-5 text-[#EA4335] mb-1" />
+                <span className="text-[9px] font-black text-charcoal">vCard</span>
+              </button>
+
+              <button
+                onClick={() => setShowQRModal(true)}
+                className="bg-[#FAF7F2] hover:bg-white rounded-2xl p-2.5 shadow-2xs border border-black/5 flex flex-col items-center justify-center transition-all"
+                title="Show QR Code"
+              >
+                <QrCode className="w-5 h-5 text-[#34A853] mb-1" />
+                <span className="text-[9px] font-black text-charcoal">QR</span>
+              </button>
+            </div>
+
+            <div className="bg-[#FAF7F2] rounded-2xl p-2.5 border border-black/5 shadow-2xs flex items-center justify-between">
+              <span className="text-[10px] font-black text-charcoal">Team</span>
+              <div className="flex items-center -space-x-1.5">
+                {teamAvatars.slice(0, 3).map((u, i) => (
+                  <div key={i} className="w-5 h-5 rounded-full overflow-hidden border border-white">
+                    <img src={u} alt="team" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+                <div className="w-5 h-5 rounded-full bg-[#FDF166] text-charcoal font-black text-[8px] flex items-center justify-center border border-white">
+                  +10
+                </div>
+              </div>
+            </div>
           </div>
-          {profile.isVerified && (
-            <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-full bg-[#1F2024] text-white border-2 border-white text-[9px] font-bold shadow-sm">
-              Verified
+        </div>
+
+        {/* BOTTOM STATUS CARDS: Yellow & Lime Green for Primary Links */}
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          {/* Yellow Card: First Link */}
+          {activeLinks[0] && (
+            <div
+              onClick={() => handleLinkClick(activeLinks[0])}
+              className="bg-[#FDF166] hover:bg-[#FBE849] rounded-3xl p-4 flex flex-col justify-between h-28 cursor-pointer transition-all text-charcoal"
+            >
+              <div>
+                <p className="text-xl font-black leading-none">
+                  98 <span className="text-[10px] font-bold text-charcoal/70">clicks</span>
+                </p>
+                <p className="text-[11px] font-black truncate mt-1">
+                  {activeLinks[0].title}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9px] font-black">In Progress</span>
+                <span className="w-2 h-2 rounded-full bg-[#EAB308]" />
+              </div>
+            </div>
+          )}
+
+          {/* Lime Card: Second Link */}
+          {activeLinks[1] && (
+            <div
+              onClick={() => handleLinkClick(activeLinks[1])}
+              className="bg-[#B6F554] hover:bg-[#A6EC3C] rounded-3xl p-4 flex flex-col justify-between h-28 cursor-pointer transition-all text-charcoal"
+            >
+              <div>
+                <p className="text-xl font-black leading-none">
+                  55 <span className="text-[10px] font-bold text-charcoal/70">clicks</span>
+                </p>
+                <p className="text-[11px] font-black truncate mt-1">
+                  {activeLinks[1].title}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9px] font-black">Complete</span>
+                <span className="w-2 h-2 rounded-full bg-[#16A34A]" />
+              </div>
             </div>
           )}
         </div>
 
-        {/* Display Name & Handle */}
-        <h1 className="text-2xl font-black text-charcoal tracking-tight mt-3">
-          {profile.displayName}
-        </h1>
-        <p className="text-xs font-semibold text-charcoal-muted tracking-wide mt-0.5">
-          @{profile.username}
-        </p>
-
-        {profile.badgeTitle && (
-          <span className="mt-2 px-3 py-1 rounded-full bg-pastel-peach-light text-charcoal text-xs font-bold border border-pastel-peach-border">
-            {profile.badgeTitle}
-          </span>
-        )}
-
-        {profile.bio && (
-          <p className="text-xs text-charcoal/80 mt-3 max-w-sm leading-relaxed">
-            {profile.bio}
-          </p>
-        )}
-
-        {/* Contact Download */}
-        <button
-          onClick={() => {
-            downloadVCardFile(vcard, `${profile.username}_contact.vcf`);
-            showToast('Contact Saved', 'Directly imported into phonebook', 'success');
-          }}
-          className={`mt-4 w-full py-3 px-6 rounded-full ${currentTheme.accentBtn} ${currentTheme.accentBtnText} text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-transform active:scale-95`}
-        >
-          <Download className="w-4 h-4 text-pastel-yellow" />
-          <span>Save Contact to Phone</span>
-        </button>
+        {/* Remaining Links */}
+        {activeLinks.slice(2).map((link) => (
+          <div
+            key={link.id}
+            onClick={() => handleLinkClick(link)}
+            className="p-3.5 rounded-2xl bg-[#FAF7F2] hover:bg-white border border-black/10 transition-all cursor-pointer flex items-center justify-between shadow-2xs group"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-white border border-black/5 flex items-center justify-center shrink-0">
+                {renderIcon(link.icon)}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-black text-charcoal truncate">
+                  {link.title}
+                </p>
+                {link.subtitle && (
+                  <p className="text-[10px] text-charcoal/60 truncate font-medium">
+                    {link.subtitle}
+                  </p>
+                )}
+              </div>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-charcoal/40 group-hover:text-charcoal group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
+          </div>
+        ))}
 
         {/* Social Icons Bar */}
-        <div className="flex items-center justify-center gap-2 mt-4 pt-3 border-t border-black/5 w-full">
+        <div className="flex items-center justify-center gap-2 pt-3 border-t border-black/5">
           {profile.socialLinks?.instagram && (
             <a
-              href={profile.socialLinks.instagram}
+              href={`https://instagram.com/${profile.socialLinks.instagram.replace('@', '')}`}
               target="_blank"
               rel="noreferrer"
-              className="w-9 h-9 rounded-full bg-[#FAF7F2] hover:bg-pastel-peach border border-black/5 flex items-center justify-center text-charcoal transition-all shadow-xs"
+              className="w-8 h-8 rounded-full bg-[#FAF7F2] hover:bg-white border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs"
             >
-              <InstagramIcon className="w-4 h-4" />
+              <InstagramIcon className="w-3.5 h-3.5" />
             </a>
           )}
           {profile.socialLinks?.twitter && (
             <a
-              href={profile.socialLinks.twitter}
+              href={`https://x.com/${profile.socialLinks.twitter.replace('@', '')}`}
               target="_blank"
               rel="noreferrer"
-              className="w-9 h-9 rounded-full bg-[#FAF7F2] hover:bg-pastel-sky border border-black/5 flex items-center justify-center text-charcoal transition-all shadow-xs"
+              className="w-8 h-8 rounded-full bg-[#FAF7F2] hover:bg-white border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs"
             >
-              <TwitterIcon className="w-4 h-4" />
-            </a>
-          )}
-          {profile.socialLinks?.linkedin && (
-            <a
-              href={profile.socialLinks.linkedin}
-              target="_blank"
-              rel="noreferrer"
-              className="w-9 h-9 rounded-full bg-[#FAF7F2] hover:bg-pastel-lavender border border-black/5 flex items-center justify-center text-charcoal transition-all shadow-xs"
-            >
-              <LinkedinIcon className="w-4 h-4" />
+              <TwitterIcon className="w-3.5 h-3.5" />
             </a>
           )}
           {profile.socialLinks?.github && (
             <a
-              href={profile.socialLinks.github}
+              href={`https://github.com/${profile.socialLinks.github.replace('@', '')}`}
               target="_blank"
               rel="noreferrer"
-              className="w-9 h-9 rounded-full bg-[#FAF7F2] hover:bg-pastel-mint border border-black/5 flex items-center justify-center text-charcoal transition-all shadow-xs"
+              className="w-8 h-8 rounded-full bg-[#FAF7F2] hover:bg-white border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs"
             >
-              <GithubIcon className="w-4 h-4" />
+              <GithubIcon className="w-3.5 h-3.5" />
+            </a>
+          )}
+          {profile.socialLinks?.linkedin && (
+            <a
+              href={profile.socialLinks.linkedin.startsWith('http') ? profile.socialLinks.linkedin : `https://${profile.socialLinks.linkedin}`}
+              target="_blank"
+              rel="noreferrer"
+              className="w-8 h-8 rounded-full bg-[#FAF7F2] hover:bg-white border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs"
+            >
+              <LinkedinIcon className="w-3.5 h-3.5" />
             </a>
           )}
           {profile.socialLinks?.email && (
             <a
               href={`mailto:${profile.socialLinks.email}`}
-              className="w-9 h-9 rounded-full bg-[#FAF7F2] hover:bg-pastel-yellow border border-black/5 flex items-center justify-center text-charcoal transition-all shadow-xs"
+              className="w-8 h-8 rounded-full bg-[#FAF7F2] hover:bg-white border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs"
             >
-              <Mail className="w-4 h-4" />
+              <Mail className="w-3.5 h-3.5" />
             </a>
           )}
         </div>
 
-        {/* Active Blocks Stack */}
-        <div className="w-full flex flex-col gap-3 mt-5">
-          {activeLinks.map((link) => (
-            <div
-              key={link.id}
-              onClick={() => handleLinkClick(link)}
-              className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between shadow-soft hover:shadow-card hover:-translate-y-0.5 active:translate-y-0 ${getStyleClasses(
-                link.styleVariant
-              )}`}
-            >
-              <div className="flex items-center gap-3.5 min-w-0 text-left">
-                <div className="w-9 h-9 rounded-xl bg-white/70 flex items-center justify-center shrink-0 shadow-xs">
-                  {renderIcon(link.icon)}
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-xs md:text-sm font-extrabold truncate leading-tight">
-                    {link.title}
-                  </h3>
-                  {link.subtitle && (
-                    <p className="text-[11px] text-charcoal/70 truncate mt-0.5">{link.subtitle}</p>
-                  )}
-                </div>
-              </div>
-              <ExternalLink className="w-4 h-4 opacity-60 shrink-0 ml-2" />
-            </div>
-          ))}
-        </div>
-
-        {/* Footer */}
-        <div className="mt-8 pt-4 border-t border-black/5 flex items-center gap-2">
-          <div className="w-5 h-5 rounded-lg bg-[#1F2024] text-white flex items-center justify-center text-[10px] font-bold">
-            T
-          </div>
+        {/* Footer Branding */}
+        <div className="pt-2 text-center">
           <a
             href="/"
-            className="text-[11px] font-bold text-charcoal/70 hover:text-charcoal tracking-wider uppercase"
+            className="text-[10px] font-black text-charcoal/40 hover:text-charcoal uppercase tracking-widest inline-flex items-center gap-1.5 transition-colors"
           >
-            Create Your Own Tapping Bio
+            <span>Powered by TAPPING</span>
+            <ExternalLink className="w-3 h-3" />
           </a>
         </div>
       </div>
 
       {/* QR Modal */}
       {showQRModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-4xl p-6 max-w-xs w-full text-center border border-black/10 shadow-float">
             <div className="flex justify-between items-center mb-3">
-              <span className="text-xs font-bold text-charcoal uppercase tracking-wider">
-                Permanent QR
+              <span className="text-xs font-black text-charcoal uppercase tracking-wider">
+                Permanent Vector QR
               </span>
-              <button onClick={() => setShowQRModal(false)} className="text-charcoal-muted">
+              <button onClick={() => setShowQRModal(false)} className="text-charcoal/60 hover:text-charcoal">
                 <X className="w-4 h-4" />
               </button>
             </div>
             {qrUrl && (
-              <img src={qrUrl} alt="QR Code" className="w-48 h-48 mx-auto rounded-2xl p-2 bg-[#FAF7F2]" />
+              <img src={qrUrl} alt="QR Code" className="w-48 h-48 mx-auto rounded-2xl p-2 bg-[#F7F5EE] border border-black/5" />
             )}
-            <p className="font-mono text-xs text-charcoal-muted mt-3">
+            <p className="font-mono text-xs text-charcoal/60 mt-3 font-bold">
               tapping.bio/{profile.username}
             </p>
             <button
@@ -343,7 +460,7 @@ export default function PublicProfilePage() {
                 a.download = `${profile.username}-qr.png`;
                 a.click();
               }}
-              className="mt-4 w-full py-2.5 rounded-full bg-[#1F2024] text-white text-xs font-semibold shadow-xs"
+              className="mt-4 w-full py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-bold shadow-xs transition-colors"
             >
               Download PNG
             </button>

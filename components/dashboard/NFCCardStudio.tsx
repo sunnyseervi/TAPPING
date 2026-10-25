@@ -82,34 +82,34 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   const currentMat = materials.find((m) => m.id === material) || materials[0];
 
   return (
-    <div className="bg-white rounded-4xl p-5 md:p-6 border border-black/5 shadow-soft">
+    <div className="bg-white rounded-4xl p-6 md:p-8 border border-black/5 shadow-soft">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-black/5">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-black/5">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-pastel-sky flex items-center justify-center">
-              <CreditCard className="w-4 h-4 text-charcoal" />
-            </div>
-            <h2 className="text-lg font-extrabold text-charcoal">Physical Metal NFC Card Studio</h2>
-          </div>
-          <p className="text-xs text-charcoal-muted mt-0.5">
-            Heavyweight metal card with embedded NTAG216 microchip and permanent laser engraving
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-charcoal tracking-tight leading-none">
+            Check Your
+          </h1>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-charcoal/35 tracking-tight leading-none mt-1">
+            Metal NFC Space
+          </h2>
+          <p className="text-xs text-charcoal/60 mt-2 font-medium">
+            Heavyweight laser-engraved metal card with embedded NTAG216 contactless microchip
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
           <button
             onClick={() => setFlipped(!flipped)}
-            className="px-3.5 py-2 rounded-full bg-[#FAF7F2] hover:bg-gray-100 text-charcoal text-xs font-semibold flex items-center gap-1.5 border border-black/10 transition-colors"
+            className="px-4 py-2 rounded-full bg-[#FAF7F2] hover:bg-white text-charcoal text-xs font-bold flex items-center gap-1.5 border border-black/10 transition-colors shadow-xs"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>Flip Card Preview</span>
+            <span>Flip Preview</span>
           </button>
           <button
             onClick={() => setOrderModalOpen(true)}
-            className="px-4 py-2 rounded-full bg-[#1F2024] hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
+            className="px-5 py-2 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
           >
-            <ShoppingBag className="w-3.5 h-3.5 text-pastel-yellow" />
+            <ShoppingBag className="w-3.5 h-3.5 text-[#FDF166]" />
             <span>Order Metal Card</span>
           </button>
         </div>
@@ -289,7 +289,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
 
           <button
             onClick={handleSaveDesign}
-            className="w-full py-2.5 px-4 rounded-full bg-pastel-sky hover:bg-pastel-sky-border text-charcoal font-semibold text-xs flex items-center justify-center gap-1.5 border border-pastel-sky-border transition-colors mt-2"
+            className="w-full py-3 px-4 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-sm transition-transform active:scale-95 mt-2"
           >
             <Check className="w-3.5 h-3.5" />
             <span>Save Card Blueprint</span>
@@ -299,47 +299,47 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
 
       {/* Checkout Modal */}
       {orderModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-4xl p-6 max-w-md w-full border border-black/10 shadow-float text-left">
             <div className="flex items-center justify-between pb-3 border-b border-black/5">
               <div className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-charcoal" />
-                <h3 className="font-bold text-sm text-charcoal">Checkout Custom Metal Card</h3>
+                <h3 className="font-black text-sm text-charcoal">Checkout Custom Metal Card</h3>
               </div>
               <button
                 onClick={() => setOrderModalOpen(false)}
-                className="text-charcoal-muted hover:text-charcoal p-1 rounded-lg"
+                className="text-charcoal/60 hover:text-charcoal p-1 rounded-lg"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="py-4 space-y-3 text-xs">
-              <div className="p-3 bg-[#FAF7F2] rounded-2xl flex justify-between items-center">
+              <div className="p-3.5 bg-[#FAF7F2] rounded-2xl flex justify-between items-center border border-black/5">
                 <div>
-                  <p className="font-bold text-charcoal">{currentMat.name}</p>
-                  <p className="text-[11px] text-charcoal-muted">Laser Engraved: {engravedName}</p>
+                  <p className="font-black text-charcoal">{currentMat.name}</p>
+                  <p className="text-[11px] text-charcoal/60 font-medium">Laser Engraved: {engravedName}</p>
                 </div>
                 <span className="font-black text-sm text-charcoal">$49.00</span>
               </div>
 
-              <div className="space-y-1 text-charcoal/80">
+              <div className="space-y-1.5 text-charcoal/80 font-medium">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span>$49.00</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Worldwide Tracked Shipping</span>
-                  <span className="text-emerald-600 font-semibold">Included</span>
+                  <span className="text-emerald-600 font-bold">Included</span>
                 </div>
-                <div className="flex justify-between font-bold text-charcoal text-sm pt-2 border-t border-black/5">
+                <div className="flex justify-between font-black text-charcoal text-sm pt-2 border-t border-black/5">
                   <span>Total</span>
                   <span>$49.00</span>
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-pastel-mint-light border border-pastel-mint-border flex items-center gap-2 text-[11px] text-charcoal">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="p-3 rounded-2xl bg-[#EFF4FF] border border-[#4F83FF]/20 flex items-center gap-2 text-[11px] text-charcoal font-medium">
+                <ShieldCheck className="w-4 h-4 text-[#4F83FF] shrink-0" />
                 <span>Protected with Razorpay Secure Checkout and Lifetime NFC Warranty</span>
               </div>
             </div>
@@ -347,13 +347,13 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             <div className="flex gap-2.5 pt-2">
               <button
                 onClick={() => setOrderModalOpen(false)}
-                className="flex-1 py-2.5 rounded-full bg-black/5 text-xs font-semibold text-charcoal"
+                className="flex-1 py-2.5 rounded-full bg-[#FAF7F2] hover:bg-gray-100 text-xs font-bold text-charcoal border border-black/10 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handlePlaceOrder}
-                className="flex-2 py-2.5 px-6 rounded-full bg-[#1F2024] hover:bg-black text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-sm"
+                className="flex-2 py-2.5 px-6 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
               >
                 <span>Pay $49 with Razorpay</span>
               </button>
