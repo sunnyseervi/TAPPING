@@ -56,13 +56,28 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   const [fontSearch, setFontSearch] = useState('');
   const [fontCategory, setFontCategory] = useState('All');
 
+  // Element Drag & Position States (Name, QR, Brand, Artwork)
+  type DragTarget = 'name' | 'qr' | 'brand' | 'artwork';
+  const [activeElement, setActiveElement] = useState<DragTarget | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cardDragRef = useRef<{ isDragging: boolean; startX: number; startY: number; initPosX: number; initPosY: number }>({
+  const dragSessionRef = useRef<{
+    isDragging: boolean;
+    target: DragTarget | null;
+    startX: number;
+    startY: number;
+    initX: number;
+    initY: number;
+    hasMoved: boolean;
+  }>({
     isDragging: false,
+    target: null,
     startX: 0,
     startY: 0,
-    initPosX: 0,
-    initPosY: 0,
+    initX: 0,
+    initY: 0,
+    hasMoved: false,
   });
 
   React.useEffect(() => {
@@ -258,29 +273,105 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     reader.readAsDataURL(file);
   };
 
-  // Drag to reposition background artwork on the card
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!currentConfig.artworkUrl) return;
-    cardDragRef.current = {
+  // Unified Element & Artwork Drag Handler with Mouse & Touch support
+  const startDrag = (e: React.MouseEvent | React.TouchEvent, target: DragTarget) => {
+    e.stopPropagation();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    let initX = 0;
+    let initY = 0;
+
+    if (target === 'name') {
+      initX = currentConfig.nameOffsetX ?? 0;
+      initY = currentConfig.nameOffsetY ?? 0;
+    } else if (target === 'qr') {
+      initX = currentConfig.qrOffsetX ?? 0;
+      initY = currentConfig.qrOffsetY ?? 0;
+    } else if (target === 'brand') {
+      initX = currentConfig.brandOffsetX ?? 0;
+      initY = currentConfig.brandOffsetY ?? 0;
+    } else if (target === 'artwork') {
+      initX = currentConfig.artworkPosX ?? 0;
+      initY = currentConfig.artworkPosY ?? 0;
+    }
+
+    dragSessionRef.current = {
       isDragging: true,
-      startX: e.clientX,
-      startY: e.clientY,
-      initPosX: currentConfig.artworkPosX ?? 0,
-      initPosY: currentConfig.artworkPosY ?? 0,
+      target,
+      startX: clientX,
+      startY: clientY,
+      initX,
+      initY,
+      hasMoved: false,
     };
+
+    setActiveElement(target);
+    setIsDragging(true);
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!cardDragRef.current.isDragging) return;
-    const dx = e.clientX - cardDragRef.current.startX;
-    const dy = e.clientY - cardDragRef.current.startY;
-    const newX = Math.max(-100, Math.min(100, cardDragRef.current.initPosX + Math.round(dx / 3)));
-    const newY = Math.max(-100, Math.min(100, cardDragRef.current.initPosY + Math.round(dy / 3)));
-    updateCurrentConfig({ artworkPosX: newX, artworkPosY: newY });
-  };
+  // Global window listeners for ultra-smooth drag without boundary loss
+  React.useEffect(() => {
+    const handleMove = (clientX: number, clientY: number) => {
+      if (!dragSessionRef.current.isDragging || !dragSessionRef.current.target) return;
+      const dx = clientX - dragSessionRef.current.startX;
+      const dy = clientY - dragSessionRef.current.startY;
 
-  const handleMouseUp = () => {
-    cardDragRef.current.isDragging = false;
+      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+        dragSessionRef.current.hasMoved = true;
+      }
+
+      const target = dragSessionRef.current.target;
+      if (target === 'artwork') {
+        const artX = Math.max(-100, Math.min(100, dragSessionRef.current.initX + Math.round(dx / 2)));
+        const artY = Math.max(-100, Math.min(100, dragSessionRef.current.initY + Math.round(dy / 2)));
+        updateCurrentConfig({ artworkPosX: artX, artworkPosY: artY });
+      } else {
+        // Enforce 5mm print-safe boundaries so elements never get cut off
+        const boundX = Math.max(-75, Math.min(75, dragSessionRef.current.initX + dx));
+        const boundY = Math.max(-45, Math.min(45, dragSessionRef.current.initY + dy));
+
+        if (target === 'name') {
+          updateCurrentConfig({ nameOffsetX: Math.round(boundX), nameOffsetY: Math.round(boundY) });
+        } else if (target === 'qr') {
+          updateCurrentConfig({ qrOffsetX: Math.round(boundX), qrOffsetY: Math.round(boundY) });
+        } else if (target === 'brand') {
+          updateCurrentConfig({ brandOffsetX: Math.round(boundX), brandOffsetY: Math.round(boundY) });
+        }
+      }
+    };
+
+    const onMouseMove = (e: MouseEvent) => handleMove(e.clientX, e.clientY);
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches[0]) handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    };
+
+    const onEnd = () => {
+      if (dragSessionRef.current.isDragging) {
+        dragSessionRef.current.isDragging = false;
+        setIsDragging(false);
+      }
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onEnd);
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onEnd);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onEnd);
+    };
+  }, [currentConfig]);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (dragSessionRef.current.hasMoved) {
+      dragSessionRef.current.hasMoved = false;
+      return;
+    }
+    flipCard();
   };
 
   const handleSaveDesign = () => {
@@ -475,16 +566,23 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             </div>
           </div>
 
-          {/* 3D Interactive Flip Card Frame with Drag Pan Handler */}
+          {/* 3D Interactive Flip Card Frame with Drag Pan Handler & Click-to-Flip */}
           <div
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            onClick={handleCardClick}
+            onMouseDown={(e) => {
+              if (currentConfig.artworkUrl) {
+                startDrag(e, 'artwork');
+              }
+            }}
+            onTouchStart={(e) => {
+              if (currentConfig.artworkUrl) {
+                startDrag(e, 'artwork');
+              }
+            }}
             className={`perspective-1000 w-full max-w-[390px] h-[245px] relative select-none rounded-3xl ${
-              currentConfig.artworkUrl ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+              isDragging ? 'cursor-grabbing' : 'cursor-pointer'
             }`}
-            title={currentConfig.artworkUrl ? "Click to flip or drag image to reposition" : "Click to flip card"}
+            title="Click empty card area to flip &bull; Drag Name, QR, or Brand to position"
           >
             <div
               className={`w-full h-full preserve-3d transition-transform duration-700 relative rounded-3xl ${
@@ -523,12 +621,20 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
 
                 {/* Content Elements Positioned Strictly within 5mm Safe Print Area */}
                 <div className="absolute inset-[18px] z-10 pointer-events-none">
-                  {/* Brand Label (TAPPING) */}
+                  {/* Brand Label (TAPPING) — Directly Draggable with Mouse & Touch */}
                   <div 
-                    className={`absolute z-10 ${getBrandPositionClass(frontSide.brandPosition)}`}
+                    onMouseDown={(e) => startDrag(e, 'brand')}
+                    onTouchStart={(e) => startDrag(e, 'brand')}
+                    onClick={(e) => { e.stopPropagation(); setActiveElement('brand'); }}
+                    className={`absolute z-10 pointer-events-auto cursor-grab active:cursor-grabbing ${getBrandPositionClass(frontSide.brandPosition)} ${
+                      activeElement === 'brand'
+                        ? 'ring-1 ring-[#4F83FF] rounded-lg p-0.5 bg-black/20'
+                        : 'hover:outline-1 hover:outline-dashed hover:outline-white/40 rounded-lg p-0.5'
+                    }`}
                     style={{
                       transform: `translate(${frontSide.brandOffsetX || 0}px, ${frontSide.brandOffsetY || 0}px)`,
                     }}
+                    title="Drag to reposition TAPPING brand"
                   >
                     <span 
                       className="font-extrabold tracking-widest uppercase block"
@@ -561,12 +667,20 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                     </div>
                   )}
 
-                  {/* Primary Name & Tagline */}
+                  {/* Primary Name & Tagline — Directly Draggable with Mouse & Touch */}
                   <div 
-                    className={`absolute z-10 ${getNamePositionClass(frontSide.namePosition)} max-w-[210px]`}
+                    onMouseDown={(e) => startDrag(e, 'name')}
+                    onTouchStart={(e) => startDrag(e, 'name')}
+                    onClick={(e) => { e.stopPropagation(); setActiveElement('name'); }}
+                    className={`absolute z-10 pointer-events-auto cursor-grab active:cursor-grabbing ${getNamePositionClass(frontSide.namePosition)} max-w-[210px] ${
+                      activeElement === 'name'
+                        ? 'ring-1 ring-[#4F83FF] rounded-xl p-1 bg-black/20'
+                        : 'hover:outline-1 hover:outline-dashed hover:outline-white/40 rounded-xl p-1'
+                    }`}
                     style={{
                       transform: `translate(${frontSide.nameOffsetX || 0}px, ${frontSide.nameOffsetY || 0}px)`,
                     }}
+                    title="Drag to reposition Name & Tagline"
                   >
                     <p 
                       className="tracking-widest uppercase opacity-80 truncate"
@@ -599,15 +713,21 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                     </p>
                   </div>
 
-                  {/* Dynamic QR Code */}
+                  {/* Dynamic QR Code — Directly Draggable with Mouse & Touch */}
                   {(sideMode === 'single_sided' || frontSide.showQrCode) && (
                     <div 
-                      className={`absolute z-10 ${getQrPositionClass(frontSide.qrPosition)} bg-white p-1 rounded-xl shadow-md flex items-center justify-center`}
+                      onMouseDown={(e) => startDrag(e, 'qr')}
+                      onTouchStart={(e) => startDrag(e, 'qr')}
+                      onClick={(e) => { e.stopPropagation(); setActiveElement('qr'); }}
+                      className={`absolute z-10 pointer-events-auto cursor-grab active:cursor-grabbing ${getQrPositionClass(frontSide.qrPosition)} bg-white p-1 rounded-xl shadow-md flex items-center justify-center ${
+                        activeElement === 'qr' ? 'ring-2 ring-[#4F83FF]' : 'hover:ring-1 hover:ring-white/60'
+                      }`}
                       style={{
                         width: `${frontSide.qrSize || 56}px`,
                         height: `${frontSide.qrSize || 56}px`,
                         transform: `translate(${frontSide.qrOffsetX || 0}px, ${frontSide.qrOffsetY || 0}px)`,
                       }}
+                      title="Drag to reposition QR code"
                     >
                       <QrCode className="w-full h-full text-black" />
                     </div>
@@ -649,11 +769,15 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                     /* Single-Sided: Pristine Minimalist Reverse */
                     <div className="flex flex-col items-center justify-center h-full text-center">
                       <span 
-                        className="font-extrabold tracking-widest uppercase"
+                        onMouseDown={(e) => startDrag(e, 'brand')}
+                        onTouchStart={(e) => startDrag(e, 'brand')}
+                        className="font-extrabold tracking-widest uppercase pointer-events-auto cursor-grab active:cursor-grabbing hover:opacity-80"
                         style={{ 
                           color: backSide.textColor || '#FFFFFF',
-                          fontSize: `${backSide.brandSize || 14}px`
+                          fontSize: `${backSide.brandSize || 14}px`,
+                          transform: `translate(${backSide.brandOffsetX || 0}px, ${backSide.brandOffsetY || 0}px)`,
                         }}
+                        title="Drag to reposition"
                       >
                         {backSide.topLabel || 'TAPPING'}
                       </span>
@@ -680,10 +804,13 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                     /* Dual-Sided Back with QR & Connection details strictly within 5mm zone */
                     <div className="flex items-center justify-between h-full">
                       <div 
-                        className="flex flex-col justify-between h-full min-w-0 pr-4"
+                        onMouseDown={(e) => startDrag(e, 'name')}
+                        onTouchStart={(e) => startDrag(e, 'name')}
+                        className="flex flex-col justify-between h-full min-w-0 pr-4 pointer-events-auto cursor-grab active:cursor-grabbing hover:outline-1 hover:outline-dashed hover:outline-white/40 rounded-xl p-1"
                         style={{
                           transform: `translate(${backSide.nameOffsetX || 0}px, ${backSide.nameOffsetY || 0}px)`,
                         }}
+                        title="Drag to reposition details"
                       >
                         <div>
                           <span 
@@ -721,12 +848,15 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
 
                       {backSide.showQrCode && (
                         <div 
-                          className="bg-white p-1 rounded-xl flex items-center justify-center shrink-0 shadow-md"
+                          onMouseDown={(e) => startDrag(e, 'qr')}
+                          onTouchStart={(e) => startDrag(e, 'qr')}
+                          className="bg-white p-1 rounded-xl flex items-center justify-center shrink-0 shadow-md pointer-events-auto cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-[#4F83FF]"
                           style={{
                             width: `${backSide.qrSize || 64}px`,
                             height: `${backSide.qrSize || 64}px`,
                             transform: `translate(${backSide.qrOffsetX || 0}px, ${backSide.qrOffsetY || 0}px)`,
                           }}
+                          title="Drag to reposition QR code"
                         >
                           <QrCode className="w-full h-full text-black" />
                         </div>
@@ -738,11 +868,51 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             </div>
           </div>
 
-          {/* Drag & Zoom Instructions */}
-          <p className="text-[11px] text-charcoal/60 mt-2 font-medium flex items-center gap-1.5">
-            <Move className="w-3 h-3 text-[#4F83FF]" />
-            <span>{currentConfig.artworkUrl ? 'Click & drag card to pan picture position' : 'Click card to flip between front & back'}</span>
-          </p>
+          {/* Drag & Positioning Real-Time Feedback Pill */}
+          <div className="w-full max-w-[390px] mt-2 flex flex-col gap-1.5">
+            <div className="flex items-center justify-between text-[11px] text-charcoal/70 font-semibold">
+              <span className="flex items-center gap-1.5">
+                <Move className="w-3.5 h-3.5 text-[#4F83FF]" />
+                <span>Drag any text, QR, or logo directly &bull; Click empty area to flip</span>
+              </span>
+              <span className="text-[10px] font-mono font-bold text-charcoal/50">
+                5mm safe bleed
+              </span>
+            </div>
+
+            {activeElement && (
+              <div className="flex items-center justify-between p-2 rounded-xl bg-[#EFF4FF] border border-[#4F83FF]/20 text-[11px] font-bold text-charcoal animate-in fade-in duration-150">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#4F83FF] animate-pulse" />
+                  <span>
+                    Moving: <strong className="text-[#4F83FF] uppercase">{activeElement}</strong> block (X: {
+                      activeElement === 'name' ? currentConfig.nameOffsetX ?? 0 :
+                      activeElement === 'qr' ? currentConfig.qrOffsetX ?? 0 :
+                      activeElement === 'brand' ? currentConfig.brandOffsetX ?? 0 :
+                      currentConfig.artworkPosX ?? 0
+                    }px, Y: {
+                      activeElement === 'name' ? currentConfig.nameOffsetY ?? 0 :
+                      activeElement === 'qr' ? currentConfig.qrOffsetY ?? 0 :
+                      activeElement === 'brand' ? currentConfig.brandOffsetY ?? 0 :
+                      currentConfig.artworkPosY ?? 0
+                    }px)
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (activeElement === 'name') updateCurrentConfig({ nameOffsetX: 0, nameOffsetY: 0 });
+                    if (activeElement === 'qr') updateCurrentConfig({ qrOffsetX: 0, qrOffsetY: 0 });
+                    if (activeElement === 'brand') updateCurrentConfig({ brandOffsetX: 0, brandOffsetY: 0 });
+                    if (activeElement === 'artwork') updateCurrentConfig({ artworkPosX: 0, artworkPosY: 0 });
+                  }}
+                  className="text-[10px] font-bold text-[#4F83FF] hover:underline cursor-pointer"
+                >
+                  Reset Pos
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Artwork Drag Pan & Zoom Controls Bar (Visible when image uploaded) */}
           {currentConfig.artworkUrl && (

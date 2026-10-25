@@ -25,6 +25,7 @@ import {
   Repeat
 } from 'lucide-react';
 import { saveStoredProfile, getStoredProfile } from '@/lib/storage';
+import { downloadVCardFile } from '@/lib/vcard';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 import { CardMaterial } from '@/lib/types';
@@ -59,7 +60,8 @@ export default function LandingPage() {
     const profile = getStoredProfile();
     profile.username = clean;
     saveStoredProfile(profile);
-    router.push('/dashboard');
+    showToast('Space Claimed!', `Welcome @${clean}! Set up your bio and metal card.`, 'success');
+    router.push('/dashboard?tab=profile');
   };
 
   const handleSimulateNFCTap = () => {
@@ -79,7 +81,27 @@ export default function LandingPage() {
   };
 
   const handleDownloadVCard = () => {
-    showToast('Contact Downloaded', 'Directly imported Alex Morgan to phonebook', 'info');
+    try {
+      downloadVCardFile({
+        id: 'vcard_alex',
+        userId: 'alex',
+        firstName: 'Alex',
+        lastName: 'Morgan',
+        organization: 'Tapping Technologies',
+        jobTitle: 'Product Designer & Systems Engineer',
+        workPhone: '+1 415 890 2200',
+        mobilePhone: '+1 415 890 2200',
+        workEmail: 'contact@alexmorgan.design',
+        streetAddress: '742 Market Street',
+        website: typeof window !== 'undefined' ? `${window.location.origin}/${handle}` : `https://${displayHost}/${handle}`,
+        city: 'San Francisco',
+        country: 'USA',
+        note: 'Saved via Tapping Contact & NFC Platform'
+      }, 'alex-morgan.vcf');
+      showToast('Contact Saved to Phone', 'Directly exported Alex Morgan (vCard 3.0) file', 'success');
+    } catch {
+      showToast('Contact Exported', 'Directly imported Alex Morgan to phonebook', 'info');
+    }
   };
 
   const getMaterialClasses = (mat: CardMaterial) => {
@@ -368,20 +390,28 @@ export default function LandingPage() {
 
                   {/* Active Link Blocks Stack */}
                   <div className="w-full flex flex-col gap-2 mt-1">
-                    <div className="p-2.5 rounded-2xl bg-[#EFF4FF] border border-[#4F83FF]/20 text-charcoal flex items-center justify-between text-left shadow-2xs">
+                    <a
+                      href="https://github.com"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="p-2.5 rounded-2xl bg-[#EFF4FF] hover:bg-[#E2ECFF] border border-[#4F83FF]/20 text-charcoal flex items-center justify-between text-left shadow-2xs transition-all hover:scale-[1.02] active:scale-98 cursor-pointer"
+                    >
                       <div className="flex items-center gap-2 min-w-0">
                         <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shrink-0">
                           <Briefcase className="w-3.5 h-3.5 text-[#4F83FF]" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[10px] font-black truncate">Design Portfolio & Works</p>
-                          <p className="text-[8px] text-charcoal/60 truncate">Case studies & systems</p>
+                          <p className="text-[10px] font-black truncate">Design Portfolio &amp; Works</p>
+                          <p className="text-[8px] text-charcoal/60 truncate">Case studies &amp; systems</p>
                         </div>
                       </div>
                       <ArrowUpRight className="w-3 h-3 text-charcoal/50 shrink-0" />
-                    </div>
+                    </a>
 
-                    <div className="p-2.5 rounded-2xl bg-[#FDF166] border border-black/10 text-charcoal flex items-center justify-between text-left shadow-2xs">
+                    <a
+                      href={`mailto:contact@alexmorgan.design?subject=Product%20Advisory%20Call`}
+                      className="p-2.5 rounded-2xl bg-[#FDF166] hover:bg-[#FBE849] border border-black/10 text-charcoal flex items-center justify-between text-left shadow-2xs transition-all hover:scale-[1.02] active:scale-98 cursor-pointer"
+                    >
                       <div className="flex items-center gap-2 min-w-0">
                         <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shrink-0">
                           <Phone className="w-3.5 h-3.5 text-charcoal" />
@@ -392,20 +422,23 @@ export default function LandingPage() {
                         </div>
                       </div>
                       <ArrowUpRight className="w-3 h-3 text-charcoal/50 shrink-0" />
-                    </div>
+                    </a>
 
-                    <div className="p-2.5 rounded-2xl bg-[#B6F554] border border-black/10 text-charcoal flex items-center justify-between text-left shadow-2xs">
+                    <Link
+                      href="/alex"
+                      className="p-2.5 rounded-2xl bg-[#B6F554] hover:bg-[#A6EC3C] border border-black/10 text-charcoal flex items-center justify-between text-left shadow-2xs transition-all hover:scale-[1.02] active:scale-98 cursor-pointer"
+                    >
                       <div className="flex items-center gap-2 min-w-0">
                         <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shrink-0">
                           <Layers className="w-3.5 h-3.5 text-charcoal" />
                         </div>
                         <div className="min-w-0">
                           <p className="text-[10px] font-black truncate">Core Engineering Stack</p>
-                          <p className="text-[8px] text-charcoal/60 truncate">Next.js, TypeScript, Systems</p>
+                          <p className="text-[8px] text-charcoal/60 truncate">Live Profile Preview &rarr;</p>
                         </div>
                       </div>
                       <ArrowUpRight className="w-3 h-3 text-charcoal/50 shrink-0" />
-                    </div>
+                    </Link>
                   </div>
 
                   <p className="text-[9px] font-black uppercase tracking-widest text-charcoal/40 mt-4">
@@ -529,7 +562,7 @@ export default function LandingPage() {
               </button>
 
               <Link
-                href="/dashboard"
+                href="/dashboard?tab=nfc"
                 className="px-5 py-3 rounded-2xl bg-white hover:bg-black/5 text-charcoal text-xs font-black border border-black/10 flex items-center gap-2 shadow-xs transition-colors"
               >
                 <span>Customize Your Card</span>
@@ -599,7 +632,7 @@ export default function LandingPage() {
               </p>
             </div>
             <Link
-              href="/dashboard"
+              href="/dashboard?tab=nfc"
               className="mt-6 text-xs font-black text-white flex items-center gap-1 hover:underline"
             >
               <span>Explore Hardware</span>
@@ -619,7 +652,7 @@ export default function LandingPage() {
               </p>
             </div>
             <Link
-              href="/dashboard"
+              href="/dashboard?tab=profile"
               className="mt-6 text-xs font-black text-charcoal flex items-center gap-1 hover:underline"
             >
               <span>Manage Profile</span>
@@ -639,7 +672,7 @@ export default function LandingPage() {
               </p>
             </div>
             <Link
-              href="/dashboard"
+              href="/dashboard?tab=digital-card"
               className="mt-6 text-xs font-black text-charcoal flex items-center gap-1 hover:underline"
             >
               <span>Configure vCard</span>
@@ -659,7 +692,7 @@ export default function LandingPage() {
               </p>
             </div>
             <Link
-              href="/dashboard"
+              href="/dashboard?tab=digital-card"
               className="mt-6 text-xs font-black text-charcoal flex items-center gap-1 hover:underline"
             >
               <span>Generate QR</span>
@@ -762,7 +795,7 @@ export default function LandingPage() {
             </div>
 
             <Link
-              href="/dashboard"
+              href="/dashboard?action=upgrade&plan=monthly"
               className="mt-8 w-full py-3.5 px-4 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
             >
               <span>Activate Monthly (&#8377;299)</span>
@@ -820,7 +853,7 @@ export default function LandingPage() {
             </div>
 
             <Link
-              href="/dashboard"
+              href="/dashboard?action=upgrade&plan=yearly"
               className="mt-8 w-full py-3.5 px-4 rounded-2xl bg-[#FDF166] hover:bg-[#FBE849] text-charcoal font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
             >
               <span>Activate Yearly (&#8377;2,999)</span>

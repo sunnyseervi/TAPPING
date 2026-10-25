@@ -38,7 +38,6 @@ export default function AppSidebar({
     { id: 'profile', label: 'Edit Profile & Links', icon: UserCheck, count: '5', color: 'bg-[#FDF166] text-charcoal' },
     { id: 'digital-card', label: 'Digital Card & QR', icon: CreditCard, count: 'v3.0', color: 'bg-[#EFF4FF] text-[#4F83FF]' },
     { id: 'nfc', label: 'Metal NFC Studio', icon: Layers, count: 'NFC', color: 'bg-[#B6F554] text-charcoal' },
-    { id: 'themes', label: 'Themes & Styles', icon: Palette, count: null, color: null },
   ];
 
   return (

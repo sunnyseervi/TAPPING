@@ -17,7 +17,8 @@ import {
   Globe,
   UserCheck,
   Calendar,
-  Headphones
+  Headphones,
+  GripVertical
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 
@@ -30,6 +31,8 @@ export default function LinksManager({ links, onUpdateLinks }: LinksManagerProps
   const { showToast } = useToast();
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   // Form state for adding/editing
   const [title, setTitle] = useState('');
@@ -122,6 +125,21 @@ export default function LinksManager({ links, onUpdateLinks }: LinksManagerProps
     reordered[index] = temp;
     onUpdateLinks(reordered);
     showToast('Order Updated', 'Link position moved down', 'info');
+  };
+
+  const handleDrop = (dropIndex: number) => {
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+    const reordered = [...links];
+    const [moved] = reordered.splice(draggedIndex, 1);
+    reordered.splice(dropIndex, 0, moved);
+    onUpdateLinks(reordered);
+    showToast('Link Reordered', `Moved "${moved.title}" to position ${dropIndex + 1}`, 'info');
+    setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   const styleVariants: { label: string; value: StyleVariant; bg: string }[] = [
@@ -244,14 +262,43 @@ export default function LinksManager({ links, onUpdateLinks }: LinksManagerProps
         {links.map((link, index) => (
           <div
             key={link.id}
-            className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
-              link.isActive
-                ? 'bg-[#FAF7F2] border-black/5'
+            draggable
+            onDragStart={(e) => {
+              setDraggedIndex(index);
+              e.dataTransfer.effectAllowed = 'move';
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'move';
+              if (dragOverIndex !== index) setDragOverIndex(index);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              handleDrop(index);
+            }}
+            onDragEnd={() => {
+              setDraggedIndex(null);
+              setDragOverIndex(null);
+            }}
+            className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 cursor-grab active:cursor-grabbing group ${
+              draggedIndex === index
+                ? 'opacity-40 scale-[0.98] border-dashed border-[#4F83FF]'
+                : dragOverIndex === index
+                ? 'border-2 border-[#4F83FF] bg-[#EFF4FF] shadow-xs'
+                : link.isActive
+                ? 'bg-[#FAF7F2] border-black/5 hover:border-black/20'
                 : 'bg-black/[0.02] border-dashed border-black/10 opacity-60'
             }`}
           >
-            {/* Left: Reorder arrows & Title */}
-            <div className="flex items-center gap-3 min-w-0">
+            {/* Left: Drag Handle, Reorder arrows & Title */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div 
+                className="p-1 text-charcoal/30 group-hover:text-charcoal/70 transition-colors shrink-0"
+                title="Drag to reorder link"
+              >
+                <GripVertical className="w-4 h-4" />
+              </div>
+
               <div className="flex flex-col gap-0.5">
                 <button
                   disabled={index === 0}

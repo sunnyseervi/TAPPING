@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { 
   getStoredProfile, 
   saveStoredProfile, 
@@ -34,9 +35,12 @@ import GoogleAuthModal from '@/components/auth/GoogleAuthModal';
 import AnimatedOnboarding from '@/components/onboarding/AnimatedOnboarding';
 import LivePhonePreview from '@/components/preview/LivePhonePreview';
 import { useToast } from '@/components/ui/Toast';
+import { Check, X, CreditCard, Sparkles } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { showToast } = useToast();
+  const searchParams = useSearchParams();
 
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [vcard, setVcard] = useState<VCardProfile>(initialVCard);
@@ -52,6 +56,10 @@ export default function DashboardPage() {
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
+  // Upgrade Modal State
+  const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
+  const [upgradePlan, setUpgradePlan] = useState<'monthly' | 'yearly'>('monthly');
+
   const handleSelectTab = (tab: string) => {
     if (tab === 'themes') {
       setActiveTab('profile');
@@ -65,6 +73,37 @@ export default function DashboardPage() {
     }
     setActiveTab(tab);
   };
+
+  // Sync search parameters from URL
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    const action = searchParams.get('action');
+    const plan = searchParams.get('plan');
+
+    if (tab === 'nfc') {
+      setActiveTab('nfc');
+    } else if (tab === 'profile') {
+      setActiveTab('profile');
+      setEditSectionTab('profile');
+    } else if (tab === 'links') {
+      setActiveTab('profile');
+      setEditSectionTab('links');
+    } else if (tab === 'themes') {
+      setActiveTab('profile');
+      setEditSectionTab('themes');
+    } else if (tab === 'digital-card') {
+      setActiveTab('digital-card');
+    } else if (tab === 'dashboard') {
+      setActiveTab('dashboard');
+    }
+
+    if (action === 'upgrade') {
+      setShowUpgradeModal(true);
+      if (plan === 'yearly' || plan === 'monthly') {
+        setUpgradePlan(plan);
+      }
+    }
+  }, [searchParams]);
 
   // Sync state on client mount to prevent SSR hydration mismatch
   useEffect(() => {
@@ -100,6 +139,31 @@ export default function DashboardPage() {
     saveStoredNFCCard(newNFC);
   };
 
+  const handleActivatePlan = (plan: 'monthly' | 'yearly') => {
+    setSubscription({
+      tier: 'pro',
+      status: 'active',
+      expiresAt: new Date(Date.now() + (plan === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString(),
+    });
+
+    try {
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.6 }
+      });
+    } catch {
+      // safe fallback
+    }
+
+    setShowUpgradeModal(false);
+    showToast(
+      'Account Activated!',
+      `TAPPING Pro (${plan === 'yearly' ? '\u20B92,999/yr' : '\u20B9299/mo'}) unlocked with permanent dynamic QR & custom themes`,
+      'success'
+    );
+  };
+
   return (
     <div className="min-h-screen bg-canvas text-charcoal selection:bg-pastel-peach relative font-sans">
       {/* Optional Google Authentication Modal */}
@@ -122,9 +186,104 @@ export default function DashboardPage() {
         />
       )}
 
+      {/* Plan Activation / Upgrade Modal (₹299/mo or ₹2,999/yr) */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-4xl p-6 sm:p-8 w-full max-w-lg shadow-2xl border border-black/10 flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-black/5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-[#FDF166] flex items-center justify-center text-charcoal shadow-2xs">
+                  <Sparkles className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-charcoal">Activate TAPPING PRO</h3>
+                  <p className="text-[11px] font-bold text-charcoal/60">Official Indian Rupee Pricing</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowUpgradeModal(false)}
+                className="w-8 h-8 rounded-full bg-[#FAF7F2] hover:bg-gray-200 flex items-center justify-center text-charcoal/70 hover:text-black cursor-pointer transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Plan Switcher Pills */}
+            <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-[#FAF7F2] border border-black/10">
+              <button
+                type="button"
+                onClick={() => setUpgradePlan('monthly')}
+                className={`py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                  upgradePlan === 'monthly'
+                    ? 'bg-[#141518] text-white shadow-xs'
+                    : 'text-charcoal/70 hover:text-black'
+                }`}
+              >
+                Monthly &#8377;299/mo
+              </button>
+              <button
+                type="button"
+                onClick={() => setUpgradePlan('yearly')}
+                className={`py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  upgradePlan === 'yearly'
+                    ? 'bg-[#141518] text-white shadow-xs'
+                    : 'text-charcoal/70 hover:text-black'
+                }`}
+              >
+                <span>Yearly &#8377;2,999/yr</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-[#B6F554] text-charcoal font-black">
+                  -16%
+                </span>
+              </button>
+            </div>
+
+            {/* Plan Features Included */}
+            <div className="space-y-2 p-4 rounded-2xl bg-[#EFF4FF] border border-[#4F83FF]/20 text-xs font-bold text-charcoal">
+              <div className="text-[10px] font-black uppercase tracking-wider text-[#4F83FF] mb-1">
+                Included in Your {upgradePlan === 'yearly' ? 'Annual' : 'Monthly'} Pro Membership:
+              </div>
+              {[
+                'Permanent Dynamic Vector QR (never breaks or expires)',
+                '13 Full-System Themes with authentic typography & custom colors',
+                'vCard 3.0 Direct Export to Apple & Android phonebooks',
+                'Visiting card 300 DPI high-resolution PNG & PDF export',
+                'Zero platform branding & full custom domain readiness',
+                upgradePlan === 'yearly' ? '20% exclusive discount on Laser-Engraved Metal NFC Cards' : 'Full access to Metal NFC Hardware Studio'
+              ].map((feat, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-[#4F83FF] text-white flex items-center justify-center shrink-0">
+                    <Check className="w-2.5 h-2.5 stroke-[3]" />
+                  </div>
+                  <span>{feat}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Payment Summary & Instant Checkout */}
+            <div className="pt-2 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => handleActivatePlan(upgradePlan)}
+                className="w-full py-3.5 px-5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>
+                  Confirm &amp; Activate {upgradePlan === 'yearly' ? 'Annual Plan (\u20B92,999)' : 'Monthly Plan (\u20B9299)'}
+                </span>
+              </button>
+              <p className="text-[10px] text-center text-charcoal/50 font-medium">
+                Instant UPI &amp; Razorpay sandbox activation &bull; 100% money-back satisfaction guarantee
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Left Collapsible Navigation Sidebar Drawer (toggled via 3-lines header button) */}
       <AppSidebar
-        activeTab={activeTab === 'profile' && editSectionTab === 'themes' ? 'themes' : activeTab}
+        activeTab={activeTab}
         onSelectTab={handleSelectTab}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
@@ -247,5 +406,19 @@ export default function DashboardPage() {
         onQuickAdd={() => handleSelectTab('profile')}
       />
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center font-bold text-xs text-charcoal/60">
+          Loading TAPPING Space...
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
   );
 }

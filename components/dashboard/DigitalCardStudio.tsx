@@ -55,7 +55,70 @@ export default function DigitalCardStudio({
   const [qrPosY, setQrPosY] = useState<number>(0);
   const [customBgImage, setCustomBgImage] = useState<string>('');
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isDraggingQr, setIsDraggingQr] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const qrDragRef = useRef<{ isDragging: boolean; startX: number; startY: number; initX: number; initY: number }>({
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+    initX: 0,
+    initY: 0,
+  });
+
+  const startQrDrag = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    qrDragRef.current = {
+      isDragging: true,
+      startX: clientX,
+      startY: clientY,
+      initX: qrPosX,
+      initY: qrPosY,
+    };
+    setIsDraggingQr(true);
+  };
+
+  useEffect(() => {
+    const handleMove = (clientX: number, clientY: number) => {
+      if (!qrDragRef.current.isDragging) return;
+      const dx = clientX - qrDragRef.current.startX;
+      const dy = clientY - qrDragRef.current.startY;
+
+      // Keep QR strictly inside the 5mm safe print boundaries
+      const newX = Math.max(-120, Math.min(25, qrDragRef.current.initX + dx));
+      const newY = Math.max(-30, Math.min(90, qrDragRef.current.initY + dy));
+
+      setQrPosX(Math.round(newX));
+      setQrPosY(Math.round(newY));
+    };
+
+    const onMouseMove = (e: MouseEvent) => handleMove(e.clientX, e.clientY);
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches[0]) handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    };
+
+    const onEnd = () => {
+      if (qrDragRef.current.isDragging) {
+        qrDragRef.current.isDragging = false;
+        setIsDraggingQr(false);
+      }
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onEnd);
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onEnd);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onEnd);
+    };
+  }, [qrPosX, qrPosY]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -529,20 +592,25 @@ export default function DigitalCardStudio({
               {/* Right Side: QR Code + TAPPING Brand (5mm margin safe) */}
               <div className="flex flex-col justify-between items-end h-full shrink-0 pl-2">
                 
-                {/* Dynamic Vector QR Code with Adjustable Size & Position */}
+                {/* Dynamic Vector QR Code with Direct Canvas Drag & Sizing */}
                 <div 
-                  className={`p-2 rounded-2xl flex items-center justify-center shrink-0 transition-transform ${currentThemeConfig.qrContainer}`}
+                  onMouseDown={startQrDrag}
+                  onTouchStart={startQrDrag}
+                  className={`p-2 rounded-2xl flex items-center justify-center shrink-0 transition-transform pointer-events-auto cursor-grab active:cursor-grabbing select-none ${
+                    isDraggingQr ? 'ring-2 ring-[#4F83FF] shadow-lg scale-105' : 'hover:ring-1 hover:ring-black/20'
+                  } ${currentThemeConfig.qrContainer}`}
                   style={{
                     width: `${qrSize}px`,
                     height: `${qrSize}px`,
                     transform: `translate(${qrPosX}px, ${qrPosY}px)`,
                   }}
+                  title="Click and drag QR code directly on card to position"
                 >
                   {qrDataUrl ? (
                     <img
                       src={qrDataUrl}
                       alt="Visiting Card QR"
-                      className="w-full h-full object-contain rounded-lg"
+                      className="w-full h-full object-contain rounded-lg pointer-events-none"
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-100 animate-pulse rounded-lg" />
@@ -561,9 +629,12 @@ export default function DigitalCardStudio({
             </div>
           </div>
 
-          {/* Quick Notice under card */}
-          <div className="w-full max-w-[520px] flex items-center justify-between mt-3 text-[11px] text-charcoal/60 px-2 font-medium">
-            <span>Data synced with your profile settings.</span>
+          {/* Quick Notice & Drag Feedback under card */}
+          <div className="w-full max-w-[520px] flex items-center justify-between mt-3 text-[11px] text-charcoal/70 px-2 font-medium">
+            <span className="flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full ${isDraggingQr ? 'bg-[#4F83FF] animate-pulse' : 'bg-emerald-500'}`} />
+              <span>{isDraggingQr ? `Dragging QR Code (X: ${qrPosX}px, Y: ${qrPosY}px)` : 'Drag QR code directly on card to position'}</span>
+            </span>
             {onSelectTab && (
               <button
                 type="button"
