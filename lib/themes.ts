@@ -1,4 +1,5 @@
 import { ThemeType, FontFamilyType, BackgroundPatternType, LinkCardStyleType } from './types';
+import { findCardFont } from './cardFonts';
 
 export interface ThemeConfig {
   id: ThemeType;
@@ -471,16 +472,29 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
 export function getFontFamilyClass(fontFamily?: FontFamilyType): string {
   switch (fontFamily) {
     case 'comic':
+    case 'bangers':
       return 'font-comic tracking-wide';
     case 'cartoon':
+    case 'fredoka':
       return 'font-cartoon';
     case 'mono':
+    case 'space-mono':
       return 'font-mono-code font-mono';
     case 'serif':
+    case 'playfair':
       return 'font-serif';
     default:
       return 'font-sans';
   }
+}
+
+export function getFontFamilyStyle(fontFamily?: FontFamilyType | string): React.CSSProperties {
+  if (!fontFamily) return {};
+  const found = findCardFont(fontFamily);
+  if (found) {
+    return { fontFamily: found.family };
+  }
+  return {};
 }
 
 export function getPatternClass(pattern?: BackgroundPatternType): string {

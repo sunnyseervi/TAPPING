@@ -21,11 +21,13 @@ import {
   Zap,
   Flame,
   Upload,
-  Trash2
+  Trash2,
+  Search
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import confetti from 'canvas-confetti';
 import { THEMES } from '@/lib/themes';
+import { CARD_FONTS, CardFont, findCardFont } from '@/lib/cardFonts';
 
 interface ThemesStudioProps {
   profile: Profile;
@@ -38,6 +40,8 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
   const [draftProfile, setDraftProfile] = useState<Profile>(profile);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeStudioTab, setActiveStudioTab] = useState<'themes' | 'typography' | 'cards' | 'background'>('themes');
+  const [fontCategory, setFontCategory] = useState<string>('All');
+  const [fontSearch, setFontSearch] = useState<string>('');
   const bannerInputRef = React.useRef<HTMLInputElement>(null);
 
   // Synchronize saved data without overwriting an active draft preview.
@@ -500,32 +504,115 @@ export default function ThemesStudio({ profile, onUpdateProfile, onLivePreviewCh
       {/* TAB 2: TYPOGRAPHY, FONT FAMILIES, COLOR & RESIZING */}
       {activeStudioTab === 'typography' && (
         <div className="flex flex-col gap-6">
-          {/* Font Family Selection */}
+          {/* Font Family Selection with 100+ Fonts */}
           <div>
-            <h3 className="text-sm font-black text-charcoal mb-1">Font Family Design</h3>
-            <p className="text-xs text-charcoal/60 mb-3">Choose the typography personality for your entire profile:</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              <div>
+                <h3 className="text-sm font-black text-charcoal">Typography Personality ({CARD_FONTS.length} Google Styles)</h3>
+                <p className="text-xs text-charcoal/60">Search and preview typography styles applied across your entire profile:</p>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {fontOptions.map((f) => {
-                const isSelected = (draftProfile.fontFamily || 'sans') === f.id;
+              {/* Current Active Font Chip */}
+              {(() => {
+                const currentFont = findCardFont(draftProfile.fontFamily) || CARD_FONTS[0];
+                return (
+                  <div className="self-start sm:self-auto px-3 py-1.5 rounded-2xl bg-white border border-black/10 shadow-2xs flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-charcoal/50 uppercase">Active:</span>
+                    <span className="text-xs font-black text-[#4F83FF]" style={{ fontFamily: currentFont.family }}>
+                      {currentFont.name}
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Category Filter Pills & Search */}
+            <div className="flex flex-col gap-2.5 mb-4">
+              <div className="relative w-full max-w-md">
+                <Search className="w-4 h-4 text-charcoal/40 absolute left-3.5 top-3" />
+                <input
+                  type="text"
+                  value={fontSearch}
+                  onChange={(e) => setFontSearch(e.target.value)}
+                  placeholder="Search fonts (e.g. Bangers, Playfair, Cinzel, Space Mono, Fredoka)..."
+                  className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                {[
+                  'All',
+                  'Modern Sans',
+                  'Luxury Serif',
+                  'Comic & Pop',
+                  'Retro & 8-Bit',
+                  'Cyber & Sci-Fi',
+                  'Display & Heavy',
+                  'Script & Signature',
+                  'Brutalist & Urban'
+                ].map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setFontCategory(cat)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                      fontCategory === cat
+                        ? 'bg-[#141518] text-white shadow-xs'
+                        : 'bg-[#FAF7F2] hover:bg-black/5 text-charcoal/70 border border-black/5'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Fonts Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[460px] overflow-y-auto pr-1 no-scrollbar">
+              {CARD_FONTS.filter((f) => {
+                const matchesCat = fontCategory === 'All' || f.category === fontCategory;
+                const matchesSearch = !fontSearch.trim() || 
+                  f.name.toLowerCase().includes(fontSearch.toLowerCase()) || 
+                  f.category.toLowerCase().includes(fontSearch.toLowerCase());
+                return matchesCat && matchesSearch;
+              }).map((f) => {
+                const isSelected = draftProfile.fontFamily === f.id || 
+                  (draftProfile.fontFamily === 'sans' && f.id === 'plus-jakarta') ||
+                  (draftProfile.fontFamily === 'comic' && f.id === 'bangers') ||
+                  (draftProfile.fontFamily === 'cartoon' && f.id === 'fredoka') ||
+                  (draftProfile.fontFamily === 'serif' && f.id === 'playfair') ||
+                  (draftProfile.fontFamily === 'mono' && (f.id === 'space-mono' || f.id === 'press-start-2p'));
                 return (
                   <div
                     key={f.id}
                     onClick={() => handleUpdateFontFamily(f.id)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
                       isSelected
-                        ? 'border-charcoal bg-black/[0.03] ring-2 ring-charcoal shadow-xs'
-                        : 'border-black/10 bg-[#FAF7F2] hover:bg-white'
+                        ? 'border-black bg-black/[0.04] ring-2 ring-black shadow-xs'
+                        : 'border-black/10 bg-[#FAF7F2] hover:bg-white hover:border-black/20'
                     }`}
                   >
-                    <div className="flex items-start justify-between">
-                      <span className="text-xs font-black text-charcoal">{f.name}</span>
-                      {isSelected && <Check className="w-4 h-4 text-[#4F83FF]" />}
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold text-charcoal">{f.name}</span>
+                      {isSelected ? (
+                        <span className="w-4 h-4 rounded-full bg-[#141518] text-white flex items-center justify-center">
+                          <Check className="w-2.5 h-2.5 stroke-[3]" />
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-charcoal/40 uppercase">{f.category}</span>
+                      )}
                     </div>
-                    <div className={`my-2 p-2 rounded-xl bg-white border border-black/5 text-charcoal ${f.class}`}>
-                      {f.preview}
+
+                    <div 
+                      className="my-1.5 p-2.5 rounded-xl bg-white border border-black/5 text-charcoal text-sm leading-tight truncate"
+                      style={{ fontFamily: f.family }}
+                    >
+                      Aa Bb 123 • @{draftProfile.username}
                     </div>
-                    <p className="text-[10px] text-charcoal/60 font-medium">{f.desc}</p>
+
+                    <span className="text-[10px] font-mono text-charcoal/50 truncate">
+                      {f.family}
+                    </span>
                   </div>
                 );
               })}

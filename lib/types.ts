@@ -13,7 +13,7 @@ export type ThemeType =
   | 'sage-cream' 
   | 'tokyo-night';
 
-export type FontFamilyType = 'sans' | 'serif' | 'mono' | 'comic' | 'cartoon';
+export type FontFamilyType = 'sans' | 'serif' | 'mono' | 'comic' | 'cartoon' | string;
 export type FontSizeScale = 'sm' | 'md' | 'lg' | 'xl';
 export type BackgroundPatternType = 
   | 'none' 

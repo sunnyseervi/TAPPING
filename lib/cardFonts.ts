@@ -140,3 +140,13 @@ export const CARD_FONTS: CardFont[] = [
   { id: 'black-han-sans', name: 'Black Han Sans Seoul', family: "'Black Han Sans', sans-serif", category: 'Brutalist & Urban' },
   { id: 'monument-extended', name: 'Dela Gothic One Heavy', family: "'Dela Gothic One', cursive", category: 'Brutalist & Urban' },
 ];
+
+export function findCardFont(fontId?: string): CardFont | undefined {
+  if (!fontId) return undefined;
+  if (fontId === 'sans') return CARD_FONTS.find((f) => f.id === 'plus-jakarta');
+  if (fontId === 'comic') return CARD_FONTS.find((f) => f.id === 'bangers');
+  if (fontId === 'cartoon') return CARD_FONTS.find((f) => f.id === 'fredoka');
+  if (fontId === 'serif') return CARD_FONTS.find((f) => f.id === 'playfair');
+  if (fontId === 'mono') return CARD_FONTS.find((f) => f.id === 'space-mono' || f.id === 'press-start-2p') || CARD_FONTS[0];
+  return CARD_FONTS.find((f) => f.id === fontId);
+}

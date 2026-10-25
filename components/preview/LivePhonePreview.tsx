@@ -21,7 +21,7 @@ import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/componen
 import { downloadVCardFile } from '@/lib/vcard';
 import { incrementLinkClick } from '@/lib/storage';
 import { useToast } from '@/components/ui/Toast';
-import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses, isDarkTheme } from '@/lib/themes';
+import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses, isDarkTheme, getFontFamilyStyle } from '@/lib/themes';
 
 interface LivePreviewProps {
   profile: Profile;
@@ -195,7 +195,10 @@ export default function LivePhonePreview({
             {/* Display Name & Handle */}
             <h1 
               className={`${titleSizeClass} font-black mt-2.5 tracking-tight text-center ${fontFamilyClass}`}
-              style={{ color: profile.fontColor || currentTheme.textHeadingHex || (isDarkTheme(profile.theme) ? '#00FF66' : '#141518') }}
+              style={{ 
+                color: profile.fontColor || currentTheme.textHeadingHex || (isDarkTheme(profile.theme) ? '#00FF66' : '#141518'),
+                ...getFontFamilyStyle(profile.fontFamily)
+              }}
             >
               {profile.displayName}
             </h1>
