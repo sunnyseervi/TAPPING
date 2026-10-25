@@ -49,6 +49,10 @@ export default function DigitalCardStudio({
   const [qrColor, setQrColor] = useState('#141518');
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [showSafeGuide, setShowSafeGuide] = useState(true);
+  const [showBrandMark, setShowBrandMark] = useState(true);
+  const [qrSize, setQrSize] = useState<number>(96);
+  const [qrPosX, setQrPosX] = useState<number>(0);
+  const [qrPosY, setQrPosY] = useState<number>(0);
   const [customBgImage, setCustomBgImage] = useState<string>('');
   const [copiedLink, setCopiedLink] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -283,42 +287,41 @@ export default function DigitalCardStudio({
     ctx.fillText(`Email: ${emailAddress}`, safeMarginX, safeMarginY + 225);
     ctx.fillText(`Bio: ${websiteUrl.replace(/^https?:\/\//, '')}`, safeMarginX, safeMarginY + 265);
 
-    // 4. Draw Right Side: High-Res Scannable QR Code
+    // 4. Draw Right Side: High-Res Scannable QR Code (with user size and position offsets)
     if (qrDataUrl) {
       await new Promise<void>((resolve) => {
         const qrImg = new Image();
         qrImg.crossOrigin = 'anonymous';
         qrImg.onload = () => {
-          // QR size: 230 x 230 px
-          const qrX = 1050 - safeMarginX - 230;
-          const qrY = safeMarginY + 20;
+          // Scale base size 230px proportionally to qrSize (default 96px)
+          const baseSize = 230 * (qrSize / 96);
+          const qrX = 1050 - safeMarginX - baseSize + (qrPosX * 2);
+          const qrY = safeMarginY + 20 + (qrPosY * 2);
           
           // White card backing for QR contrast
           ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(qrX - 10, qrY - 10, 250, 250);
+          ctx.fillRect(qrX - 10, qrY - 10, baseSize + 20, baseSize + 20);
           ctx.strokeStyle = 'rgba(0,0,0,0.1)';
           ctx.lineWidth = 2;
-          ctx.strokeRect(qrX - 10, qrY - 10, 250, 250);
+          ctx.strokeRect(qrX - 10, qrY - 10, baseSize + 20, baseSize + 20);
 
-          ctx.drawImage(qrImg, qrX, qrY, 230, 230);
+          ctx.drawImage(qrImg, qrX, qrY, baseSize, baseSize);
           resolve();
         };
         qrImg.src = qrDataUrl;
       });
     }
 
-    // 5. Draw Right Side Bottom: TAPPING Brand Mark (5mm Margin, never cut off, never overlapping QR)
-    const brandX = 1050 - safeMarginX;
-    const brandY = 600 - safeMarginY - 15;
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'bottom';
-    ctx.fillStyle = primaryTextColor;
-    ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText('TAPPING', brandX, brandY);
-
-    ctx.fillStyle = isLightCard ? '#4F83FF' : '#00FF66';
-    ctx.font = 'bold 13px "Courier New", monospace';
-    ctx.fillText('SMART VISITING CARD', brandX, brandY + 20);
+    // 5. Draw Right Side Bottom: TAPPING Brand Mark (Optional, 5mm Margin, never cut off)
+    if (showBrandMark) {
+      const brandX = 1050 - safeMarginX;
+      const brandY = 600 - safeMarginY - 10;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
+      ctx.fillStyle = primaryTextColor;
+      ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('TAPPING', brandX, brandY);
+    }
 
     return canvas;
   };
@@ -523,31 +526,37 @@ export default function DigitalCardStudio({
                 </div>
               </div>
 
-              {/* Right Side: QR Code + TAPPING Brand (5mm margin, never overlaps) */}
+              {/* Right Side: QR Code + TAPPING Brand (5mm margin safe) */}
               <div className="flex flex-col justify-between items-end h-full shrink-0 pl-2">
                 
-                {/* Dynamic Vector QR Code */}
-                <div className={`p-2 rounded-2xl flex items-center justify-center shrink-0 ${currentThemeConfig.qrContainer}`}>
+                {/* Dynamic Vector QR Code with Adjustable Size & Position */}
+                <div 
+                  className={`p-2 rounded-2xl flex items-center justify-center shrink-0 transition-transform ${currentThemeConfig.qrContainer}`}
+                  style={{
+                    width: `${qrSize}px`,
+                    height: `${qrSize}px`,
+                    transform: `translate(${qrPosX}px, ${qrPosY}px)`,
+                  }}
+                >
                   {qrDataUrl ? (
                     <img
                       src={qrDataUrl}
                       alt="Visiting Card QR"
-                      className="w-24 h-24 sm:w-28 sm:h-28 rounded-lg"
+                      className="w-full h-full object-contain rounded-lg"
                     />
                   ) : (
-                    <div className="w-24 h-24 bg-gray-100 animate-pulse rounded-lg" />
+                    <div className="w-full h-full bg-gray-100 animate-pulse rounded-lg" />
                   )}
                 </div>
 
-                {/* Brand Name "TAPPING" at bottom right corner (5mm margin safe) */}
-                <div className="text-right">
-                  <span className={`font-black text-sm sm:text-base tracking-widest uppercase block leading-none ${currentThemeConfig.brandColor}`}>
-                    TAPPING
-                  </span>
-                  <span className="text-[9px] font-mono opacity-60 block tracking-tight mt-0.5">
-                    SMART HARDWARE
-                  </span>
-                </div>
+                {/* Brand Name "TAPPING" at bottom right corner (toggleable) */}
+                {showBrandMark && (
+                  <div className="text-right">
+                    <span className={`font-black text-sm sm:text-base tracking-widest uppercase block leading-none ${currentThemeConfig.brandColor}`}>
+                      TAPPING
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -669,7 +678,132 @@ export default function DigitalCardStudio({
             </div>
           </div>
 
-          {/* Section 3: QR Code Color */}
+          {/* Section 3: QR Code Size & Drag/Nudge Controls */}
+          <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <label className="font-black text-charcoal uppercase tracking-wider block text-xs">
+                QR Barcode Size &amp; Position
+              </label>
+              <span className="text-[10px] font-mono font-bold text-charcoal/70 bg-white px-2 py-0.5 rounded-lg border border-black/10">
+                {qrSize}px &middot; X: {qrPosX > 0 ? `+${qrPosX}` : qrPosX} Y: {qrPosY > 0 ? `+${qrPosY}` : qrPosY}
+              </span>
+            </div>
+
+            {/* Size Slider */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between text-[11px] font-medium text-charcoal/70">
+                <span>Scale / Dimensions</span>
+                <div className="flex items-center gap-1">
+                  {[
+                    { label: 'Compact', size: 76 },
+                    { label: 'Standard', size: 96 },
+                    { label: 'Large', size: 116 },
+                    { label: 'Max', size: 130 },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => setQrSize(preset.size)}
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                        qrSize === preset.size
+                          ? 'bg-[#4F83FF] text-white'
+                          : 'bg-white hover:bg-black/5 text-charcoal border border-black/10'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <input
+                type="range"
+                min="64"
+                max="130"
+                step="2"
+                value={qrSize}
+                onChange={(e) => setQrSize(Number(e.target.value))}
+                className="w-full accent-[#4F83FF] cursor-pointer"
+              />
+            </div>
+
+            {/* Position Offset Controls */}
+            <div className="flex items-center justify-between pt-1 border-t border-black/5">
+              <span className="text-[11px] font-medium text-charcoal/70">Move Position</span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setQrPosX((prev) => Math.max(-30, prev - 5))}
+                  className="w-7 h-7 rounded-xl bg-white hover:bg-gray-100 border border-black/10 flex items-center justify-center font-bold text-xs cursor-pointer shadow-2xs"
+                  title="Move Left"
+                >
+                  &larr;
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQrPosX((prev) => Math.min(30, prev + 5))}
+                  className="w-7 h-7 rounded-xl bg-white hover:bg-gray-100 border border-black/10 flex items-center justify-center font-bold text-xs cursor-pointer shadow-2xs"
+                  title="Move Right"
+                >
+                  &rarr;
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQrPosY((prev) => Math.max(-25, prev - 5))}
+                  className="w-7 h-7 rounded-xl bg-white hover:bg-gray-100 border border-black/10 flex items-center justify-center font-bold text-xs cursor-pointer shadow-2xs"
+                  title="Move Up"
+                >
+                  &uarr;
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQrPosY((prev) => Math.min(25, prev + 5))}
+                  className="w-7 h-7 rounded-xl bg-white hover:bg-gray-100 border border-black/10 flex items-center justify-center font-bold text-xs cursor-pointer shadow-2xs"
+                  title="Move Down"
+                >
+                  &darr;
+                </button>
+                {(qrPosX !== 0 || qrPosY !== 0) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQrPosX(0);
+                      setQrPosY(0);
+                    }}
+                    className="px-2 py-1 rounded-xl text-[10px] font-bold text-charcoal/70 hover:text-black bg-white border border-black/10 cursor-pointer shadow-2xs"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 4: Brand Mark Visibility (White-Label Print Option) */}
+          <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex items-center justify-between gap-3">
+            <div>
+              <label className="font-black text-charcoal uppercase tracking-wider block text-xs">
+                TAPPING Brand Mark
+              </label>
+              <p className="text-[10px] text-charcoal/60 mt-0.5">
+                {showBrandMark 
+                  ? 'Showing "TAPPING" corner mark on printed card'
+                  : 'Hidden & removed for 100% white-label custom card'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowBrandMark(!showBrandMark)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                showBrandMark
+                  ? 'bg-[#4F83FF] text-white shadow-xs'
+                  : 'bg-white hover:bg-gray-50 text-charcoal border border-black/10 shadow-2xs'
+              }`}
+            >
+              {showBrandMark ? 'Brand Visible' : 'Removed'}
+            </button>
+          </div>
+
+          {/* Section 5: QR Code Color */}
           <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col gap-2">
             <label className="font-black text-charcoal uppercase tracking-wider block text-xs">
               QR Foreground Tint
@@ -700,7 +834,32 @@ export default function DigitalCardStudio({
             </div>
           </div>
 
-          {/* Section 4: Bio URL Sharing */}
+          {/* Section 6: Scan Destination & Live Redirect Verification */}
+          <div className="p-4 rounded-3xl bg-emerald-50/80 border border-emerald-200/80 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Live Phone Scan Redirect Active</span>
+              </span>
+              <a
+                href={targetUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] flex items-center gap-1 transition-transform active:scale-95"
+              >
+                <span>Test Link</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+            <p className="text-xs font-mono font-bold text-emerald-950 truncate">
+              {targetUrl}
+            </p>
+            <p className="text-[10px] text-emerald-700 font-medium">
+              Scanning this QR code on any iPhone or Android camera instantly redirects straight to your live bio profile page.
+            </p>
+          </div>
+
+          {/* Section 7: Bio URL Sharing */}
           <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex items-center justify-between gap-2">
             <div className="min-w-0 flex-1">
               <span className="text-[10px] font-mono uppercase tracking-wider text-charcoal/50 block">

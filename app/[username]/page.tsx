@@ -39,7 +39,7 @@ import { downloadVCardFile } from '@/lib/vcard';
 import QRCode from 'qrcode';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
-import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses } from '@/lib/themes';
+import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses, isDarkTheme } from '@/lib/themes';
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -79,8 +79,16 @@ export default function PublicProfilePage() {
 
   // Active theme and styling tokens
   const currentTheme = THEMES[profile.theme] || THEMES['pastel-bento'];
+  const dark = isDarkTheme(profile.theme);
   const fontFamilyClass = getFontFamilyClass(profile.fontFamily);
   const patternClass = profile.showHeaderBackground ? getPatternClass(profile.headerBackground) : '';
+
+  // Adaptive container styling: never gets stuck in illegible dark box
+  const cardContainerClass = dark 
+    ? 'bg-[#0B0F19]/95 backdrop-blur-md border border-white/10 text-white shadow-2xl'
+    : (profile.theme === 'comic-pop' || profile.theme === 'neobrutalism')
+      ? 'bg-white border-3 border-black text-black shadow-[8px_8px_0px_#000]'
+      : 'bg-white/95 backdrop-blur-md border border-black/10 text-charcoal shadow-2xl';
 
   // Dynamic font sizing
   const titleSizeClass = 
@@ -174,38 +182,41 @@ export default function PublicProfilePage() {
         </div>
       )}
 
-      {/* TOP FLOATING ACTION BAR: Pure Contact Sharing */}
-      <div className="w-full max-w-xl mx-auto flex items-center justify-between py-2 mb-2 relative z-10">
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-black/10 shadow-2xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[11px] font-mono font-bold text-charcoal/70">
-            @{profile.username}
-          </span>
-        </div>
-
+      {/* TOP ACTION BAR: Refined Share & QR Actions (No Clunky Green Dot) */}
+      <div className="w-full max-w-xl mx-auto flex items-center justify-end py-1.5 mb-2 relative z-10">
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
               recordQRScan();
               setShowQRModal(true);
             }}
-            className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 border border-black/10 flex items-center justify-center text-charcoal shadow-2xs transition-transform active:scale-95 cursor-pointer"
+            className={`px-3 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer ${
+              dark 
+                ? 'bg-[#141A28]/90 hover:bg-[#1C2538] text-white border-white/20' 
+                : 'bg-white/90 hover:bg-white text-charcoal border-black/10'
+            }`}
             title="Scan or View QR Code"
           >
-            <QrCode className="w-4 h-4" />
+            <QrCode className="w-3.5 h-3.5" />
+            <span>QR</span>
           </button>
           <button
             onClick={handleShare}
-            className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 border border-black/10 flex items-center justify-center text-charcoal shadow-2xs transition-transform active:scale-95 cursor-pointer"
+            className={`px-3.5 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer ${
+              dark 
+                ? 'bg-[#141A28]/90 hover:bg-[#1C2538] text-white border-white/20' 
+                : 'bg-white/90 hover:bg-white text-charcoal border-black/10'
+            }`}
             title="Share Contact Profile"
           >
-            {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Share2 className="w-3.5 h-3.5" />}
+            <span>{copied ? 'Copied' : 'Share'}</span>
           </button>
         </div>
       </div>
 
       {/* MAIN PROFILE CARD: USER IDENTITY & CONTACT DATA */}
-      <main className={`w-full max-w-xl mx-auto ${currentTheme.containerBg} rounded-[36px] sm:rounded-[44px] shadow-card border border-black/5 flex flex-col overflow-hidden text-center transition-all relative z-10`}>
+      <main className={`w-full max-w-xl mx-auto ${cardContainerClass} rounded-[36px] sm:rounded-[44px] flex flex-col overflow-hidden text-center transition-all relative z-10`}>
         {/* Card Body */}
         <div className="p-6 sm:p-8 flex flex-col gap-6">
           {/* 1. USER IDENTITY (Avatar, Name, Handle, Title, Location, Bio) */}
@@ -226,10 +237,15 @@ export default function PublicProfilePage() {
             {/* User Display Name */}
             <h1 
               className={`${titleSizeClass} font-black tracking-tight mt-3.5 leading-tight ${fontFamilyClass}`}
-              style={profile.fontColor ? { color: profile.fontColor } : undefined}
+              style={{ color: profile.fontColor || (dark ? '#FFFFFF' : '#141518') }}
             >
               {profile.displayName}
             </h1>
+
+            {/* Handle / Username */}
+            <p className={`text-xs font-bold font-mono mt-0.5 ${dark ? 'text-white/60' : 'text-charcoal/60'}`}>
+              @{profile.username}
+            </p>
 
             {/* Professional Work / Title / Company Badge */}
             {(jobTitleText || organizationName) && (
@@ -249,7 +265,7 @@ export default function PublicProfilePage() {
 
             {/* Location / Address */}
             {fullAddress && (
-              <div className="flex items-center justify-center gap-1.5 mt-1.5 text-xs font-semibold opacity-60">
+              <div className={`flex items-center justify-center gap-1.5 mt-1.5 text-xs font-semibold ${dark ? 'text-white/70' : 'text-charcoal/70'}`}>
                 <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
                 <span>{fullAddress}</span>
               </div>
@@ -257,7 +273,7 @@ export default function PublicProfilePage() {
 
             {/* Bio Description */}
             {profile.bio && (
-              <p className={`${bodySizeClass} opacity-75 mt-3 max-w-md leading-relaxed font-medium`}>
+              <p className={`${bodySizeClass} mt-3 max-w-md leading-relaxed font-medium ${dark ? 'text-white/85' : 'text-charcoal/75'}`}>
                 {profile.bio}
               </p>
             )}
@@ -279,7 +295,11 @@ export default function PublicProfilePage() {
               {phoneNumber && (
                 <a
                   href={`tel:${phoneNumber.replace(/[^0-9+]/g, '')}`}
-                  className="py-2.5 px-3 rounded-2xl bg-white hover:bg-gray-50 text-charcoal border border-black/10 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                  className={`py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors ${
+                    dark 
+                      ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
+                      : 'bg-white hover:bg-gray-50 text-charcoal border border-black/10'
+                  }`}
                   title={`Call ${phoneNumber}`}
                 >
                   <Phone className="w-3.5 h-3.5 text-[#34A853]" />
@@ -290,7 +310,11 @@ export default function PublicProfilePage() {
               {emailAddress && (
                 <a
                   href={`mailto:${emailAddress}`}
-                  className="py-2.5 px-3 rounded-2xl bg-white hover:bg-gray-50 text-charcoal border border-black/10 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                  className={`py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors ${
+                    dark 
+                      ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
+                      : 'bg-white hover:bg-gray-50 text-charcoal border border-black/10'
+                  }`}
                   title={`Email ${emailAddress}`}
                 >
                   <Mail className="w-3.5 h-3.5 text-[#4F83FF]" />
@@ -303,10 +327,14 @@ export default function PublicProfilePage() {
                   href={vcard.website.startsWith('http') ? vcard.website : `https://${vcard.website}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="col-span-2 sm:col-span-1 py-2.5 px-3 rounded-2xl bg-white hover:bg-gray-50 text-charcoal border border-black/10 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                  className={`col-span-2 sm:col-span-1 py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors ${
+                    dark 
+                      ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
+                      : 'bg-white hover:bg-gray-50 text-charcoal border border-black/10'
+                  }`}
                   title="Open Website"
                 >
-                  <Globe className="w-3.5 h-3.5 text-purple-600" />
+                  <Globe className="w-3.5 h-3.5 text-purple-400" />
                   <span className="truncate">Website</span>
                 </a>
               )}
@@ -314,22 +342,24 @@ export default function PublicProfilePage() {
           </div>
 
           {/* 3. STRUCTURED CONTACT DETAILS CARD (Name, Number, Work, Address, Website) */}
-          <div className="rounded-3xl bg-black/[0.03] border border-black/5 p-4 sm:p-5 flex flex-col gap-3 text-left">
-            <p className="text-[10px] font-black uppercase tracking-wider opacity-50">
+          <div className={`rounded-3xl p-4 sm:p-5 flex flex-col gap-3 text-left ${
+            dark ? 'bg-white/[0.05] border border-white/10 text-white' : 'bg-black/[0.03] border border-black/5 text-charcoal'
+          }`}>
+            <p className={`text-[10px] font-black uppercase tracking-wider ${dark ? 'text-white/60' : 'opacity-50'}`}>
               Contact & Business Details
             </p>
 
             <div className="space-y-2.5 text-xs">
               {/* Phone */}
               {phoneNumber && (
-                <div className="flex items-center justify-between pb-2 border-b border-black/5">
-                  <span className="font-bold opacity-60 flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 opacity-50" />
+                <div className={`flex items-center justify-between pb-2 border-b ${dark ? 'border-white/10' : 'border-black/5'}`}>
+                  <span className={`font-bold flex items-center gap-1.5 ${dark ? 'text-white/70' : 'opacity-60'}`}>
+                    <Phone className="w-3.5 h-3.5 opacity-60" />
                     <span>Phone Number</span>
                   </span>
                   <a
                     href={`tel:${phoneNumber.replace(/[^0-9+]/g, '')}`}
-                    className="font-mono font-black text-charcoal hover:underline"
+                    className={`font-mono font-black hover:underline ${dark ? 'text-white' : 'text-charcoal'}`}
                   >
                     {phoneNumber}
                   </a>
@@ -338,14 +368,14 @@ export default function PublicProfilePage() {
 
               {/* Email */}
               {emailAddress && (
-                <div className="flex items-center justify-between pb-2 border-b border-black/5">
-                  <span className="font-bold opacity-60 flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5 opacity-50" />
+                <div className={`flex items-center justify-between pb-2 border-b ${dark ? 'border-white/10' : 'border-black/5'}`}>
+                  <span className={`font-bold flex items-center gap-1.5 ${dark ? 'text-white/70' : 'opacity-60'}`}>
+                    <Mail className="w-3.5 h-3.5 opacity-60" />
                     <span>Work Email</span>
                   </span>
                   <a
                     href={`mailto:${emailAddress}`}
-                    className="font-mono font-bold text-charcoal hover:underline truncate max-w-[200px]"
+                    className={`font-mono font-bold hover:underline truncate max-w-[200px] ${dark ? 'text-white' : 'text-charcoal'}`}
                   >
                     {emailAddress}
                   </a>
@@ -354,12 +384,12 @@ export default function PublicProfilePage() {
 
               {/* Organization / Work */}
               {organizationName && (
-                <div className="flex items-center justify-between pb-2 border-b border-black/5">
-                  <span className="font-bold opacity-60 flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 opacity-50" />
+                <div className={`flex items-center justify-between pb-2 border-b ${dark ? 'border-white/10' : 'border-black/5'}`}>
+                  <span className={`font-bold flex items-center gap-1.5 ${dark ? 'text-white/70' : 'opacity-60'}`}>
+                    <Building2 className="w-3.5 h-3.5 opacity-60" />
                     <span>Organization</span>
                   </span>
-                  <span className="font-black text-charcoal">
+                  <span className={`font-black ${dark ? 'text-white' : 'text-charcoal'}`}>
                     {organizationName}
                   </span>
                 </div>
@@ -367,12 +397,12 @@ export default function PublicProfilePage() {
 
               {/* Address */}
               {fullAddress && (
-                <div className="flex items-center justify-between pb-2 border-b border-black/5">
-                  <span className="font-bold opacity-60 flex items-center gap-1.5 shrink-0">
-                    <MapPin className="w-3.5 h-3.5 opacity-50" />
+                <div className={`flex items-center justify-between pb-2 border-b ${dark ? 'border-white/10' : 'border-black/5'}`}>
+                  <span className={`font-bold flex items-center gap-1.5 shrink-0 ${dark ? 'text-white/70' : 'opacity-60'}`}>
+                    <MapPin className="w-3.5 h-3.5 opacity-60" />
                     <span>Address</span>
                   </span>
-                  <span className="font-bold text-charcoal text-right truncate max-w-[220px]">
+                  <span className={`font-bold text-right truncate max-w-[220px] ${dark ? 'text-white' : 'text-charcoal'}`}>
                     {fullAddress}
                   </span>
                 </div>
@@ -381,15 +411,15 @@ export default function PublicProfilePage() {
               {/* Website */}
               {vcard.website && (
                 <div className="flex items-center justify-between">
-                  <span className="font-bold opacity-60 flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5 opacity-50" />
+                  <span className={`font-bold flex items-center gap-1.5 ${dark ? 'text-white/70' : 'opacity-60'}`}>
+                    <Globe className="w-3.5 h-3.5 opacity-60" />
                     <span>Website</span>
                   </span>
                   <a
                     href={vcard.website.startsWith('http') ? vcard.website : `https://${vcard.website}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-mono font-bold text-[#4F83FF] hover:underline truncate max-w-[200px]"
+                    className={`font-mono font-bold hover:underline truncate max-w-[200px] ${dark ? 'text-[#38BDF8]' : 'text-[#4F83FF]'}`}
                   >
                     {vcard.website.replace(/^https?:\/\//, '')}
                   </a>
@@ -405,7 +435,11 @@ export default function PublicProfilePage() {
                 href={`https://instagram.com/${profile.socialLinks.instagram.replace('@', '')}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-10 h-10 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 ${
+                  dark 
+                    ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
+                    : 'bg-white hover:bg-black/5 text-charcoal border border-black/10'
+                }`}
                 title="Instagram"
               >
                 <InstagramIcon className="w-4 h-4" />
@@ -416,7 +450,11 @@ export default function PublicProfilePage() {
                 href={`https://x.com/${profile.socialLinks.twitter.replace('@', '')}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-10 h-10 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 ${
+                  dark 
+                    ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
+                    : 'bg-white hover:bg-black/5 text-charcoal border border-black/10'
+                }`}
                 title="X / Twitter"
               >
                 <TwitterIcon className="w-4 h-4" />
@@ -427,7 +465,11 @@ export default function PublicProfilePage() {
                 href={`https://github.com/${profile.socialLinks.github.replace('@', '')}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-10 h-10 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 ${
+                  dark 
+                    ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
+                    : 'bg-white hover:bg-black/5 text-charcoal border border-black/10'
+                }`}
                 title="GitHub"
               >
                 <GithubIcon className="w-4 h-4" />
@@ -438,7 +480,11 @@ export default function PublicProfilePage() {
                 href={profile.socialLinks.linkedin.startsWith('http') ? profile.socialLinks.linkedin : `https://${profile.socialLinks.linkedin}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-10 h-10 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 ${
+                  dark 
+                    ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
+                    : 'bg-white hover:bg-black/5 text-charcoal border border-black/10'
+                }`}
                 title="LinkedIn"
               >
                 <LinkedinIcon className="w-4 h-4" />
@@ -447,7 +493,11 @@ export default function PublicProfilePage() {
             {profile.socialLinks?.email && (
               <a
                 href={`mailto:${profile.socialLinks.email}`}
-                className="w-10 h-10 rounded-full bg-white hover:bg-black/5 border border-black/10 flex items-center justify-center text-charcoal transition-all shadow-2xs hover:scale-105"
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-2xs hover:scale-105 ${
+                  dark 
+                    ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
+                    : 'bg-white hover:bg-black/5 text-charcoal border border-black/10'
+                }`}
                 title="Direct Email"
               >
                 <Mail className="w-4 h-4" />
@@ -457,7 +507,7 @@ export default function PublicProfilePage() {
 
           {/* 5. USER'S CONTENT & ACTIVE LINKS STACK */}
           <div className="flex flex-col gap-3 pt-2 text-left">
-            <p className="text-[10px] font-black uppercase tracking-wider opacity-50 px-1">
+            <p className={`text-[10px] font-black uppercase tracking-wider px-1 ${dark ? 'text-white/60' : 'opacity-50'}`}>
               Featured Links & Portfolio
             </p>
 

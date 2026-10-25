@@ -591,3 +591,8 @@ export function resolveLinkCardClasses(
   return theme.linkVariantClass(variant, cardStyle);
 }
 
+export function isDarkTheme(themeId?: ThemeType): boolean {
+  return themeId === 'retro-arcade' || themeId === 'cyberpunk-neon' || themeId === 'japanese-ukiyo';
+}
+
+

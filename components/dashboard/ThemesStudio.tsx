@@ -73,6 +73,7 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
       headerBackground: selected.defaultPattern,
       showHeaderBackground: selected.defaultPattern !== 'none',
       linkCardStyle: selected.defaultCardStyle,
+      fontColor: undefined,
     };
     onUpdateProfile(updated);
     showToast('Theme Applied', `Switched to ${selected.name}`, 'success');
@@ -115,8 +116,14 @@ export default function ThemesStudio({ profile, onUpdateProfile }: ThemesStudioP
   };
 
   const handleUpdateHeaderPattern = (pattern: BackgroundPatternType) => {
+    // Intelligently harmonize theme if picking bright comic or pop patterns
+    let nextTheme = profile.theme;
+    if ((pattern === 'comic-sunburst' || pattern === 'comic-sunburst-red' || pattern === 'pop-halftone' || pattern === 'pop-halftone-cyan') && (profile.theme === 'retro-arcade' || profile.theme === 'cyberpunk-neon')) {
+      nextTheme = 'comic-pop';
+    }
     const updated: Profile = {
       ...profile,
+      theme: nextTheme,
       headerBackground: pattern,
       showHeaderBackground: pattern !== 'none',
     };
