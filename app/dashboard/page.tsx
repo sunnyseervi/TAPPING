@@ -32,6 +32,7 @@ import ThemesStudio from '@/components/dashboard/ThemesStudio';
 import FloatingBottomDock from '@/components/dashboard/FloatingBottomDock';
 import GoogleAuthModal from '@/components/auth/GoogleAuthModal';
 import AnimatedOnboarding from '@/components/onboarding/AnimatedOnboarding';
+import LivePhonePreview from '@/components/preview/LivePhonePreview';
 import { useToast } from '@/components/ui/Toast';
 
 export default function DashboardPage() {
@@ -45,6 +46,7 @@ export default function DashboardPage() {
   const [subscription, setSubscription] = useState<Subscription>(initialSubscription);
 
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [profileViewMode, setProfileViewMode] = useState<'form' | 'preview'>('form');
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
@@ -113,12 +115,11 @@ export default function DashboardPage() {
         onClose={() => setIsSidebarOpen(false)}
         profile={profile}
         onOpenAuth={() => setShowAuthModal(true)}
-        onOpenOnboarding={() => setShowOnboarding(true)}
       />
 
       {/* Main Content Layout Container: Full-width responsive with desktop sidebar offset */}
       <div className="w-full lg:pl-72 flex flex-col min-h-screen">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 pt-3 pb-28 lg:pb-12">
+        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 pt-3 pb-28 lg:pb-12">
           {/* Top Header */}
           <DashboardHeader
             profile={profile}
@@ -137,14 +138,64 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* TAB: EDIT PROFILE (Full Profile Settings + Link Blocks) */}
+          {/* TAB: EDIT PROFILE (Profile Settings + Real-time Live Phone Preview on Right Side) */}
           {activeTab === 'profile' && (
-            <EditProfileSection
-              profile={profile}
-              links={links}
-              onUpdateProfile={handleUpdateProfile}
-              onUpdateLinks={handleUpdateLinks}
-            />
+            <div className="w-full flex flex-col gap-4">
+              {/* Mobile/Tablet View Toggle (Shown only below lg breakpoint) */}
+              <div className="lg:hidden flex items-center justify-center p-1 rounded-2xl bg-white border border-black/10 shadow-xs max-w-sm mx-auto w-full">
+                <button
+                  type="button"
+                  onClick={() => setProfileViewMode('form')}
+                  className={`flex-1 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    profileViewMode === 'form'
+                      ? 'bg-[#141518] text-white shadow-xs'
+                      : 'text-charcoal/70 hover:text-black'
+                  }`}
+                >
+                  Edit Profile & Links
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProfileViewMode('preview')}
+                  className={`flex-1 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    profileViewMode === 'preview'
+                      ? 'bg-[#4F83FF] text-white shadow-xs'
+                      : 'text-charcoal/70 hover:text-black'
+                  }`}
+                >
+                  <span>Live Preview</span>
+                  <span className="w-2 h-2 rounded-full bg-[#B6F554]" />
+                </button>
+              </div>
+
+              {/* Side-by-Side on Desktop (lg:), Adaptive View on Mobile */}
+              <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* Left Column: Form & Link Block Manager */}
+                <div className={`lg:col-span-7 xl:col-span-8 flex flex-col gap-6 ${
+                  profileViewMode === 'preview' ? 'hidden lg:flex' : 'flex'
+                }`}>
+                  <EditProfileSection
+                    profile={profile}
+                    links={links}
+                    onUpdateProfile={handleUpdateProfile}
+                    onUpdateLinks={handleUpdateLinks}
+                    onLiveChange={(preview) => setProfile(preview)}
+                  />
+                </div>
+
+                {/* Right Column: Sticky Live Mobile Phone Preview with Real-time Updates */}
+                <div className={`lg:col-span-5 xl:col-span-4 lg:sticky lg:top-6 flex flex-col items-center justify-center ${
+                  profileViewMode === 'form' ? 'hidden lg:flex' : 'flex'
+                }`}>
+                  <LivePhonePreview
+                    profile={profile}
+                    vcard={vcard}
+                    links={links}
+                    nfcCard={nfcCard}
+                  />
+                </div>
+              </div>
+            </div>
           )}
 
           {/* TAB: DIGITAL BUSINESS CARD & PERMANENT QR */}

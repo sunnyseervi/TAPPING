@@ -21,6 +21,13 @@ import { saveStoredProfile, getStoredProfile } from '@/lib/storage';
 export default function LandingPage() {
   const router = useRouter();
   const [handle, setHandle] = useState('alex');
+  const [displayHost, setDisplayHost] = useState('tapping.bio');
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setDisplayHost(window.location.host);
+    }
+  }, []);
 
   const handleClaim = (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,7 +109,7 @@ export default function LandingPage() {
           className="mt-8 flex flex-col sm:flex-row items-center gap-2 p-2 bg-white rounded-3xl shadow-card border border-black/10 max-w-md w-full"
         >
           <div className="flex items-center pl-4 flex-1 w-full text-xs font-mono font-bold text-charcoal">
-            <span className="text-charcoal/40">tapping.bio/</span>
+            <span className="text-charcoal/40 font-bold">{displayHost}/</span>
             <input
               type="text"
               value={handle}

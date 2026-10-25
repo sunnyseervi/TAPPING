@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Profile, AnalyticsSummary } from '@/lib/types';
 import { 
   Bell, 
@@ -31,15 +31,40 @@ export default function TeamSpaceBento({
 }: TeamSpaceBentoProps) {
   const { showToast } = useToast();
   const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState(() => (typeof window !== 'undefined' ? window.location.origin : ''));
+
+  // Dynamically resolve active host/origin on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
+  }, []);
+
+  const liveUrl = origin ? `${origin}/${profile.username}` : `/${profile.username}`;
+  const displayHost = origin ? origin.replace(/^https?:\/\//, '') : 'localhost:3000';
 
   // Today's day name (e.g. Friday, Sunday)
   const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(new Date());
 
-  const handleCopyLink = () => {
+  const handleShareOrCopy = async () => {
+    const fullUrl = origin ? `${origin}/${profile.username}` : (typeof window !== 'undefined' ? `${window.location.origin}/${profile.username}` : `/${profile.username}`);
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: `${profile.displayName} - Creator Space`,
+          text: `Connect with ${profile.displayName}:`,
+          url: fullUrl,
+        });
+        showToast('Shared Profile', fullUrl, 'success');
+        return;
+      } catch {
+        // Fallback to clipboard if share was canceled or unavailable
+      }
+    }
     if (typeof window !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(`https://tapping.bio/${profile.username}`);
+      navigator.clipboard.writeText(fullUrl);
       setCopied(true);
-      showToast('Bio Link Copied', `https://tapping.bio/${profile.username}`, 'success');
+      showToast('Bio Link Copied!', fullUrl, 'success');
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -104,24 +129,37 @@ export default function TeamSpaceBento({
 
         {/* Middle Row: Dark Charcoal Capsule Action Pill + Overall Engagement Score */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center pt-2">
-          {/* Dark Charcoal Pill: Share Bio Link */}
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center gap-3.5 p-3 rounded-full bg-white hover:bg-black/5 border border-black/10 shadow-xs transition-all text-left group w-full cursor-pointer"
-            title="Click to copy bio link"
-          >
-            <div className="w-11 h-11 rounded-full bg-[#141518] text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-              <Share2 className="w-5 h-5 text-white stroke-[2.2]" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <span className="block text-xs sm:text-sm font-black text-charcoal leading-tight truncate">
-                {copied ? 'Profile Link Copied' : 'Share Bio Space'}
-              </span>
-              <span className="block text-[11px] font-semibold text-charcoal/50 truncate">
-                tapping.bio/{profile.username}
-              </span>
-            </div>
-          </button>
+          {/* Real Dynamic Bio Space Share Capsule */}
+          <div className="flex items-center gap-2 p-1.5 sm:p-2 rounded-full bg-white border border-black/10 shadow-xs w-full">
+            <button
+              onClick={handleShareOrCopy}
+              className="flex items-center gap-3 p-1 flex-1 min-w-0 hover:bg-black/5 rounded-full transition-all text-left group cursor-pointer"
+              title="Click to copy bio link or share"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#141518] text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                {copied ? <Check className="w-4 h-4 text-[#B6F554] stroke-[2.5]" /> : <Share2 className="w-4 h-4 text-white stroke-[2.2]" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-xs sm:text-sm font-black text-charcoal leading-tight truncate">
+                  {copied ? 'Profile Link Copied!' : 'Share Bio Space'}
+                </span>
+                <span className="block text-[11px] font-mono font-bold text-charcoal/60 truncate">
+                  {displayHost}/{profile.username}
+                </span>
+              </div>
+            </button>
+
+            <a
+              href={`/${profile.username}`}
+              target="_blank"
+              rel="noreferrer"
+              className="px-3.5 sm:px-4 py-2 rounded-full bg-[#EFF4FF] hover:bg-[#E2ECFF] text-[#4F83FF] text-xs font-black flex items-center gap-1.5 transition-colors shrink-0"
+              title="Open Public Bio Profile in New Tab"
+            >
+              <span>Open</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
 
           {/* Right Typography Stat: Engagement Rate CTR */}
           <div className="flex flex-col items-start sm:items-end justify-center pl-2 sm:pl-0">

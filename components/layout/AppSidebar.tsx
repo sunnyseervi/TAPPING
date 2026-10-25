@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { 
   LayoutGrid, 
   Layers, 
@@ -9,7 +10,9 @@ import {
   Palette, 
   ExternalLink,
   X,
-  ArrowRight
+  ArrowRight,
+  Globe,
+  ArrowUpRight
 } from 'lucide-react';
 import { Profile } from '@/lib/types';
 
@@ -20,7 +23,6 @@ interface AppSidebarProps {
   onClose: () => void;
   profile: Profile;
   onOpenAuth?: () => void;
-  onOpenOnboarding?: () => void;
 }
 
 export default function AppSidebar({
@@ -30,7 +32,6 @@ export default function AppSidebar({
   onClose,
   profile,
   onOpenAuth,
-  onOpenOnboarding,
 }: AppSidebarProps) {
   const navItems = [
     { id: 'dashboard', label: 'Creator Space', icon: LayoutGrid, count: null, color: null },
@@ -129,6 +130,21 @@ export default function AppSidebar({
                 </button>
               );
             })}
+
+            {/* Public Landing & Hero Page Link */}
+            <div className="pt-2">
+              <Link
+                href="/"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-black bg-white/70 hover:bg-white text-charcoal/80 hover:text-black border border-black/5 shadow-2xs hover:shadow-xs transition-all"
+                title="View Public Landing & Hero Page"
+              >
+                <div className="flex items-center gap-3">
+                  <Globe className="w-4 h-4 text-[#4F83FF] stroke-[2.2]" />
+                  <span>Public Landing Page</span>
+                </div>
+                <ArrowUpRight className="w-3.5 h-3.5 text-charcoal/50" />
+              </Link>
+            </div>
           </nav>
         </div>
 
@@ -168,27 +184,6 @@ export default function AppSidebar({
               <span>View Live Bio Space</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
-
-            <div className="flex items-center gap-2 pt-1 border-t border-black/5">
-              {onOpenOnboarding && (
-                <button
-                  onClick={onOpenOnboarding}
-                  className="flex-1 py-1.5 px-2.5 rounded-xl bg-black/5 hover:bg-black/10 text-charcoal text-[11px] font-bold text-center transition-colors cursor-pointer"
-                  title="Watch First-Time Introduction"
-                >
-                  Onboarding Tour
-                </button>
-              )}
-              {onOpenAuth && (
-                <button
-                  onClick={onOpenAuth}
-                  className="flex-1 py-1.5 px-2.5 rounded-xl bg-black/5 hover:bg-black/10 text-charcoal text-[11px] font-bold text-center transition-colors cursor-pointer"
-                  title="Google Authentication"
-                >
-                  Google Auth
-                </button>
-              )}
-            </div>
           </div>
         </div>
       </aside>

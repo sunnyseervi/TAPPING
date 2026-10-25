@@ -20,6 +20,13 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   const [engravedTagline, setEngravedTagline] = useState(nfcCard.engravedTagline || 'DIGITAL CREATOR AND FOUNDER');
   const [redirectMode, setRedirectMode] = useState<'profile' | 'direct_vcard' | 'custom_url'>(nfcCard.redirectMode);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [displayHost, setDisplayHost] = useState('tapping.bio');
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setDisplayHost(window.location.host);
+    }
+  }, []);
 
   const materials: { id: CardMaterial; name: string; class: string; desc: string }[] = [
     {
@@ -170,7 +177,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                       TAP ANY PHONE TO CONNECT
                     </span>
                     <p className="font-mono text-xs mt-1.5 opacity-90">
-                      tapping.bio/{username}
+                      {displayHost}/{username}
                     </p>
                   </div>
                   <div className="text-[10px] font-mono opacity-60">

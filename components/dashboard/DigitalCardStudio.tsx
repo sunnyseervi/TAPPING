@@ -40,13 +40,20 @@ export default function DigitalCardStudio({
   const [bgColor, setBgColor] = useState('#FFFFFF');
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const targetUrl = `https://tapping.bio/${username}`;
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
+  }, []);
+
+  const targetUrl = origin ? `${origin}/${username}` : `https://tapping.bio/${username}`;
 
   useEffect(() => {
     generateQRCode();
-  }, [username, qrColor, bgColor, activeSection]);
+  }, [username, qrColor, bgColor, activeSection, targetUrl]);
 
   const generateQRCode = async () => {
     try {

@@ -63,7 +63,11 @@ export default function PublicProfilePage() {
 
   useEffect(() => {
     recordPageView();
-    setProfile(getStoredProfile());
+    const stored = getStoredProfile();
+    if (stored && usernameParam) {
+      stored.username = usernameParam;
+    }
+    setProfile(stored);
     setVcard(getStoredVCard());
     setLinks(getStoredLinks());
     setNfcCard(getStoredNFCCard());
@@ -73,7 +77,7 @@ export default function PublicProfilePage() {
         .then(setQrUrl)
         .catch(console.error);
     }
-  }, []);
+  }, [usernameParam]);
 
   const activeLinks = links.filter((l) => l.isActive);
 
@@ -133,7 +137,7 @@ export default function PublicProfilePage() {
   return (
     <div className="min-h-screen bg-[#F7F5EE] text-charcoal flex flex-col items-center justify-start p-4 sm:p-6 lg:p-10 selection:bg-[#FDF166] selection:text-charcoal transition-colors duration-300">
       {/* Top Floating Navigation Bar: Fits screen gracefully */}
-      <div className="w-full max-w-md lg:max-w-5xl flex items-center justify-between py-2 mb-4">
+      <div className="w-full max-w-5xl mx-auto flex items-center justify-between py-2 mb-4">
         <a
           href="/dashboard"
           className="text-xs font-bold text-charcoal/80 hover:text-black bg-white px-4 py-2 rounded-full border border-black/10 shadow-xs flex items-center gap-1.5 transition-colors"
@@ -172,7 +176,7 @@ export default function PublicProfilePage() {
       </div>
 
       {/* MAIN CONTAINER: RESPONSIVE DESKTOP & MOBILE CREATOR SHOWCASE */}
-      <div className="w-full max-w-md lg:max-w-5xl bg-white rounded-[40px] p-6 lg:p-8 shadow-card border border-black/5 flex flex-col gap-6 text-left relative overflow-hidden">
+      <div className="w-full max-w-5xl mx-auto bg-white rounded-[40px] p-6 lg:p-8 shadow-card border border-black/5 flex flex-col gap-6 text-left relative overflow-hidden">
         {/* Top Header Row */}
         <div className="flex items-start justify-between pb-2 border-b border-black/5">
           <div>

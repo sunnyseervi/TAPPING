@@ -30,6 +30,7 @@ interface EditProfileSectionProps {
   links: LinkBlock[];
   onUpdateProfile: (updated: Profile) => void;
   onUpdateLinks: (newLinks: LinkBlock[]) => void;
+  onLiveChange?: (updated: Profile) => void;
 }
 
 export default function EditProfileSection({
@@ -37,8 +38,16 @@ export default function EditProfileSection({
   links,
   onUpdateProfile,
   onUpdateLinks,
+  onLiveChange,
 }: EditProfileSectionProps) {
   const { showToast } = useToast();
+  const [displayHost, setDisplayHost] = useState('tapping.bio');
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setDisplayHost(window.location.host);
+    }
+  }, []);
 
   // Profile Form State
   const [displayName, setDisplayName] = useState(profile.displayName);
@@ -54,6 +63,21 @@ export default function EditProfileSection({
     email: profile.socialLinks?.email || '',
     phone: profile.socialLinks?.phone || '',
   });
+
+  const notifyLive = (partial: Partial<Profile>) => {
+    if (onLiveChange) {
+      onLiveChange({
+        ...profile,
+        displayName,
+        username,
+        badgeTitle,
+        bio,
+        avatarUrl,
+        socialLinks,
+        ...partial,
+      });
+    }
+  };
 
   // Links Form State
   const [isAddingLink, setIsAddingLink] = useState(false);
@@ -244,7 +268,10 @@ export default function EditProfileSection({
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => setAvatarUrl(preset)}
+                  onClick={() => {
+                    setAvatarUrl(preset);
+                    notifyLive({ avatarUrl: preset });
+                  }}
                   className={`w-7 h-7 rounded-xl overflow-hidden border transition-all ${
                     avatarUrl === preset ? 'ring-2 ring-charcoal border-white scale-105' : 'border-black/10 opacity-70 hover:opacity-100'
                   }`}
@@ -264,7 +291,10 @@ export default function EditProfileSection({
               <input
                 type="text"
                 value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
+                onChange={(e) => {
+                  setDisplayName(e.target.value);
+                  notifyLive({ displayName: e.target.value });
+                }}
                 required
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
@@ -275,11 +305,14 @@ export default function EditProfileSection({
                 Username (@handle)
               </label>
               <div className="flex items-center bg-[#FAF7F2] rounded-2xl border border-black/10 px-3.5 py-2.5">
-                <span className="text-xs font-bold text-charcoal/50 select-none mr-1">tapping.bio/</span>
+                <span className="text-xs font-bold text-charcoal/50 select-none mr-1">{displayHost}/</span>
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    notifyLive({ username: e.target.value });
+                  }}
                   required
                   className="w-full bg-transparent text-xs font-bold focus:outline-none"
                 />
@@ -293,7 +326,10 @@ export default function EditProfileSection({
               <input
                 type="text"
                 value={badgeTitle}
-                onChange={(e) => setBadgeTitle(e.target.value)}
+                onChange={(e) => {
+                  setBadgeTitle(e.target.value);
+                  notifyLive({ badgeTitle: e.target.value });
+                }}
                 placeholder="Product Designer"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
@@ -306,7 +342,11 @@ export default function EditProfileSection({
               <input
                 type="email"
                 value={socialLinks.email}
-                onChange={(e) => setSocialLinks({ ...socialLinks, email: e.target.value })}
+                onChange={(e) => {
+                  const updatedSocial = { ...socialLinks, email: e.target.value };
+                  setSocialLinks(updatedSocial);
+                  notifyLive({ socialLinks: updatedSocial });
+                }}
                 placeholder="contact@alexmorgan.design"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
@@ -318,7 +358,10 @@ export default function EditProfileSection({
               </label>
               <textarea
                 value={bio}
-                onChange={(e) => setBio(e.target.value)}
+                onChange={(e) => {
+                  setBio(e.target.value);
+                  notifyLive({ bio: e.target.value });
+                }}
                 rows={2}
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-charcoal/20 resize-none"
               />
@@ -334,7 +377,11 @@ export default function EditProfileSection({
                 <input
                   type="text"
                   value={socialLinks.instagram}
-                  onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
+                  onChange={(e) => {
+                    const updatedSocial = { ...socialLinks, instagram: e.target.value };
+                    setSocialLinks(updatedSocial);
+                    notifyLive({ socialLinks: updatedSocial });
+                  }}
                   placeholder="alexmorgan"
                   className="w-full bg-transparent text-xs font-semibold focus:outline-none"
                 />
@@ -350,7 +397,11 @@ export default function EditProfileSection({
                 <input
                   type="text"
                   value={socialLinks.twitter}
-                  onChange={(e) => setSocialLinks({ ...socialLinks, twitter: e.target.value })}
+                  onChange={(e) => {
+                    const updatedSocial = { ...socialLinks, twitter: e.target.value };
+                    setSocialLinks(updatedSocial);
+                    notifyLive({ socialLinks: updatedSocial });
+                  }}
                   placeholder="alexmorgan"
                   className="w-full bg-transparent text-xs font-semibold focus:outline-none"
                 />
@@ -364,7 +415,11 @@ export default function EditProfileSection({
               <input
                 type="text"
                 value={socialLinks.github}
-                onChange={(e) => setSocialLinks({ ...socialLinks, github: e.target.value })}
+                onChange={(e) => {
+                  const updatedSocial = { ...socialLinks, github: e.target.value };
+                  setSocialLinks(updatedSocial);
+                  notifyLive({ socialLinks: updatedSocial });
+                }}
                 placeholder="alexmorgan"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
@@ -377,7 +432,11 @@ export default function EditProfileSection({
               <input
                 type="text"
                 value={socialLinks.linkedin}
-                onChange={(e) => setSocialLinks({ ...socialLinks, linkedin: e.target.value })}
+                onChange={(e) => {
+                  const updatedSocial = { ...socialLinks, linkedin: e.target.value };
+                  setSocialLinks(updatedSocial);
+                  notifyLive({ socialLinks: updatedSocial });
+                }}
                 placeholder="https://linkedin.com/in/..."
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
