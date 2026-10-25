@@ -22,7 +22,7 @@ import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/componen
 import { downloadVCardFile } from '@/lib/vcard';
 import { incrementLinkClick } from '@/lib/storage';
 import { useToast } from '@/components/ui/Toast';
-import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses, isDarkTheme, getFontFamilyStyle } from '@/lib/themes';
+import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses, isDarkTheme, isPatternDark, getFontFamilyStyle } from '@/lib/themes';
 
 interface LivePreviewProps {
   profile: Profile;
@@ -81,8 +81,10 @@ export default function LivePhonePreview({
       : 'bg-white/85 text-charcoal backdrop-blur-xl border border-white/50 shadow-sm rounded-3xl p-3.5 my-1';
   }
 
+  const isDarkPatternActive = (profile.showHeaderBackground || profile.fullPageBackground) && isPatternDark(profile.headerBackground);
+  const isDarkCanvas = isDark || isDarkPatternActive;
   const hasDarkWallpaper = Boolean(profile.customHeaderImage) && (profile.bgImageDim ?? 30) >= 35;
-  const contentIsDark = isCardBehindActive ? insideCardDark : (isDark || hasDarkWallpaper);
+  const contentIsDark = isCardBehindActive ? insideCardDark : (isDarkCanvas || hasDarkWallpaper);
 
   // Font sizing calculations
   const titleSizeClass = 
@@ -248,7 +250,8 @@ export default function LivePhonePreview({
               <h1 
                 className={`${titleSizeClass} font-black mt-2.5 tracking-tight text-center ${fontFamilyClass}`}
                 style={{ 
-                  color: profile.fontColor || currentTheme.textHeadingHex || (contentIsDark ? '#FFFFFF' : '#141518'),
+                  color: profile.fontColor || (contentIsDark ? '#FFFFFF' : (currentTheme.textHeadingHex || '#141518')),
+                  textShadow: contentIsDark ? '0 2px 10px rgba(0,0,0,0.75)' : undefined,
                   ...getFontFamilyStyle(profile.fontFamily)
                 }}
               >
@@ -258,7 +261,8 @@ export default function LivePhonePreview({
               <p 
                 className="text-[11px] font-bold mt-0.5 font-mono"
                 style={{
-                  color: profile.fontColor ? profile.fontColor : (contentIsDark ? 'rgba(255,255,255,0.7)' : 'rgba(20,21,24,0.7)'),
+                  color: profile.fontColor ? profile.fontColor : (contentIsDark ? 'rgba(255,255,255,0.85)' : 'rgba(20,21,24,0.65)'),
+                  textShadow: contentIsDark ? '0 1px 6px rgba(0,0,0,0.6)' : undefined,
                   opacity: profile.fontColor ? 0.8 : undefined,
                 }}
               >
@@ -418,14 +422,12 @@ export default function LivePhonePreview({
 
                     return (
                       <div key={link.id} className="w-full my-1.5 flex flex-col gap-1.5 text-left">
-                        <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-xl border shadow-2xs backdrop-blur-md ${
-                          contentIsDark ? 'bg-black/60 border-white/15 text-white' : 'bg-white/90 border-black/10 text-charcoal'
-                        }`}>
-                          <span className={`text-[9px] font-black uppercase tracking-wider flex items-center gap-1 ${contentIsDark ? 'text-[#FF8D71]' : 'text-[#A6462D]'}`}>
+                        <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl border border-black/10 bg-white/95 text-charcoal shadow-2xs backdrop-blur-md">
+                          <span className="text-[9px] font-black uppercase tracking-wider flex items-center gap-1 text-[#A6462D]">
                             <ShoppingBag className="w-2.5 h-2.5" />
                             <span>{link.title || 'Store Products'}</span>
                           </span>
-                          <span className="text-[8px] font-bold opacity-60">
+                          <span className="text-[8px] font-bold text-charcoal/60">
                             {sliderProducts.length} items &bull; Slidable
                           </span>
                         </div>
@@ -437,9 +439,7 @@ export default function LivePhonePreview({
                           {sliderProducts.map((product) => (
                             <div
                               key={product.id}
-                              className={`w-[140px] shrink-0 snap-start rounded-2xl border p-2 flex flex-col justify-between shadow-md ${
-                                contentIsDark ? 'bg-[#181920] border-white/15 text-white' : 'bg-white border-black/10 text-charcoal'
-                              }`}
+                              className="w-[140px] shrink-0 snap-start rounded-2xl border border-black/10 p-2 flex flex-col justify-between shadow-sm bg-white text-charcoal"
                             >
                               <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/5 mb-1.5">
                                 {product.imageUrl ? (
@@ -451,10 +451,10 @@ export default function LivePhonePreview({
                                   ₹{product.price}
                                 </span>
                               </div>
-                              <p className={`text-[10px] font-black truncate leading-tight ${contentIsDark ? 'text-white' : 'text-charcoal'}`}>{product.name}</p>
-                              <div className="mt-1.5 flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/10">
-                                <span className={`text-[9px] font-black ${contentIsDark ? 'text-[#FF8D71]' : 'text-[#A6462D]'}`}>₹{product.price}</span>
-                                <span className="text-[8px] font-black px-1.5 py-0.5 rounded-md bg-[#A6462D] text-white">Bag</span>
+                              <p className="text-[10px] font-black truncate leading-tight text-charcoal">{product.name}</p>
+                              <div className="mt-1.5 flex items-center justify-between pt-1 border-t border-black/5">
+                                <span className="text-[9px] font-black text-[#A6462D]">₹{product.price}</span>
+                                <span className="text-[8px] font-black px-1.5 py-0.5 rounded-md bg-[#A6462D] text-white shadow-2xs">Bag</span>
                               </div>
                             </div>
                           ))}
@@ -468,13 +468,13 @@ export default function LivePhonePreview({
                     profile.theme,
                     link.styleVariant,
                     cardStyle
-                  );
+                  ).replace(/rounded-full/g, 'rounded-2xl').replace(/rounded-none/g, 'rounded-2xl');
                   const effectiveTextColor = link.textColor || (link.bgImage ? '#FFFFFF' : profile.fontColor || undefined);
                   return (
                     <div
                       key={link.id}
                       onClick={() => handleLinkClick(link)}
-                      className={`p-3 transition-all cursor-pointer flex items-center justify-between relative overflow-hidden ${cardClasses}`}
+                      className={`min-h-[50px] p-2.5 rounded-2xl border border-black/10 bg-white/95 text-charcoal shadow-2xs hover:bg-white transition-all cursor-pointer flex items-center justify-between relative overflow-hidden ${cardClasses}`}
                       style={{
                         backgroundImage: link.bgImage ? `url(${link.bgImage})` : undefined,
                         backgroundSize: link.bgImage ? (link.bgImageFit === 'fill' ? '100% 100%' : (link.bgImageFit || 'cover')) : undefined,
@@ -521,12 +521,12 @@ export default function LivePhonePreview({
             {/* Creator Products & Store Fallback (Slidable Carousel) — only if not placed in link blocks */}
             {!activeLinks.some((l) => l.type === 'product_slider') && store?.enabled && store.products.some((p) => p.isActive) && (
               <div className="w-full mt-2 pt-3 border-t border-black/10 flex flex-col gap-2 text-left">
-                <div className="flex items-center justify-between px-0.5">
-                  <span className={`text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${contentIsDark ? 'text-white/70' : 'text-[#A6462D]'}`}>
-                    <ShoppingBag className="w-3 h-3" />
+                <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl border border-black/10 bg-white/95 text-charcoal shadow-2xs backdrop-blur-md">
+                  <span className="text-[9px] font-black uppercase tracking-wider flex items-center gap-1 text-[#A6462D]">
+                    <ShoppingBag className="w-2.5 h-2.5" />
                     <span>Store Products</span>
                   </span>
-                  <span className="text-[9px] font-bold opacity-60">
+                  <span className="text-[8px] font-bold text-charcoal/60">
                     {store.products.filter(p => p.isActive).length} items &bull; Slidable
                   </span>
                 </div>
@@ -538,9 +538,7 @@ export default function LivePhonePreview({
                   {store.products.filter(p => p.isActive).map((product) => (
                     <div
                       key={product.id}
-                      className={`w-[140px] shrink-0 snap-start rounded-2xl border p-2 flex flex-col justify-between shadow-md ${
-                        contentIsDark ? 'bg-[#181920] border-white/15 text-white' : 'bg-white border-black/10 text-charcoal'
-                      }`}
+                      className="w-[140px] shrink-0 snap-start rounded-2xl border border-black/10 p-2 flex flex-col justify-between shadow-sm bg-white text-charcoal"
                     >
                       <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/5 mb-1.5">
                         {product.imageUrl ? (
@@ -552,10 +550,10 @@ export default function LivePhonePreview({
                           ₹{product.price}
                         </span>
                       </div>
-                      <p className={`text-[10px] font-black truncate leading-tight ${contentIsDark ? 'text-white' : 'text-charcoal'}`}>{product.name}</p>
-                      <div className="mt-1.5 flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/10">
-                        <span className={`text-[9px] font-black ${contentIsDark ? 'text-[#FF8D71]' : 'text-[#A6462D]'}`}>₹{product.price}</span>
-                        <span className="text-[8px] font-black px-1.5 py-0.5 rounded-md bg-[#A6462D] text-white">Bag</span>
+                      <p className="text-[10px] font-black truncate leading-tight text-charcoal">{product.name}</p>
+                      <div className="mt-1.5 flex items-center justify-between pt-1 border-t border-black/5">
+                        <span className="text-[9px] font-black text-[#A6462D]">₹{product.price}</span>
+                        <span className="text-[8px] font-black px-1.5 py-0.5 rounded-md bg-[#A6462D] text-white shadow-2xs">Bag</span>
                       </div>
                     </div>
                   ))}

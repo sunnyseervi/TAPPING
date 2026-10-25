@@ -45,6 +45,7 @@ import {
   getPatternClass, 
   resolveLinkCardClasses, 
   isDarkTheme, 
+  isPatternDark,
   getFontFamilyStyle 
 } from '@/lib/themes';
 import PublicStore from '@/components/store/PublicStore';
@@ -247,8 +248,10 @@ export default function PublicProfilePage() {
       : 'bg-white/85 text-charcoal backdrop-blur-2xl border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.25)] rounded-[36px] sm:rounded-[40px] p-5 sm:p-7';
   }
 
+  const isDarkPatternActive = (profile.showHeaderBackground || profile.fullPageBackground) && isPatternDark(profile.headerBackground);
+  const isDarkCanvas = isDarkTheme(currentTheme.id) || isDarkPatternActive;
   const hasDarkWallpaper = Boolean(profile.customHeaderImage) && (profile.bgImageDim ?? 30) >= 35;
-  const contentIsDark = isCardBehindActive ? insideCardDark : (dark || hasDarkWallpaper);
+  const contentIsDark = isCardBehindActive ? insideCardDark : (isDarkCanvas || hasDarkWallpaper);
 
   return (
     <div className="min-h-screen sm:h-screen w-full bg-[#E5E5E7] dark:bg-[#0D0F12] flex items-center justify-center p-0 sm:py-6 sm:px-4 relative overflow-hidden selection:bg-[#FDF166] selection:text-charcoal transition-colors">
@@ -313,52 +316,53 @@ export default function PublicProfilePage() {
           </div>
         )}
 
-        {/* TOP ACTION BAR: Pinned cleanly at top of mobile canvas */}
-        <div className="w-full flex items-center justify-between py-3.5 px-5 relative z-20 shrink-0">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            contentIsDark ? 'bg-white/10 text-white border border-white/15' : 'bg-black/5 text-charcoal border border-black/10'
-          } backdrop-blur-md`}>
-            <Globe className="w-4 h-4 opacity-70" />
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                recordQRScan();
-                setShowQRModal(true);
-              }}
-              className={`px-3 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer backdrop-blur-md ${
-                contentIsDark 
-                  ? 'bg-[#141A28]/85 hover:bg-[#1C2538] text-white border-white/20' 
-                  : 'bg-white/85 hover:bg-white text-charcoal border-black/10'
-              }`}
-              title="Scan or View QR Code"
-            >
-              <QrCode className="w-3.5 h-3.5" />
-              <span>QR</span>
-            </button>
-            <button
-              onClick={handleShare}
-              className={`px-3.5 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer backdrop-blur-md ${
-                contentIsDark 
-                  ? 'bg-[#141A28]/85 hover:bg-[#1C2538] text-white border-white/20' 
-                  : 'bg-white/85 hover:bg-white text-charcoal border-black/10'
-              }`}
-              title="Share Contact Profile"
-            >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Share2 className="w-3.5 h-3.5" />}
-              <span>{copied ? 'Copied' : 'Share'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* SCROLLABLE DATA CONTAINER: Theme remains fixed in place, ONLY Data / Content scrolls smoothly */}
+        {/* SCROLLABLE DATA CONTAINER: Everything scrolls naturally and smoothly together */}
         <div className="flex-1 w-full overflow-y-auto overscroll-contain no-scrollbar relative z-10 flex flex-col items-center">
-          <main className={`w-full flex flex-col items-center text-center px-4 sm:px-6 pt-1 pb-6 transition-all ${
+          
+          {/* TOP ACTION BAR: Scrolls seamlessly with content — never cuts off avatar */}
+          <div className="w-full flex items-center justify-between pt-5 pb-2 px-5 relative z-20 shrink-0">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+              contentIsDark ? 'bg-black/40 text-white border border-white/20' : 'bg-white/80 text-charcoal border border-black/10'
+            } backdrop-blur-md shadow-2xs`}>
+              <Globe className="w-4 h-4 opacity-70" />
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  recordQRScan();
+                  setShowQRModal(true);
+                }}
+                className={`px-3 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer backdrop-blur-md ${
+                  contentIsDark 
+                    ? 'bg-black/45 hover:bg-black/60 text-white border-white/20' 
+                    : 'bg-white/85 hover:bg-white text-charcoal border-black/10'
+                }`}
+                title="Scan or View QR Code"
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span>QR</span>
+              </button>
+              <button
+                onClick={handleShare}
+                className={`px-3.5 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer backdrop-blur-md ${
+                  contentIsDark 
+                    ? 'bg-black/45 hover:bg-black/60 text-white border-white/20' 
+                    : 'bg-white/85 hover:bg-white text-charcoal border-black/10'
+                }`}
+                title="Share Contact Profile"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Share2 className="w-3.5 h-3.5" />}
+                <span>{copied ? 'Copied' : 'Share'}</span>
+              </button>
+            </div>
+          </div>
+
+          <main className={`w-full flex flex-col items-center text-center px-4 sm:px-6 pt-2 pb-6 transition-all ${
             isCardBehindActive ? cardContainerClasses : ''
           }`}>
         
         {/* Avatar with Crisp Thin Ring & Shadow (Modern Rounded Square / Squircle) */}
-        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] sm:rounded-[32px] overflow-hidden ring-1.5 ring-white/80 border border-black/10 shadow-sm bg-white relative flex items-center justify-center shrink-0">
+        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] sm:rounded-[32px] overflow-hidden ring-1.5 ring-white/80 border border-black/10 shadow-sm bg-white relative flex items-center justify-center shrink-0 mt-1">
           <img
             src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
             alt={profile.displayName}
@@ -375,6 +379,7 @@ export default function PublicProfilePage() {
           className={`${titleSizeClass} font-black tracking-tight mt-3 leading-tight`}
           style={{ 
             color: profile.fontColor || (contentIsDark ? '#FFFFFF' : (currentTheme.textHeadingHex || '#141518')),
+            textShadow: contentIsDark ? '0 2px 10px rgba(0,0,0,0.75)' : undefined,
             ...getFontFamilyStyle(profile.fontFamily)
           }}
         >
@@ -385,8 +390,8 @@ export default function PublicProfilePage() {
         <p 
           className="text-xs font-bold font-mono mt-0.5"
           style={{
-            color: profile.fontColor ? profile.fontColor : undefined,
-            opacity: profile.fontColor ? 0.8 : undefined,
+            color: profile.fontColor ? profile.fontColor : (contentIsDark ? 'rgba(255,255,255,0.85)' : 'rgba(20,21,24,0.65)'),
+            textShadow: contentIsDark ? '0 1px 6px rgba(0,0,0,0.6)' : undefined,
           }}
         >
           @{profile.username}
@@ -608,44 +613,57 @@ export default function PublicProfilePage() {
               }
 
               const cardStyle = link.linkTheme || profile.linkCardStyle;
-              const cardClasses = resolveLinkCardClasses(
+              const rawCardClasses = resolveLinkCardClasses(
                 profile.theme,
                 link.styleVariant,
                 cardStyle
               );
+              // Clean anti-slop: Ensure link buttons are sleek modern rounded rectangles (never bulky distorted pills)
+              const cardClasses = rawCardClasses.replace(/rounded-full/g, 'rounded-2xl').replace(/rounded-none/g, 'rounded-2xl');
+              const effectiveTextColor = link.textColor || (link.bgImage ? '#FFFFFF' : profile.fontColor || '#141518');
+
               return (
                 <div
                   key={link.id}
                   onClick={() => handleLinkClick(link)}
-                  className={`p-4 transition-all cursor-pointer flex items-center justify-between relative overflow-hidden ${cardClasses}`}
+                  className={`min-h-[58px] p-3.5 sm:p-4 rounded-2xl border border-black/10 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-between relative overflow-hidden group ${cardClasses}`}
                   style={{
                     backgroundImage: link.bgImage ? `url(${link.bgImage})` : undefined,
                     backgroundSize: link.bgImage ? (link.bgImageFit === 'fill' ? '100% 100%' : (link.bgImageFit || 'cover')) : undefined,
                     backgroundRepeat: link.bgImage ? 'no-repeat' : undefined,
                     backgroundPosition: link.bgImage ? 'center' : undefined,
-                    backgroundColor: link.bgColor || undefined,
-                    color: link.textColor || (link.bgImage ? '#FFFFFF' : profile.fontColor || undefined),
+                    backgroundColor: link.bgColor || (link.bgImage ? undefined : (cardClasses.includes('bg-') ? undefined : '#FFFFFF')),
+                    color: effectiveTextColor,
                   }}
                 >
                   {link.bgImage && (
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-[0.5px] pointer-events-none z-0" />
                   )}
                   <div className="flex items-center gap-3 min-w-0 relative z-10">
-                    <div className="w-9 h-9 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center shrink-0 shadow-2xs text-charcoal">
+                    <div className="w-10 h-10 rounded-xl bg-black/5 border border-black/5 flex items-center justify-center shrink-0 shadow-2xs text-charcoal group-hover:scale-105 transition-transform">
                       {renderIcon(link.icon)}
                     </div>
-                    <div className="min-w-0">
-                      <p className={`${bodySizeClass} font-black truncate leading-tight`}>
+                    <div className="min-w-0 text-left">
+                      <p 
+                        className={`${bodySizeClass} font-black truncate leading-tight`}
+                        style={{ color: effectiveTextColor }}
+                      >
                         {link.title}
                       </p>
                       {link.subtitle && (
-                        <p className="text-[11px] opacity-75 truncate mt-0.5 font-medium">
+                        <p 
+                          className="text-[11px] opacity-70 truncate mt-0.5 font-medium"
+                          style={{ color: effectiveTextColor }}
+                        >
                           {link.subtitle}
                         </p>
                       )}
                     </div>
                   </div>
-                  <ArrowUpRight className="w-4 h-4 opacity-70 shrink-0 ml-2 relative z-10" />
+                  <ArrowUpRight 
+                    className="w-4 h-4 opacity-50 group-hover:opacity-90 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 ml-2 relative z-10 stroke-[2.2]" 
+                    style={{ color: effectiveTextColor }}
+                  />
                 </div>
               );
             })

@@ -55,16 +55,16 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
       }
       switch (variant) {
         case 'peach':
-          return 'bg-[#EFF4FF] hover:bg-[#E2ECFF] border border-[#4F83FF]/20 text-[#141518] shadow-2xs';
+          return 'bg-[#EFF4FF] hover:bg-[#E2ECFF] border border-[#4F83FF]/20 text-[#141518] shadow-2xs rounded-2xl';
         case 'lavender':
         case 'yellow':
-          return 'bg-[#FDF166] hover:bg-[#FBE849] border border-black/10 text-charcoal shadow-2xs';
+          return 'bg-[#FDF166] hover:bg-[#FBE849] border border-black/10 text-charcoal shadow-2xs rounded-2xl';
         case 'mint':
-          return 'bg-[#B6F554] hover:bg-[#A3ED33] border border-black/10 text-charcoal shadow-2xs';
+          return 'bg-[#B6F554] hover:bg-[#A3ED33] border border-black/10 text-charcoal shadow-2xs rounded-2xl';
         case 'sky':
-          return 'bg-[#4F83FF] hover:bg-[#3B6DE6] border border-black/10 text-white shadow-2xs';
+          return 'bg-[#4F83FF] hover:bg-[#3B6DE6] border border-black/10 text-white shadow-2xs rounded-2xl';
         default:
-          return 'bg-white hover:bg-gray-50 border border-black/10 text-charcoal shadow-2xs';
+          return 'bg-white hover:bg-gray-50 border border-black/10 text-charcoal shadow-2xs rounded-2xl';
       }
     },
   },
@@ -658,9 +658,9 @@ export function resolveLinkCardClasses(
     return 'bg-[#EEF2F6] hover:bg-[#E2E8F0] border border-white/60 text-[#1E293B] font-bold shadow-[inset_0_2px_4px_rgba(255,255,255,0.8),0_8px_20px_rgba(0,0,0,0.06)] rounded-3xl';
   }
 
-  // 22. Floating Capsule Pill
+  // 22. Clean Modern Rounded Card
   if (cardStyle === 'minimal-pill') {
-    return 'bg-white hover:bg-[#F8FAFC] border border-black/15 text-charcoal font-semibold shadow-xs rounded-full transition-transform hover:-translate-y-0.5';
+    return 'bg-white/95 hover:bg-white border border-black/10 text-charcoal font-black shadow-xs rounded-2xl transition-all hover:-translate-y-0.5';
   }
 
   // Fallback to active theme's styling
@@ -668,8 +668,20 @@ export function resolveLinkCardClasses(
   return theme.linkVariantClass(variant, cardStyle);
 }
 
+export function isPatternDark(pattern?: BackgroundPatternType): boolean {
+  if (!pattern || pattern === 'none') return false;
+  return [
+    'japanese-seigaiha',
+    'cyber-matrix',
+    'y2k-grid',
+    'retro-grid',
+    'comic-sunburst-red',
+    'tribal-glyphs',
+  ].includes(pattern);
+}
+
 export function isDarkTheme(themeId?: ThemeType): boolean {
-  return themeId === 'cyberpunk-neon';
+  return themeId === 'cyberpunk-neon' || themeId === 'tokyo-night';
 }
 
 

@@ -46,9 +46,7 @@ export default function PublicStore({ store, sellerName, dark, productIds, title
     .sort((a, b) => a.sortOrder - b.sortOrder);
   const itemCount = cart.reduce((sum, line) => sum + line.quantity, 0);
   const total = cart.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
-  const panelClass = dark 
-    ? 'border-white/15 bg-[#181920] text-white shadow-xl' 
-    : 'border-black/10 bg-white text-charcoal shadow-md';
+  const panelClass = 'border border-black/10 bg-white text-charcoal shadow-md rounded-2xl overflow-hidden';
 
   useEffect(() => {
     if (visitRecorded.current) return;
@@ -133,12 +131,11 @@ export default function PublicStore({ store, sellerName, dark, productIds, title
 
   return (
     <section className="flex flex-col gap-2.5 text-left w-full">
-      <div className={`flex items-center justify-between gap-3 px-3 py-2 rounded-2xl border shadow-2xs backdrop-blur-xl ${
-        dark ? 'bg-black/60 border-white/15 text-white' : 'bg-white/90 border-black/10 text-charcoal'
-      }`}>
+      {/* Light Clean Header Bar */}
+      <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-2xl border shadow-sm backdrop-blur-xl bg-white/95 border-black/10 text-charcoal">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Tag className={`h-3.5 w-3.5 shrink-0 ${dark ? 'text-[#FF8D71]' : 'text-[#A6462D]'}`} />
-          <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider truncate">
+          <Tag className="h-3.5 w-3.5 shrink-0 text-[#A6462D]" />
+          <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-charcoal truncate">
             {title || 'Featured Products'}
           </h2>
         </div>
@@ -155,16 +152,14 @@ export default function PublicStore({ store, sellerName, dark, productIds, title
       <div className="relative w-full">
         {products.length > 1 && (
           <div className="flex items-center justify-between mb-1.5 px-1">
-            <span className={`text-[10px] font-bold ${dark ? 'text-white/70' : 'text-charcoal/70'}`}>
+            <span className="text-[10px] font-bold text-charcoal/70">
               {products.length} {products.length === 1 ? 'item' : 'items'} &bull; Slidable
             </span>
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => scrollProducts('left')}
-                className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${
-                  dark ? 'bg-[#181920] hover:bg-white/20 text-white border-white/20' : 'bg-white hover:bg-black/5 text-charcoal border-black/10'
-                }`}
+                className="w-6 h-6 rounded-full border border-black/10 bg-white hover:bg-black/5 text-charcoal flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
                 aria-label="Previous product"
               >
                 <ChevronLeft className="w-3 h-3" />
@@ -172,9 +167,7 @@ export default function PublicStore({ store, sellerName, dark, productIds, title
               <button
                 type="button"
                 onClick={() => scrollProducts('right')}
-                className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${
-                  dark ? 'bg-[#181920] hover:bg-white/20 text-white border-white/20' : 'bg-white hover:bg-black/5 text-charcoal border-black/10'
-                }`}
+                className="w-6 h-6 rounded-full border border-black/10 bg-white hover:bg-black/5 text-charcoal flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
                 aria-label="Next product"
               >
                 <ChevronRight className="w-3 h-3" />
@@ -191,9 +184,9 @@ export default function PublicStore({ store, sellerName, dark, productIds, title
           {products.map((product) => (
             <article
               key={product.id}
-              className={`w-[145px] sm:w-[160px] shrink-0 snap-start rounded-2xl border overflow-hidden shadow-md transition-all flex flex-col justify-between ${panelClass}`}
+              className={`w-[145px] sm:w-[160px] shrink-0 snap-start rounded-2xl border border-black/10 bg-white text-charcoal shadow-md overflow-hidden transition-all flex flex-col justify-between`}
             >
-              <div className={`relative aspect-square w-full overflow-hidden ${dark ? 'bg-black/40' : 'bg-[#EAE1D5]'}`}>
+              <div className="relative aspect-square w-full overflow-hidden bg-[#F4F1EA]">
                 {product.imageUrl ? (
                   <img
                     src={product.imageUrl}
@@ -211,7 +204,7 @@ export default function PublicStore({ store, sellerName, dark, productIds, title
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="absolute right-2 top-2 p-1 rounded-full bg-white/90 dark:bg-black/80 text-charcoal dark:text-white shadow-2xs hover:scale-110 transition-transform backdrop-blur-md"
+                    className="absolute right-2 top-2 p-1 rounded-full bg-white/95 text-charcoal shadow-2xs hover:scale-110 transition-transform border border-black/5"
                     title="Open product link"
                   >
                     <ExternalLink className="w-3 h-3" />
@@ -219,37 +212,33 @@ export default function PublicStore({ store, sellerName, dark, productIds, title
                 )}
               </div>
 
-              {/* 100% Solid Opaque Details Box (ZERO transparency against any wallpaper) */}
-              <div className={`p-2.5 flex flex-col flex-1 justify-between gap-1.5 ${
-                dark ? 'bg-[#181920] text-white' : 'bg-white text-charcoal'
-              }`}>
+              {/* 100% Solid Pure White Details Box (Crisp & Clean Light Theme) */}
+              <div className="p-2.5 flex flex-col flex-1 justify-between gap-1.5 bg-white text-charcoal">
                 <div>
-                  <h3 className={`text-xs font-black leading-tight truncate ${dark ? 'text-white' : 'text-charcoal'}`}>
+                  <h3 className="text-xs font-black leading-tight text-charcoal truncate">
                     {product.name}
                   </h3>
                   <div className="flex items-baseline gap-1 mt-0.5">
-                    <span className={`text-xs font-black ${dark ? 'text-[#FF8D71]' : 'text-[#A6462D]'}`}>
+                    <span className="text-xs font-black text-[#A6462D]">
                       {formatPrice(product.price)}
                     </span>
                     {product.compareAtPrice && product.compareAtPrice > product.price && (
-                      <span className={`text-[9px] font-bold line-through ${dark ? 'text-white/45' : 'text-charcoal/35'}`}>
+                      <span className="text-[9px] font-bold line-through text-charcoal/40">
                         {formatPrice(product.compareAtPrice)}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className={`pt-1.5 border-t flex flex-col gap-1.5 ${dark ? 'border-white/10' : 'border-black/5'}`}>
+                <div className="pt-1.5 border-t border-black/5 flex flex-col gap-1.5">
                   {product.variants.length > 0 && (
                     <select
                       value={selectedVariants[product.id] || product.variants[0]}
                       onChange={(event) => setSelectedVariants((current) => ({ ...current, [product.id]: event.target.value }))}
-                      className={`w-full rounded-lg border px-1.5 py-1 text-[10px] font-bold outline-none ${
-                        dark ? 'border-white/20 bg-[#252834] text-white' : 'border-[#D9CFC2] bg-[#FAF7F2] text-charcoal'
-                      }`}
+                      className="w-full rounded-lg border border-black/15 bg-[#FAF7F2] px-1.5 py-1 text-[10px] font-bold text-charcoal outline-none"
                     >
                       {product.variants.map((variant) => (
-                        <option key={variant} value={variant} className={dark ? 'bg-[#252834] text-white' : 'bg-white text-charcoal'}>
+                        <option key={variant} value={variant} className="bg-white text-charcoal">
                           {variant}
                         </option>
                       ))}
