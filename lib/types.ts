@@ -342,6 +342,11 @@ export interface MetalCardOrder {
   paymentStatus: 'paid' | 'pending' | 'refunded';
   paymentMethod?: 'UPI' | 'COD';
   createdAt: string;
+  notes?: string;
+  sideMode?: CardSideMode;
+  frontSide?: CardSideConfig;
+  backSide?: CardSideConfig;
+  cardDesign?: NFCCardDesign;
   shippingAddress: {
     name: string;
     street: string;

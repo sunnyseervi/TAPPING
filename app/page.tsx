@@ -45,7 +45,6 @@ export default function LandingPage() {
   // Metal NFC Hardware Studio State in Hero
   const [selectedMaterial, setSelectedMaterial] = useState<CardMaterial>('matte_black');
   const [cardFlipped, setCardFlipped] = useState(false);
-  const [nfcTapped, setNfcTapped] = useState(false);
   const [copied, setCopied] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [isSignedIn, setIsSignedIn] = useState(false);
@@ -71,12 +70,6 @@ export default function LandingPage() {
     saveStoredProfile(profile);
     showToast('Handle Claimed', `Welcome @${clean}! Set up your bio and metal card.`, 'success');
     router.push('/dashboard?tab=profile');
-  };
-
-  const handleSimulateNFCTap = () => {
-    setNfcTapped(true);
-    showToast('NFC Hardware Tap Detected', `Connected via ${getMaterialName(selectedMaterial)} NFC Smart Card`, 'success');
-    setTimeout(() => setNfcTapped(false), 3000);
   };
 
   const handleCopyLink = () => {
@@ -182,21 +175,21 @@ export default function LandingPage() {
       ]
     },
     {
-      name: 'Devansh Verma',
-      handle: 'devansh',
-      role: 'Music Producer & Sound Engineer',
+      name: 'Rohan Mehra',
+      handle: 'rohanmehra',
+      role: 'Brand Designer & Creative Director',
       location: 'New Delhi, India',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
-      bio: 'Independent electronic producer and film composer. Streaming on Spotify and Apple Music.',
-      badge: 'Audio & Music',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+      bio: 'Crafting brand identities, typography systems, and high-performance digital experiences.',
+      badge: 'Brand & Identity',
       links: [
-        { title: 'Listen to Debut EP "Monsoon Nocturne"', sub: 'Stream on Spotify & Apple Music', clicks: '6,180' },
-        { title: 'Tour Tickets & Live Concert Dates', sub: 'Delhi, Pune & Bengaluru', clicks: '3,840' },
-        { title: 'Sample Pack Vol. 2 for Producers', sub: 'Royalty-free analog synths', clicks: '1,250' },
+        { title: 'Selected Brand Identity Case Studies', sub: 'Visual design systems & brandbooks', clicks: '5,920' },
+        { title: 'Typography & Editorial Portfolio', sub: 'Award-winning print & digital work', clicks: '3,410' },
+        { title: 'Book 1:1 Design Studio Consultation', sub: '30-minute creative strategy call', clicks: '1,680' },
       ],
       products: [
-        { name: 'Analog Drum Kit WAV', price: '₹799', img: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300' },
-        { name: 'Limited Cassette Tape', price: '₹999', img: 'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=300' },
+        { name: 'Studio Brand Guidelines Template', price: '₹1,499', img: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=300' },
+        { name: 'Minimalist Grid System Poster', price: '₹899', img: 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=300' },
       ]
     }
   ];
@@ -332,19 +325,6 @@ export default function LandingPage() {
                     <div className="w-3.5 h-1.5 rounded-[2px] border border-charcoal bg-charcoal" />
                   </div>
                 </div>
-
-                {/* Simulated NFC Tap Banner when triggered */}
-                {nfcTapped && (
-                  <div className="absolute top-12 left-4 right-4 z-30 bg-[#141518] text-white p-3 rounded-2xl shadow-float flex items-center gap-2.5 border border-white/20 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="w-8 h-8 rounded-xl bg-white text-charcoal flex items-center justify-center shrink-0">
-                      <CreditCard className="w-4 h-4 stroke-[2.5]" />
-                    </div>
-                    <div className="flex-1 min-w-0 text-left">
-                      <p className="text-xs font-black text-white">NFC Smart Card Tapped</p>
-                      <p className="text-[10px] text-white/70 truncate">Loaded via Contactless Hardware</p>
-                    </div>
-                  </div>
-                )}
 
                 {/* SCROLLABLE INNER PHONE SCREEN SHOWING REAL GENERATED CONTENT */}
                 <div className="w-full bg-[#FAF7F2] rounded-b-[40px] overflow-y-auto max-h-[580px] no-scrollbar px-4 pt-1 pb-6 flex flex-col items-center text-center">
@@ -585,22 +565,13 @@ export default function LandingPage() {
                 ))}
               </div>
 
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                <button
-                  type="button"
-                  onClick={handleSimulateNFCTap}
-                  className="py-3 px-4 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95 cursor-pointer"
-                >
-                  <CreditCard className="w-3.5 h-3.5" />
-                  <span>Simulate Tap</span>
-                </button>
-
+              <div className="mt-2">
                 <Link
                   href="/dashboard?tab=nfc"
-                  className="py-3 px-4 rounded-2xl bg-white hover:bg-gray-50 border border-black/10 text-charcoal text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-[0.99]"
                 >
-                  <span>Order Metal Card</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>Order Custom Metal NFC Card</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
