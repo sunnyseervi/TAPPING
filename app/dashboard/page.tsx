@@ -63,6 +63,15 @@ function DashboardContent() {
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
+
+  const handleToggleSidebar = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsSidebarOpen((prev) => !prev);
+    } else {
+      setIsSidebarCollapsed((prev) => !prev);
+    }
+  };
 
   // Upgrade Modal State
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
@@ -325,7 +334,7 @@ function DashboardContent() {
         </div>
       )}
 
-      {/* Left Collapsible Navigation Sidebar Drawer (toggled via 3-lines header button) */}
+      {/* Left Collapsible Navigation Sidebar Drawer (toggled via 3-dots header button) */}
       <AppSidebar
         activeTab={activeTab}
         onSelectTab={handleSelectTab}
@@ -334,15 +343,16 @@ function DashboardContent() {
         profile={profile}
         linkCount={links.length}
         onOpenAuth={() => setShowAuthModal(true)}
+        isDesktopCollapsed={isSidebarCollapsed}
       />
 
       {/* Main Content Layout Container: Full-width responsive with desktop sidebar offset */}
-      <div className="w-full lg:pl-72 flex flex-col min-h-screen">
+      <div className={`w-full transition-all duration-300 flex flex-col min-h-screen ${isSidebarCollapsed ? 'lg:pl-0' : 'lg:pl-72'}`}>
         <div className="w-full max-w-[1720px] mx-auto px-3 sm:px-6 md:px-8 lg:px-10 pt-2 sm:pt-3 pb-10 sm:pb-12">
           {/* Top Header */}
           <DashboardHeader
             profile={profile}
-            onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            onToggleSidebar={handleToggleSidebar}
             onSelectTab={handleSelectTab}
           />
 

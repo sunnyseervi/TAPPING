@@ -1103,6 +1103,8 @@ export function createMetalCardOrder(orderData: Partial<MetalCardOrder>): MetalC
   const orders = getStoredOrders();
   const seqNum = 10893 + orders.length;
   const orderNumber = `TAP-${seqNum}`;
+  const isCod = orderData.paymentMethod === 'COD';
+
   const newOrder: MetalCardOrder = {
     id: `ord_${Date.now()}`,
     orderNumber,
@@ -1111,15 +1113,17 @@ export function createMetalCardOrder(orderData: Partial<MetalCardOrder>): MetalC
     userEmail: orderData.userEmail || 'creator@tapping.bio',
     userPhone: orderData.userPhone || '+91 98765 43210',
     material: orderData.material || 'matte_black',
+    customColor: orderData.customColor,
     engravedName: orderData.engravedName || 'TAPPING CREATOR',
     engravedTagline: orderData.engravedTagline || 'DIGITAL BUSINESS CARD',
     qrUrl: orderData.qrUrl || 'https://tapping.bio',
-    status: 'pending',
+    status: 'in_production',
     trackingNumber: `DEL-${Math.floor(1000000 + Math.random() * 9000000)}`,
     shippingCarrier: 'Delhivery Surface Pro',
     amount: 1499,
     currency: 'INR',
-    paymentStatus: 'paid',
+    paymentStatus: isCod ? 'pending' : 'paid',
+    paymentMethod: orderData.paymentMethod || 'UPI',
     createdAt: new Date().toISOString(),
     shippingAddress: orderData.shippingAddress || {
       name: orderData.userName || 'Creator',
@@ -1141,9 +1145,9 @@ export function createMetalCardOrder(orderData: Partial<MetalCardOrder>): MetalC
     amount: newOrder.amount,
     currency: 'INR',
     type: 'metal_card',
-    status: 'succeeded',
-    method: 'UPI',
-    planName: `Metal NFC Card (${newOrder.material.replace('_', ' ').toUpperCase()})`,
+    status: isCod ? 'pending' : 'succeeded',
+    method: isCod ? 'COD' : 'UPI',
+    planName: `Metal NFC Card (${newOrder.material === 'custom_color' ? `Custom Shade ${newOrder.customColor || ''}` : newOrder.material.replace('_', ' ').toUpperCase()})`,
   });
 
   return newOrder;

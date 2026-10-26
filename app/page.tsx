@@ -149,7 +149,7 @@ export default function LandingPage() {
       handle: 'aarav',
       role: 'Founder & Hardware Architect',
       location: 'Bengaluru, India',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+      avatar: 'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=400&auto=format&fit=crop&q=80',
       bio: 'Building contactless NFC hardware and digital identity infrastructure in Bengaluru.',
       badge: 'Hardware & Tech',
       links: [
@@ -352,7 +352,7 @@ export default function LandingPage() {
                   <div className="relative mt-2">
                     <div className="w-20 h-20 rounded-[24px] overflow-hidden ring-1.5 ring-white/80 border border-black/10 shadow-sm bg-white flex items-center justify-center">
                       <img
-                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400"
+                        src="https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=400&auto=format&fit=crop&q=80"
                         alt="Aarav Sharma"
                         className="w-full h-full object-cover"
                       />

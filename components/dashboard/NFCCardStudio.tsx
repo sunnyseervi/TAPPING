@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { NFCCardDesign, CardMaterial, CardSideMode, CardSideConfig } from '@/lib/types';
+import { NFCCardDesign, CardMaterial, CardSideMode, CardSideConfig, MetalCardOrder } from '@/lib/types';
 import { CARD_FONTS, CardFont } from '@/lib/cardFonts';
+import ColorChartPicker from '@/components/ui/ColorChartPicker';
 import { 
   CreditCard, 
   QrCode, 
@@ -22,6 +23,7 @@ import {
   Copy, 
   ExternalLink,
   ChevronDown,
+  ChevronRight,
   ArrowUp,
   ArrowDown,
   ArrowLeft,
@@ -50,9 +52,13 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   const [flipped, setFlipped] = useState(false);
   const [activeSide, setActiveSide] = useState<'front' | 'back'>('front');
   const [material, setMaterial] = useState<CardMaterial>(nfcCard.material || 'matte_black');
+  const [customCardColor, setCustomCardColor] = useState<string>(nfcCard.customColor || '#1E293B');
   const [sideMode, setSideMode] = useState<CardSideMode>(nfcCard.sideMode || 'double_sided');
   const [redirectMode, setRedirectMode] = useState<'profile' | 'direct_vcard' | 'custom_url'>(nfcCard.redirectMode || 'profile');
   const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [orderStep, setOrderStep] = useState<'review' | 'delivery' | 'payment' | 'confirm_popup' | 'success'>('review');
+  const [paymentMode, setPaymentMode] = useState<'UPI' | 'COD'>('UPI');
+  const [placedOrder, setPlacedOrder] = useState<MetalCardOrder | null>(null);
   const [saveConfirmModalOpen, setSaveConfirmModalOpen] = useState(false);
   const [displayHost, setDisplayHost] = useState('tapping.bio');
   const [qrDataUrl, setQrDataUrl] = useState('');
@@ -66,6 +72,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   // Order Details Form State
   const [shippingName, setShippingName] = useState(username.toUpperCase());
   const [shippingPhone, setShippingPhone] = useState('+91 98765 43210');
+  const [shippingEmail, setShippingEmail] = useState('creator@tapping.bio');
   const [shippingStreet, setShippingStreet] = useState('Flat 402, Skyline Residency, 100ft Road');
   const [shippingCity, setShippingCity] = useState('Bengaluru');
   const [shippingState, setShippingState] = useState('Karnataka');
@@ -212,6 +219,16 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     { name: 'Ultra Violet', hex: '#8B5CF6' },
   ];
 
+  function isColorDark(hex: string): boolean {
+    if (!hex) return true;
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.substring(0, 2), 16) || 0;
+    const g = parseInt(clean.substring(2, 4), 16) || 0;
+    const b = parseInt(clean.substring(4, 6), 16) || 0;
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness < 160;
+  }
+
   const materials: { id: CardMaterial; name: string; class: string; desc: string; textDefault: string }[] = [
     {
       id: 'matte_black',
@@ -240,6 +257,13 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
       class: 'metal-titanium-silver text-slate-900',
       desc: 'Reflective silver brushed steel',
       textDefault: '#0F172A',
+    },
+    {
+      id: 'custom_color',
+      name: 'Custom Card Color',
+      class: 'metal-custom-color',
+      desc: 'Full spectral palette & color wheel',
+      textDefault: '#FFFFFF',
     },
   ];
 
@@ -414,6 +438,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
       updateCardRef.current({
         ...baseCardRef.current,
         material,
+        customColor: material === 'custom_color' ? customCardColor : undefined,
         sideMode,
         frontSide,
         backSide,
@@ -423,7 +448,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
       });
     }, 300);
     return () => window.clearTimeout(timer);
-  }, [material, sideMode, frontSide, backSide, redirectMode]);
+  }, [material, customCardColor, sideMode, frontSide, backSide, redirectMode]);
 
   const handleCardClick = (e: React.MouseEvent) => {
     if (dragSessionRef.current.hasMoved) {
@@ -437,6 +462,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     const updated: NFCCardDesign = {
       ...nfcCard,
       material,
+      customColor: material === 'custom_color' ? customCardColor : undefined,
       sideMode,
       frontSide,
       backSide,
@@ -452,7 +478,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     setIsExporting(true);
     showToast('Generating PNG...', 'Rendering 1024x648 high-res metal card', 'info');
     try {
-      await exportCardAsPng(nfcCard, material, activeSide, username, displayHost);
+      await exportCardAsPng({ ...nfcCard, customColor: customCardColor }, material, activeSide, username, displayHost);
       showToast('PNG Downloaded', 'Saved high-res image to your device', 'success');
     } catch {
       showToast('Export Failed', 'Could not generate card PNG', 'error');
@@ -466,7 +492,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     setIsExporting(true);
     showToast('Generating Printable PDF...', 'Compiling ISO standard card blueprint', 'info');
     try {
-      await exportCardAsPdf(nfcCard, material, activeSide, username, displayHost);
+      await exportCardAsPdf({ ...nfcCard, customColor: customCardColor }, material, activeSide, username, displayHost);
       showToast('PDF Exported', 'Print-ready vector PDF downloaded', 'success');
     } catch {
       showToast('Export Failed', 'Could not generate card PDF', 'error');
@@ -478,7 +504,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
 
   const handleDownloadHtml = () => {
     try {
-      exportCardAsHtml(nfcCard, material, activeSide, username, displayHost);
+      exportCardAsHtml({ ...nfcCard, customColor: customCardColor }, material, activeSide, username, displayHost);
       showToast('Vector HTML / SVG Saved', 'Downloaded vector card blueprint', 'success');
     } catch {
       showToast('Export Failed', 'Could not generate HTML blueprint', 'error');
@@ -487,10 +513,10 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     }
   };
 
-  const handlePlaceOrder = () => {
+  const handleFinalizeOrder = () => {
     confetti({
-      particleCount: 140,
-      spread: 90,
+      particleCount: 160,
+      spread: 95,
       origin: { y: 0.6 },
     });
 
@@ -498,12 +524,14 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     const newOrder = createMetalCardOrder({
       userId: 'usr_001',
       userName: shippingName || username.toUpperCase(),
-      userEmail: 'aarav@tapping.bio',
+      userEmail: shippingEmail || 'creator@tapping.bio',
       userPhone: shippingPhone,
       material,
+      customColor: material === 'custom_color' ? customCardColor : undefined,
       engravedName: frontSide.primaryText || nfcCard.engravedName || username.toUpperCase(),
       engravedTagline: frontSide.secondaryText || nfcCard.engravedTagline || 'DIGITAL CREATOR & FOUNDER',
       qrUrl: `https://${displayHost}/${username}`,
+      paymentMethod: paymentMode,
       shippingAddress: {
         name: shippingName || username.toUpperCase(),
         street: shippingStreet,
@@ -514,9 +542,12 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
       },
     });
 
+    setPlacedOrder(newOrder);
+
     const updated: NFCCardDesign = {
       ...nfcCard,
       material,
+      customColor: material === 'custom_color' ? customCardColor : undefined,
       sideMode,
       frontSide,
       backSide,
@@ -526,10 +557,11 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
       trackingNumber: newOrder.trackingNumber,
     };
     onUpdateCard(updated);
-    setOrderModalOpen(false);
+    setOrderStep('success');
+
     showToast(
       'Order Confirmed!',
-      `Order ${newOrder.orderNumber} placed. Tracking: ${newOrder.trackingNumber}. Visible in Admin Panel & Orders tab.`,
+      `Order ${newOrder.orderNumber} placed via ${paymentMode === 'COD' ? 'Cash on Delivery' : 'UPI'}. Visible in Account & Orders.`,
       'success'
     );
   };
@@ -673,7 +705,10 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
           </button>
 
           <button
-            onClick={() => setOrderModalOpen(true)}
+            onClick={() => {
+              setOrderStep('review');
+              setOrderModalOpen(true);
+            }}
             className="px-4 py-2 rounded-full bg-[#B6F554] hover:bg-[#A6EC3C] text-charcoal text-xs font-black flex items-center gap-1.5 border border-black/10 shadow-xs transition-transform active:scale-95 cursor-pointer"
           >
             <ShoppingBag className="w-3.5 h-3.5 text-charcoal" />
@@ -782,8 +817,12 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             >
               {/* ===================== FRONT SIDE ===================== */}
               <div
-                className={`absolute inset-0 backface-hidden rounded-3xl p-6 flex flex-col justify-between overflow-hidden shadow-card border border-black/10 ${currentMat.class}`}
-                style={{ fontFamily: frontSide.fontFamily || "'Plus Jakarta Sans', sans-serif" }}
+                className={`absolute inset-0 backface-hidden rounded-3xl p-6 flex flex-col justify-between overflow-hidden shadow-card border border-black/10 ${material === 'custom_color' ? '' : currentMat.class}`}
+                style={{ 
+                  fontFamily: frontSide.fontFamily || "'Plus Jakarta Sans', sans-serif",
+                  backgroundColor: material === 'custom_color' ? customCardColor : undefined,
+                  color: material === 'custom_color' ? (isColorDark(customCardColor) ? '#FFFFFF' : '#141518') : undefined,
+                }}
               >
                 {/* Custom Uploaded Artwork Layer with Drag & Zoom */}
                 {frontSide.artworkUrl && (
@@ -922,8 +961,12 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
 
               {/* ===================== BACK SIDE ===================== */}
               <div
-                className={`absolute inset-0 backface-hidden rotate-y-180 rounded-3xl p-6 flex flex-col justify-between overflow-hidden shadow-card border border-black/10 ${currentMat.class}`}
-                style={{ fontFamily: backSide.fontFamily || "'Plus Jakarta Sans', sans-serif" }}
+                className={`absolute inset-0 backface-hidden rotate-y-180 rounded-3xl p-6 flex flex-col justify-between overflow-hidden shadow-card border border-black/10 ${material === 'custom_color' ? '' : currentMat.class}`}
+                style={{ 
+                  fontFamily: backSide.fontFamily || "'Plus Jakarta Sans', sans-serif",
+                  backgroundColor: material === 'custom_color' ? customCardColor : undefined,
+                  color: material === 'custom_color' ? (isColorDark(customCardColor) ? '#FFFFFF' : '#141518') : undefined,
+                }}
               >
                 {/* Custom Uploaded Artwork Layer (Back) with Drag & Zoom */}
                 {backSide.artworkUrl && (
@@ -1885,34 +1928,72 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             </>
           )}
 
-          {/* Section 4: Metal Alloy Finish */}
+          {/* Section 4: Metal Alloy Finish & Card Color */}
           <div>
             <label className="font-black text-charcoal uppercase tracking-wider block mb-2">
-              Select Metal Alloy Finish
+              Select Metal Alloy Finish &amp; Card Color
             </label>
-            <div className="grid grid-cols-2 gap-2.5">
-              {materials.map((mat) => (
-                <button
-                  key={mat.id}
-                  onClick={() => {
-                    setMaterial(mat.id);
-                    if (mat.id === 'matte_black') {
-                      updateCurrentConfig({ textColor: '#FFFFFF' });
-                    } else {
-                      updateCurrentConfig({ textColor: '#141518' });
-                    }
-                  }}
-                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                    material === mat.id
-                      ? 'border-charcoal bg-black/5 ring-2 ring-charcoal shadow-xs'
-                      : 'border-black/10 bg-white hover:bg-gray-50'
-                  }`}
-                >
-                  <p className="font-black text-charcoal text-xs">{mat.name}</p>
-                  <p className="text-[10px] text-charcoal/60 mt-0.5">{mat.desc}</p>
-                </button>
-              ))}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {materials.map((mat) => {
+                const isSelected = material === mat.id;
+                return (
+                  <button
+                    key={mat.id}
+                    onClick={() => {
+                      setMaterial(mat.id);
+                      if (mat.id === 'matte_black') {
+                        updateCurrentConfig({ textColor: '#FFFFFF' });
+                      } else if (mat.id === 'custom_color') {
+                        const isDark = isColorDark(customCardColor);
+                        updateCurrentConfig({ textColor: isDark ? '#FFFFFF' : '#141518' });
+                      } else {
+                        updateCurrentConfig({ textColor: '#141518' });
+                      }
+                    }}
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-charcoal bg-black/5 ring-2 ring-charcoal shadow-xs'
+                        : 'border-black/10 bg-white hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      {mat.id === 'custom_color' ? (
+                        <span className="w-3.5 h-3.5 rounded-full border border-black/20" style={{ backgroundColor: customCardColor }} />
+                      ) : (
+                        <span className={`w-3.5 h-3.5 rounded-full border border-black/20 ${mat.id === 'matte_black' ? 'bg-[#141518]' : mat.id === 'brushed_gold' ? 'bg-[#D4AF37]' : mat.id === 'rose_gold' ? 'bg-[#D99B9B]' : 'bg-[#EAECEF]'}`} />
+                      )}
+                      <p className="font-black text-charcoal text-xs">{mat.name}</p>
+                    </div>
+                    <p className="text-[10px] text-charcoal/60 leading-tight">{mat.desc}</p>
+                  </button>
+                );
+              })}
             </div>
+
+            {/* Custom Color Chart Section */}
+            {material === 'custom_color' && (
+              <div className="mt-3 p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 text-left">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <span className="text-xs font-black text-charcoal block">Card Color Chart &amp; Spectral Palette</span>
+                    <p className="text-[11px] text-charcoal/60 mt-0.5">Select any curated shade or pick an exact RGB / HEX color wheel</p>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-white border border-black/10 shadow-2xs">
+                    <span className="w-4 h-4 rounded-full border border-black/20" style={{ backgroundColor: customCardColor }} />
+                    <span className="font-mono text-xs font-bold text-charcoal">{customCardColor}</span>
+                  </div>
+                </div>
+                <ColorChartPicker
+                  value={customCardColor}
+                  onChange={(hex) => {
+                    setCustomCardColor(hex);
+                    setMaterial('custom_color');
+                    const isDark = isColorDark(hex);
+                    updateCurrentConfig({ textColor: isDark ? '#FFFFFF' : '#141518' });
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           {/* Section 5: Upload Custom Artwork to Current Side */}
@@ -2181,159 +2262,511 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
         </div>
       )}
 
-      {/* Comprehensive Hardware Order Modal */}
+      {/* Multi-Step Hardware Order Wizard Modal */}
       {orderModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-4xl p-6 sm:p-7 max-w-lg w-full border border-black/10 shadow-2xl text-left animate-in fade-in zoom-in-95 duration-200 my-8">
+            
+            {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-black/5">
               <div className="flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-charcoal" />
-                <h3 className="font-black text-base text-charcoal">Order Custom Laser-Engraved Metal NFC Card</h3>
+                <div className="w-8 h-8 rounded-xl bg-[#B6F554] text-charcoal flex items-center justify-center">
+                  <ShoppingBag className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <div>
+                  <h3 className="font-black text-sm sm:text-base text-charcoal">
+                    {orderStep === 'review' && 'Order Custom Metal NFC Card (Step 1/3)'}
+                    {orderStep === 'delivery' && 'Delivery & Shipping Details (Step 2/3)'}
+                    {orderStep === 'payment' && 'Select Payment Mode (Step 3/3)'}
+                    {orderStep === 'confirm_popup' && 'Confirm Your Order'}
+                    {orderStep === 'success' && 'Order Received & Dispatched!'}
+                  </h3>
+                  <p className="text-[10px] font-bold text-charcoal/50">
+                    {orderStep === 'review' && 'Review your custom laser engraving specifications'}
+                    {orderStep === 'delivery' && 'Enter your Pan-India delivery address'}
+                    {orderStep === 'payment' && 'Choose between UPI and Cash on Delivery'}
+                    {orderStep === 'confirm_popup' && 'Please confirm your order details'}
+                    {orderStep === 'success' && 'Sent to laser workshop for precision fabrication'}
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setOrderModalOpen(false)}
-                className="text-charcoal/60 hover:text-charcoal p-1 rounded-lg cursor-pointer"
+                className="text-charcoal/60 hover:text-charcoal p-1.5 rounded-xl hover:bg-black/5 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="py-4 space-y-4 text-xs max-h-[75vh] overflow-y-auto pr-1">
-              {/* Selected Hardware Spec Banner */}
-              <div className="p-3.5 bg-[#FAF7F2] rounded-2xl flex justify-between items-center border border-black/10 shadow-2xs">
+            {/* Stepper Progress Bar (for steps 1-3) */}
+            {(orderStep === 'review' || orderStep === 'delivery' || orderStep === 'payment') && (
+              <div className="grid grid-cols-3 gap-2 pt-3 pb-2 text-[10px] font-black text-center">
+                <div className={`p-1.5 rounded-xl border ${orderStep === 'review' ? 'bg-[#141518] text-white border-black' : 'bg-[#FAF7F2] text-charcoal/60 border-black/5'}`}>
+                  1. Review
+                </div>
+                <div className={`p-1.5 rounded-xl border ${orderStep === 'delivery' ? 'bg-[#141518] text-white border-black' : 'bg-[#FAF7F2] text-charcoal/60 border-black/5'}`}>
+                  2. Address
+                </div>
+                <div className={`p-1.5 rounded-xl border ${orderStep === 'payment' ? 'bg-[#141518] text-white border-black' : 'bg-[#FAF7F2] text-charcoal/60 border-black/5'}`}>
+                  3. Payment
+                </div>
+              </div>
+            )}
+
+            {/* STEP 1: REVIEW CARD ITEM & SPECS */}
+            {orderStep === 'review' && (
+              <div className="py-3 space-y-3.5 text-xs max-h-[70vh] overflow-y-auto pr-1">
+                {/* Mini Card Preview */}
+                <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col sm:flex-row items-center gap-4">
+                  <div
+                    className="w-44 h-28 rounded-2xl p-3 flex flex-col justify-between shrink-0 shadow-md border border-black/20"
+                    style={{
+                      backgroundColor: material === 'custom_color' ? customCardColor : (material === 'matte_black' ? '#141518' : material === 'brushed_gold' ? '#D4AF37' : material === 'rose_gold' ? '#D99B9B' : '#EAECEF'),
+                      color: (material === 'matte_black' || (material === 'custom_color' && isColorDark(customCardColor))) ? '#FFFFFF' : '#141518',
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] font-black uppercase tracking-wider">
+                        {frontSide.topLabel || 'TAPPING'}
+                      </span>
+                      <div className="w-5 h-3 rounded-xs bg-amber-400 border border-amber-600 flex flex-col justify-around p-0.5 shadow-2xs">
+                        <div className="w-full h-px bg-amber-700" />
+                        <div className="w-full h-px bg-amber-700" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-black uppercase truncate">
+                        {frontSide.primaryText || username.toUpperCase()}
+                      </p>
+                      <p className="text-[7px] font-mono opacity-80 uppercase truncate">
+                        {frontSide.secondaryText || 'FOUNDER & CREATOR'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 text-left flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-white border border-black/10 text-charcoal">
+                        {material === 'custom_color' ? `Custom Shade (${customCardColor})` : currentMat.name}
+                      </span>
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        NTAG216 Chip
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-charcoal/80 font-bold mt-1">
+                      Engraved Name: <span className="text-charcoal font-black">{frontSide.primaryText || username.toUpperCase()}</span>
+                    </p>
+                    <p className="text-[10px] text-charcoal/60">
+                      Destination: <span className="font-mono">{displayHost}/{username}</span>
+                    </p>
+                    <p className="text-[10px] text-charcoal/60">
+                      Back Side: <span className="font-medium">{isBackPlain ? 'Plain Mirror Stainless Steel' : 'Laser Engraved QR & Info'}</span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Pricing & Free Delivery Summary */}
+                <div className="p-3.5 rounded-2xl bg-white border border-black/10 space-y-2 text-xs">
+                  <div className="flex justify-between items-center text-charcoal/70">
+                    <span>1x Precision Laser Metal NFC Card</span>
+                    <span className="font-mono font-bold text-charcoal">₹1,499</span>
+                  </div>
+                  <div className="flex justify-between items-center text-charcoal/70">
+                    <span>Pan-India Express Tracked Delivery</span>
+                    <span className="font-bold text-emerald-600">FREE</span>
+                  </div>
+                  <div className="flex justify-between items-center text-charcoal/70">
+                    <span>NTAG216 Microchip Encoding</span>
+                    <span className="font-bold text-emerald-600">FREE</span>
+                  </div>
+                  <div className="pt-2 border-t border-black/5 flex justify-between items-center text-sm font-black text-charcoal">
+                    <span>Total Amount Payable</span>
+                    <span className="text-base text-charcoal font-mono">₹1,499</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setOrderModalOpen(false)}
+                    className="flex-1 py-3 rounded-full bg-[#FAF7F2] hover:bg-gray-100 text-xs font-bold text-charcoal border border-black/10 transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOrderStep('delivery')}
+                    className="flex-2 py-3 px-6 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                  >
+                    <span>Continue to Delivery Details</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2: DELIVERY ADDRESS & CONTACT */}
+            {orderStep === 'delivery' && (
+              <div className="py-3 space-y-3.5 text-xs max-h-[70vh] overflow-y-auto pr-1">
+                <div className="space-y-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] font-bold text-charcoal/70 block mb-1">Recipient Name *</label>
+                      <input
+                        type="text"
+                        value={shippingName}
+                        onChange={(e) => setShippingName(e.target.value)}
+                        placeholder="Full Name"
+                        className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-charcoal/70 block mb-1">Mobile Phone (For Courier SMS) *</label>
+                      <input
+                        type="text"
+                        value={shippingPhone}
+                        onChange={(e) => setShippingPhone(e.target.value)}
+                        placeholder="+91 98765 43210"
+                        className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-charcoal/70 block mb-1">Email Address (For Tracking & Invoice) *</label>
+                    <input
+                      type="email"
+                      value={shippingEmail}
+                      onChange={(e) => setShippingEmail(e.target.value)}
+                      placeholder="you@email.com"
+                      className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-charcoal/70 block mb-1">Delivery Street Address / Flat / Building *</label>
+                    <input
+                      type="text"
+                      value={shippingStreet}
+                      onChange={(e) => setShippingStreet(e.target.value)}
+                      placeholder="e.g. Flat 402, Skyline Residency, 100ft Road"
+                      className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="text-[10px] font-bold text-charcoal/70 block mb-1">City *</label>
+                      <input
+                        type="text"
+                        value={shippingCity}
+                        onChange={(e) => setShippingCity(e.target.value)}
+                        placeholder="Bengaluru"
+                        className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-charcoal/70 block mb-1">State *</label>
+                      <input
+                        type="text"
+                        value={shippingState}
+                        onChange={(e) => setShippingState(e.target.value)}
+                        placeholder="Karnataka"
+                        className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-charcoal/70 block mb-1">PIN Code *</label>
+                      <input
+                        type="text"
+                        value={shippingZip}
+                        onChange={(e) => setShippingZip(e.target.value)}
+                        placeholder="560038"
+                        className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-charcoal/70 block mb-1">Special Engraving / Workshop Notes (Optional)</label>
+                    <input
+                      type="text"
+                      value={engravingNotes}
+                      onChange={(e) => setEngravingNotes(e.target.value)}
+                      placeholder="e.g. Ensure deep laser engraving contrast"
+                      className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-medium text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setOrderStep('review')}
+                    className="flex-1 py-3 rounded-full bg-[#FAF7F2] hover:bg-gray-100 text-xs font-bold text-charcoal border border-black/10 transition-colors cursor-pointer"
+                  >
+                    Back to Review
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!shippingName.trim() || !shippingPhone.trim() || !shippingStreet.trim() || !shippingCity.trim() || !shippingZip.trim()) {
+                        showToast('Required Fields Missing', 'Please fill in name, phone, street address, city, and PIN code', 'error');
+                        return;
+                      }
+                      setOrderStep('payment');
+                    }}
+                    className="flex-2 py-3 px-6 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                  >
+                    <span>Continue to Payment Mode</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: PAYMENT MODE (CASH OR UPI) */}
+            {orderStep === 'payment' && (
+              <div className="py-3 space-y-3.5 text-xs max-h-[70vh] overflow-y-auto pr-1">
+                <p className="text-xs font-bold text-charcoal">
+                  Select your preferred payment method:
+                </p>
+
+                <div className="space-y-2.5">
+                  {/* Option 1: UPI Payment */}
+                  <div
+                    onClick={() => setPaymentMode('UPI')}
+                    className={`p-4 rounded-3xl border-2 transition-all cursor-pointer ${
+                      paymentMode === 'UPI'
+                        ? 'border-charcoal bg-[#EFF4FF]/60 ring-2 ring-[#4F83FF]/30 shadow-xs'
+                        : 'border-black/10 bg-white hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-white border border-black/10 flex items-center justify-center font-black text-xs text-[#4F83FF] shadow-2xs">
+                          UPI
+                        </div>
+                        <div>
+                          <p className="font-black text-charcoal text-xs">UPI (Google Pay / PhonePe / Paytm / BHIM)</p>
+                          <p className="text-[10px] text-charcoal/60 mt-0.5">Instant online payment with zero convenience fee</p>
+                        </div>
+                      </div>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMode === 'UPI' ? 'border-[#4F83FF] bg-[#4F83FF]' : 'border-black/20'}`}>
+                        {paymentMode === 'UPI' && <Check className="w-3 h-3 text-white stroke-[3]" />}
+                      </div>
+                    </div>
+
+                    {paymentMode === 'UPI' && (
+                      <div className="mt-3 pt-3 border-t border-black/5 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-black/5">
+                        <div className="text-left">
+                          <span className="text-[10px] font-bold text-charcoal/50 uppercase">Official UPI ID</span>
+                          <p className="font-mono font-black text-charcoal text-xs mt-0.5">tapping.pay@icici</p>
+                          <span className="text-[9px] text-emerald-700 font-bold block mt-1">Verified Merchant &bull; Instant Queue Priority</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText('tapping.pay@icici');
+                            showToast('UPI ID Copied', 'tapping.pay@icici copied to clipboard', 'info');
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-[#FAF7F2] hover:bg-gray-100 text-charcoal text-[10px] font-black border border-black/10 cursor-pointer"
+                        >
+                          Copy UPI ID
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Option 2: Cash on Delivery (COD) */}
+                  <div
+                    onClick={() => setPaymentMode('COD')}
+                    className={`p-4 rounded-3xl border-2 transition-all cursor-pointer ${
+                      paymentMode === 'COD'
+                        ? 'border-charcoal bg-[#FAF7F2] ring-2 ring-charcoal/30 shadow-xs'
+                        : 'border-black/10 bg-white hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-white border border-black/10 flex items-center justify-center font-black text-xs text-emerald-700 shadow-2xs">
+                          COD
+                        </div>
+                        <div>
+                          <p className="font-black text-charcoal text-xs">Cash on Delivery (COD)</p>
+                          <p className="text-[10px] text-charcoal/60 mt-0.5">Pay ₹1,499 upon doorstep delivery via Cash or Delivery Agent QR</p>
+                        </div>
+                      </div>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMode === 'COD' ? 'border-charcoal bg-charcoal' : 'border-black/20'}`}>
+                        {paymentMode === 'COD' && <Check className="w-3 h-3 text-white stroke-[3]" />}
+                      </div>
+                    </div>
+
+                    {paymentMode === 'COD' && (
+                      <div className="mt-3 pt-3 border-t border-black/5 bg-white p-3 rounded-2xl border border-black/5">
+                        <p className="text-[10px] text-charcoal/70 leading-relaxed font-medium">
+                          Pan-India delivery via Delhivery Express. Please keep ₹1,499 ready in cash or UPI app when your courier arrives.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Total Summary */}
+                <div className="p-3.5 rounded-2xl bg-[#FAF7F2] border border-black/10 flex items-center justify-between text-xs">
+                  <div>
+                    <p className="font-bold text-charcoal">Total Amount</p>
+                    <p className="text-[10px] text-charcoal/60">Inclusive of all taxes & express shipping</p>
+                  </div>
+                  <span className="text-lg font-black font-mono text-charcoal">₹1,499</span>
+                </div>
+
+                <div className="flex gap-2.5 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setOrderStep('delivery')}
+                    className="flex-1 py-3 rounded-full bg-[#FAF7F2] hover:bg-gray-100 text-xs font-bold text-charcoal border border-black/10 transition-colors cursor-pointer"
+                  >
+                    Back to Address
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOrderStep('confirm_popup')}
+                    className="flex-2 py-3 px-6 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                  >
+                    <span>Proceed to Confirm Order</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: CONFIRMATION POPUP ("ARE YOU SURE?") */}
+            {orderStep === 'confirm_popup' && (
+              <div className="py-4 space-y-4 text-xs animate-in fade-in zoom-in-95 duration-150">
+                <div className="p-4 rounded-3xl bg-[#EFF4FF] border border-[#4F83FF]/30 space-y-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-2xl bg-[#4F83FF] text-white flex items-center justify-center shrink-0">
+                      <Check className="w-5 h-5 stroke-[2.5]" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black text-charcoal">Are you sure you want to place this order?</h4>
+                      <p className="text-[11px] text-charcoal/70">Please review your final order parameters before fabrication</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl p-3 border border-black/10 space-y-1.5 text-[11px]">
+                    <div className="flex justify-between">
+                      <span className="text-charcoal/60">Item:</span>
+                      <strong className="text-charcoal">1x Laser Metal NFC Card ({material === 'custom_color' ? `Custom Shade ${customCardColor}` : currentMat.name})</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-charcoal/60">Laser Engraving:</span>
+                      <strong className="text-charcoal">{frontSide.primaryText || username.toUpperCase()}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-charcoal/60">Deliver to:</span>
+                      <span className="text-charcoal font-medium text-right max-w-[240px] truncate">{shippingName}, {shippingCity} ({shippingZip})</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-charcoal/60">Payment Mode:</span>
+                      <strong className="text-emerald-700">{paymentMode === 'COD' ? 'Cash on Delivery (COD)' : 'UPI Payment'}</strong>
+                    </div>
+                    <div className="flex justify-between pt-1 border-t border-black/5 font-black text-xs text-charcoal">
+                      <span>Total Price:</span>
+                      <span className="font-mono text-sm">₹1,499</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setOrderStep('payment')}
+                    className="flex-1 py-3 rounded-full bg-[#FAF7F2] hover:bg-gray-100 text-xs font-bold text-charcoal border border-black/10 transition-colors cursor-pointer"
+                  >
+                    Review Again
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleFinalizeOrder}
+                    className="flex-2 py-3 px-6 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                  >
+                    <Check className="w-4 h-4 stroke-[2.5]" />
+                    <span>Yes, Confirm &amp; Place Order (₹1,499)</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 5: SUCCESS CONFIRMATION MODAL */}
+            {orderStep === 'success' && (
+              <div className="py-4 space-y-4 text-xs text-center animate-in fade-in zoom-in-95 duration-200">
+                <div className="w-14 h-14 rounded-3xl bg-[#B6F554] border border-black/10 text-charcoal flex items-center justify-center mx-auto shadow-sm">
+                  <Check className="w-8 h-8 stroke-[3]" />
+                </div>
+
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-[#141518] border border-black/20" />
-                    <p className="font-black text-charcoal text-sm">{currentMat.name}</p>
-                  </div>
-                  <p className="text-[11px] text-charcoal/70 font-medium mt-1">
-                    Engraved Name: <strong className="text-charcoal font-black">{frontSide.primaryText || username.toUpperCase()}</strong>
-                  </p>
-                  <p className="text-[10px] text-emerald-700 font-bold mt-0.5">
-                    13.56MHz NTAG216 Contactless Chip &bull; Vector Dynamic QR
+                  <h3 className="text-xl font-black text-charcoal">
+                    Order Placed Successfully!
+                  </h3>
+                  <p className="text-xs text-charcoal/70 mt-1 max-w-sm mx-auto font-medium">
+                    Your custom laser blueprint has been dispatched to our laser workshop for high-precision fabrication and NTAG216 encoding.
                   </p>
                 </div>
-                <div className="text-right">
-                  <span className="font-black text-lg text-charcoal">₹1,499</span>
-                  <span className="block text-[9px] text-emerald-600 font-bold">Free Tracked Courier</span>
-                </div>
-              </div>
 
-              {/* Recipient Contact Details */}
-              <div className="space-y-2">
-                <h4 className="text-[11px] font-black uppercase tracking-wider text-charcoal/70">
-                  Recipient & Contact Details
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[10px] font-bold text-charcoal/60 block mb-1">Full Name</label>
-                    <input
-                      type="text"
-                      value={shippingName}
-                      onChange={(e) => setShippingName(e.target.value)}
-                      placeholder="Your Full Name"
-                      className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
-                    />
+                {/* Order Specs Box */}
+                <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 text-left space-y-2">
+                  <div className="flex justify-between items-center pb-2 border-b border-black/5">
+                    <span className="text-charcoal/60 font-bold">Order ID:</span>
+                    <span className="font-mono font-black text-charcoal text-sm">{placedOrder?.orderNumber || 'TAP-10894'}</span>
                   </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-charcoal/60 block mb-1">Phone Number (For Courier SMS)</label>
-                    <input
-                      type="text"
-                      value={shippingPhone}
-                      onChange={(e) => setShippingPhone(e.target.value)}
-                      placeholder="+91 98765 43210"
-                      className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
-                    />
+                  <div className="flex justify-between items-center">
+                    <span className="text-charcoal/60 font-bold">Courier Tracking ID:</span>
+                    <span className="font-mono font-black text-[#4F83FF]">{placedOrder?.trackingNumber || 'DEL-8920148'}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-charcoal/60 font-bold">Shipping Carrier:</span>
+                    <span className="font-bold text-charcoal">Delhivery Surface Express</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-charcoal/60 font-bold">Payment Method:</span>
+                    <span className="font-black text-emerald-700">
+                      {paymentMode === 'COD' ? 'Cash on Delivery (Pay ₹1,499 on arrival)' : 'UPI Verified (₹1,499 Paid)'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-black/5">
+                    <span className="text-charcoal/60 font-bold">Estimated Delivery:</span>
+                    <span className="font-bold text-charcoal">3 to 4 Business Days</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Pan-India Shipping Address */}
-              <div className="space-y-2">
-                <h4 className="text-[11px] font-black uppercase tracking-wider text-charcoal/70">
-                  Delivery Address (Pan-India Express)
-                </h4>
-                <div>
-                  <label className="text-[10px] font-bold text-charcoal/60 block mb-1">Street Address / Flat / Floor</label>
-                  <input
-                    type="text"
-                    value={shippingStreet}
-                    onChange={(e) => setShippingStreet(e.target.value)}
-                    placeholder="e.g. Flat 402, Skyline Residency, 100ft Road"
-                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="text-[10px] font-bold text-charcoal/60 block mb-1">City</label>
-                    <input
-                      type="text"
-                      value={shippingCity}
-                      onChange={(e) => setShippingCity(e.target.value)}
-                      placeholder="Bengaluru"
-                      className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-charcoal/60 block mb-1">State</label>
-                    <input
-                      type="text"
-                      value={shippingState}
-                      onChange={(e) => setShippingState(e.target.value)}
-                      placeholder="Karnataka"
-                      className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-charcoal/60 block mb-1">PIN Code</label>
-                    <input
-                      type="text"
-                      value={shippingZip}
-                      onChange={(e) => setShippingZip(e.target.value)}
-                      placeholder="560038"
-                      className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
-                    />
-                  </div>
+                <div className="flex gap-2.5 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOrderModalOpen(false);
+                      const accountBtn = document.querySelector('[title="Account & Orders"]') as HTMLButtonElement;
+                      if (accountBtn) accountBtn.click();
+                      else window.location.href = '/dashboard?tab=account';
+                    }}
+                    className="flex-1 py-3 px-4 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black transition-transform active:scale-95 cursor-pointer shadow-xs"
+                  >
+                    View in Account &amp; Orders
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOrderModalOpen(false)}
+                    className="py-3 px-5 rounded-full bg-[#FAF7F2] hover:bg-gray-100 text-charcoal text-xs font-bold border border-black/10 transition-colors cursor-pointer"
+                  >
+                    Done
+                  </button>
                 </div>
               </div>
+            )}
 
-              {/* Special Laser Engraving Instructions */}
-              <div>
-                <label className="text-[10px] font-bold text-charcoal/60 block mb-1">Special Engraving Notes (Optional)</label>
-                <input
-                  type="text"
-                  value={engravingNotes}
-                  onChange={(e) => setEngravingNotes(e.target.value)}
-                  placeholder="e.g. Ensure laser etch is high contrast"
-                  className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-medium text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
-                />
-              </div>
-
-              {/* Security & Warranty Badge */}
-              <div className="p-3 rounded-2xl bg-[#EFF4FF] border border-[#4F83FF]/20 flex items-center gap-2 text-[11px] text-charcoal font-medium">
-                <ShieldCheck className="w-4 h-4 text-[#4F83FF] shrink-0" />
-                <span>Protected by Razorpay &bull; Lifetime NTAG216 Microchip Hardware Warranty</span>
-              </div>
-            </div>
-
-            <div className="flex gap-2.5 pt-3 border-t border-black/5">
-              <button
-                type="button"
-                onClick={() => setOrderModalOpen(false)}
-                className="flex-1 py-3 rounded-full bg-[#FAF7F2] hover:bg-gray-100 text-xs font-bold text-charcoal border border-black/10 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handlePlaceOrder}
-                className="flex-2 py-3 px-6 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
-              >
-                <span>Confirm & Place Order (₹1,499)</span>
-                <Check className="w-3.5 h-3.5 text-[#B6F554]" />
-              </button>
-            </div>
           </div>
         </div>
       )}

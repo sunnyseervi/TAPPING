@@ -5,7 +5,7 @@ export const initialProfile: Profile = {
   username: 'aarav',
   displayName: 'Aarav Sharma',
   bio: 'Founder & Product Architect. Designing smart contactless NFC hardware, digital cards & bio spaces in India.',
-  avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
+  avatarUrl: 'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=400&auto=format&fit=crop&q=80',
   badgeTitle: 'Founder & Architect',
   theme: 'pastel-bento',
   fontFamily: 'sans',

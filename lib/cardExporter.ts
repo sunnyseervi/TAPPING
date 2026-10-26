@@ -22,7 +22,12 @@ export async function exportCardAsPng(
 
   // 1. Draw Card Material Background
   const gradient = ctx.createLinearGradient(0, 0, width, height);
-  if (material === 'matte_black') {
+  if (material === 'custom_color') {
+    const baseColor = card.customColor || '#1E293B';
+    gradient.addColorStop(0, baseColor);
+    gradient.addColorStop(0.5, baseColor);
+    gradient.addColorStop(1, baseColor);
+  } else if (material === 'matte_black') {
     gradient.addColorStop(0, '#1E2024');
     gradient.addColorStop(0.5, '#141518');
     gradient.addColorStop(1, '#0C0D0F');
@@ -50,11 +55,18 @@ export async function exportCardAsPng(
 
   // Subtle metallic chamfer border
   ctx.lineWidth = 4;
-  ctx.strokeStyle = material === 'matte_black' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)';
+  ctx.strokeStyle = (material === 'matte_black' || material === 'custom_color') ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)';
   ctx.stroke();
 
-  const textColor = material === 'matte_black' ? '#FFFFFF' : '#141518';
-  const subColor = material === 'matte_black' ? 'rgba(255,255,255,0.7)' : 'rgba(20,21,24,0.7)';
+  // Contrast check for custom color
+  const hex = (card.customColor || '#1E293B').replace('#', '');
+  const rVal = parseInt(hex.substring(0, 2), 16) || 0;
+  const gVal = parseInt(hex.substring(2, 4), 16) || 0;
+  const bVal = parseInt(hex.substring(4, 6), 16) || 0;
+  const isLight = (rVal * 299 + gVal * 587 + bVal * 114) / 1000 > 160;
+
+  const textColor = (material === 'matte_black' || (material === 'custom_color' && !isLight)) ? '#FFFFFF' : '#141518';
+  const subColor = (material === 'matte_black' || (material === 'custom_color' && !isLight)) ? 'rgba(255,255,255,0.7)' : 'rgba(20,21,24,0.7)';
 
   // 2. Draw Top Header / Brand
   const brandX = 64 + (cfg?.brandOffsetX || 0) * 2;
@@ -173,7 +185,13 @@ export async function exportCardAsPdf(
   const isBack = side === 'back';
 
   // Fill background
-  if (material === 'matte_black') {
+  if (material === 'custom_color') {
+    const hex = (card.customColor || '#1E293B').replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16) || 30;
+    const g = parseInt(hex.substring(2, 4), 16) || 41;
+    const b = parseInt(hex.substring(4, 6), 16) || 59;
+    doc.setFillColor(r, g, b);
+  } else if (material === 'matte_black') {
     doc.setFillColor(20, 21, 24);
   } else if (material === 'brushed_gold') {
     doc.setFillColor(200, 164, 77);
@@ -184,8 +202,14 @@ export async function exportCardAsPdf(
   }
   doc.roundedRect(2, 2, 81.6, 49.98, 3, 3, 'F');
 
-  const textColor = material === 'matte_black' ? [255, 255, 255] : [20, 21, 24];
-  const subColor = material === 'matte_black' ? [180, 185, 195] : [60, 65, 75];
+  const hexPdf = (card.customColor || '#1E293B').replace('#', '');
+  const rP = parseInt(hexPdf.substring(0, 2), 16) || 0;
+  const gP = parseInt(hexPdf.substring(2, 4), 16) || 0;
+  const bP = parseInt(hexPdf.substring(4, 6), 16) || 0;
+  const isLightPdf = (rP * 299 + gP * 587 + bP * 114) / 1000 > 160;
+
+  const textColor = (material === 'matte_black' || (material === 'custom_color' && !isLightPdf)) ? [255, 255, 255] : [20, 21, 24];
+  const subColor = (material === 'matte_black' || (material === 'custom_color' && !isLightPdf)) ? [180, 185, 195] : [60, 65, 75];
 
   // Brand Header
   doc.setTextColor(textColor[0], textColor[1], textColor[2]);
@@ -279,7 +303,9 @@ export function exportCardAsHtml(
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.15);
       ${
-        material === 'matte_black'
+        material === 'custom_color'
+          ? `background: ${card.customColor || '#1e293b'}; color: #ffffff;`
+          : material === 'matte_black'
           ? 'background: linear-gradient(135deg, #1e2024 0%, #141518 50%, #0c0d0f 100%); color: #ffffff;'
           : material === 'brushed_gold'
           ? 'background: linear-gradient(135deg, #d4af37 0%, #c8a44d 50%, #997d2e 100%); color: #141518;'

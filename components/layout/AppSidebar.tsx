@@ -9,9 +9,6 @@ import {
   CreditCard, 
   ExternalLink,
   X,
-  Globe,
-  ArrowUpRight,
-  ShieldCheck,
   ShoppingBag
 } from 'lucide-react';
 import { Profile } from '@/lib/types';
@@ -25,6 +22,7 @@ interface AppSidebarProps {
   profile: Profile;
   linkCount?: number;
   onOpenAuth?: () => void;
+  isDesktopCollapsed?: boolean;
 }
 
 export default function AppSidebar({
@@ -35,6 +33,7 @@ export default function AppSidebar({
   profile,
   linkCount = 0,
   onOpenAuth,
+  isDesktopCollapsed = false,
 }: AppSidebarProps) {
   const navItems = [
     { id: 'dashboard', label: 'Creator Space', icon: LayoutGrid, count: null, color: null },
@@ -53,11 +52,11 @@ export default function AppSidebar({
         />
       )}
 
-      {/* Sidebar: Permanently docked on desktop (lg:translate-x-0 lg:w-72), slide-out drawer on mobile */}
+      {/* Sidebar: Docked on desktop (collapsible via 3-dots button), slide-out drawer on mobile */}
       <aside
         className={`fixed top-0 left-0 z-50 lg:z-30 h-screen bg-[#F7F5EE] border-r border-black/10 flex flex-col justify-between w-72 sm:w-80 lg:w-72 shadow-2xl lg:shadow-none transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
+          isDesktopCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'
+        } ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         {/* Top Header in Sidebar */}
         <div>
@@ -115,21 +114,6 @@ export default function AppSidebar({
                 </button>
               );
             })}
-
-            {/* Public Landing & Hero Page Link */}
-            <div className="pt-2">
-              <Link
-                href="/"
-                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-black bg-white/70 hover:bg-white text-charcoal/80 hover:text-black border border-black/5 shadow-2xs hover:shadow-xs transition-all"
-                title="View Public Landing & Hero Page"
-              >
-                <div className="flex items-center gap-3">
-                  <Globe className="w-4 h-4 text-[#4F83FF] stroke-[2.2]" />
-                  <span>Public Landing Page</span>
-                </div>
-                <ArrowUpRight className="w-3.5 h-3.5 text-charcoal/50" />
-              </Link>
-            </div>
           </nav>
         </div>
 
@@ -137,11 +121,15 @@ export default function AppSidebar({
         <div className="p-4 border-t border-black/5 bg-white/50 backdrop-blur-sm">
           <div className="p-4 rounded-3xl bg-white border border-black/10 shadow-soft flex flex-col gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl overflow-hidden bg-[#FAF7F2] shrink-0 border border-black/10 shadow-xs">
+              <div className="w-11 h-11 rounded-2xl overflow-hidden bg-[#FAF7F2] shrink-0 border border-black/10 shadow-xs relative">
                 <img
                   src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
                   alt={profile.displayName}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full ${profile.avatarFit === 'cover' ? 'object-cover' : 'object-contain'}`}
+                  style={{
+                    transform: `scale(${(profile.avatarZoom ?? 100) / 100}) translate(${profile.avatarPosX ?? 0}px, ${profile.avatarPosY ?? 0}px)`,
+                    transformOrigin: 'center center',
+                  }}
                 />
               </div>
               <div className="min-w-0 text-left flex-1">

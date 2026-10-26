@@ -54,7 +54,7 @@ export type LinkCardStyleType =
   | 'claymorphism-soft'
   | 'minimal-pill';
 
-export type CardMaterial = 'matte_black' | 'brushed_gold' | 'rose_gold' | 'titanium_silver';
+export type CardMaterial = 'matte_black' | 'brushed_gold' | 'rose_gold' | 'titanium_silver' | 'custom_color';
 
 export interface SocialLinks {
   instagram?: string;
@@ -231,6 +231,7 @@ export interface CardSideConfig {
 export interface NFCCardDesign {
   id: string;
   material: CardMaterial;
+  customColor?: string; // Custom hex color when material === 'custom_color'
   sideMode?: CardSideMode; // 'double_sided' or 'single_sided'
   frontSide?: CardSideConfig;
   backSide?: CardSideConfig;
@@ -329,6 +330,7 @@ export interface MetalCardOrder {
   userEmail: string;
   userPhone: string;
   material: CardMaterial;
+  customColor?: string;
   engravedName: string;
   engravedTagline: string;
   qrUrl: string;
@@ -338,6 +340,7 @@ export interface MetalCardOrder {
   amount: number;
   currency: 'INR';
   paymentStatus: 'paid' | 'pending' | 'refunded';
+  paymentMethod?: 'UPI' | 'COD';
   createdAt: string;
   shippingAddress: {
     name: string;
@@ -357,7 +360,7 @@ export interface PaymentRecord {
   currency: 'INR';
   type: 'subscription_monthly' | 'subscription_yearly' | 'metal_card';
   status: 'succeeded' | 'pending' | 'failed' | 'refunded';
-  method: 'UPI' | 'Card' | 'NetBanking';
+  method: 'UPI' | 'Card' | 'NetBanking' | 'COD';
   transactionRef: string;
   createdAt: string;
   planName: string;

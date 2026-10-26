@@ -12,7 +12,6 @@ import {
   getStoredOrders, 
   getStoredProfile, 
   saveStoredProfile,
-  resetAllToDefault,
   deleteCurrentCustomerAccount
 } from '@/lib/storage';
 import { 
@@ -20,27 +19,29 @@ import {
   Truck, 
   Check, 
   Clock, 
-  ShieldCheck, 
   ExternalLink, 
   LogOut, 
-  Laptop, 
-  Smartphone, 
   MapPin, 
   Calendar, 
-  AlertCircle,
-  ShoppingBag,
-  Sparkles,
-  ChevronRight,
-  Package,
-  Trash2,
-  AlertTriangle,
-  Lock,
-  Phone,
-  RefreshCw,
-  X
+  ShoppingBag, 
+  Sparkles, 
+  ChevronRight, 
+  Package, 
+  Trash2, 
+  AlertTriangle, 
+  Lock, 
+  Phone, 
+  RefreshCw, 
+  X,
+  Share2,
+  Download,
+  QrCode,
+  Layers,
+  RotateCcw
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
-import TappingLogo from '@/components/brand/TappingLogo';
+import QRCodeGenerator from 'qrcode';
+import { exportCardAsPng, exportCardAsPdf } from '@/lib/cardExporter';
 
 interface AccountOrdersSectionProps {
   profile: Profile;
@@ -63,6 +64,11 @@ export default function AccountOrdersSection({
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Live Card & QR State
+  const [isCardFlipped, setIsCardFlipped] = useState(false);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setDisplayHost(window.location.host);
@@ -76,13 +82,98 @@ export default function AccountOrdersSection({
     }
   }, []);
 
+  // Generate dynamic QR code for profile
+  useEffect(() => {
+    if (typeof window !== 'undefined' && profile.username) {
+      const origin = window.location.origin;
+      const targetUrl = `${origin}/${profile.username}`;
+      QRCodeGenerator.toDataURL(targetUrl, { 
+        width: 360, 
+        margin: 1, 
+        errorCorrectionLevel: 'M',
+        color: {
+          dark: '#141518',
+          light: '#FFFFFF'
+        }
+      })
+        .then(setQrCodeDataUrl)
+        .catch(console.error);
+    }
+  }, [profile.username]);
+
   const handleLogout = () => {
-    // Clear user session
     const p = getStoredProfile();
     p.username = 'creator';
     saveStoredProfile(p);
     showToast('Signed Out', 'You have been safely logged out of your session', 'info');
     router.push('/');
+  };
+
+  const handleShareProfile = async () => {
+    const url = typeof window !== 'undefined' ? `${window.location.origin}/${profile.username}` : `https://${displayHost}/${profile.username}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${profile.displayName} - Tapping Profile`,
+          text: `Connect with ${profile.displayName} on Tapping`,
+          url,
+        });
+        return;
+      } catch {
+        // Fall back to clipboard
+      }
+    }
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+      showToast('Profile Link Copied', `Copied ${url} to clipboard`, 'success');
+    }
+  };
+
+  const handleDownloadQr = () => {
+    if (!qrCodeDataUrl) return;
+    const a = document.createElement('a');
+    a.href = qrCodeDataUrl;
+    a.download = `tapping-qr-${profile.username}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('QR Code Downloaded', 'Permanent vector QR saved to downloads', 'success');
+  };
+
+  const handleDownloadCardPng = async () => {
+    setIsDownloading(true);
+    try {
+      await exportCardAsPng(
+        nfcCard,
+        nfcCard.material || 'matte_black',
+        isCardFlipped ? 'back' : 'front',
+        profile.username,
+        displayHost
+      );
+      showToast('Card PNG Saved', 'Downloaded 300 DPI high-resolution card image', 'success');
+    } catch {
+      showToast('Export Error', 'Could not export card image', 'error');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleDownloadCardPdf = async () => {
+    setIsDownloading(true);
+    try {
+      await exportCardAsPdf(
+        nfcCard,
+        nfcCard.material || 'matte_black',
+        isCardFlipped ? 'back' : 'front',
+        profile.username,
+        displayHost
+      );
+      showToast('Card PDF Saved', 'Downloaded print-ready vector PDF', 'success');
+    } catch {
+      showToast('Export Error', 'Could not export card PDF', 'error');
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -110,54 +201,79 @@ export default function AccountOrdersSection({
   
   const daysRemaining = Math.max(0, Math.ceil((planExpiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
 
+  // Material and styling resolution
+  const isCustomMat = nfcCard.material === 'custom_color';
+  const matClass = nfcCard.material === 'matte_black'
+    ? 'metal-matte-black text-white'
+    : nfcCard.material === 'brushed_gold'
+    ? 'metal-brushed-gold text-slate-900'
+    : nfcCard.material === 'rose_gold'
+    ? 'metal-rose-gold text-slate-900'
+    : nfcCard.material === 'titanium_silver'
+    ? 'metal-titanium-silver text-slate-900'
+    : 'bg-[#141518] text-white';
+
   return (
     <div className="space-y-6 text-left">
       {/* Top Header Card */}
       <div className="p-6 md:p-8 rounded-4xl bg-white border border-black/5 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-3xl overflow-hidden border-2 border-black/10 shadow-sm shrink-0 bg-[#FAF7F2]">
+          <div className="w-16 h-16 rounded-3xl overflow-hidden border-2 border-black/10 shadow-sm shrink-0 bg-[#FAF7F2] relative">
             <img
-              src={profile.avatarUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400'}
+              src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
               alt={profile.displayName}
-              className="w-full h-full object-cover"
+              className={`w-full h-full ${profile.avatarFit === 'cover' ? 'object-cover' : 'object-contain'}`}
+              style={{
+                transform: `scale(${(profile.avatarZoom ?? 100) / 100}) translate(${profile.avatarPosX ?? 0}px, ${profile.avatarPosY ?? 0}px)`,
+                transformOrigin: 'center center',
+              }}
             />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-black text-charcoal">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-black text-charcoal tracking-tight font-sans">
                 {profile.displayName}
               </h1>
               <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#FDF166] text-charcoal border border-black/10">
                 PRO ACTIVE
               </span>
             </div>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className="text-xs text-charcoal/80 font-mono font-bold flex items-center gap-1 bg-[#FAF7F2] px-2 py-0.5 rounded-md border border-black/5">
-                <Lock className="w-3 h-3 text-charcoal/50" />
-                @{profile.username}
-                <span className="text-[9px] text-charcoal/40 font-sans font-semibold">(Permanent)</span>
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap text-xs text-charcoal/70">
+              <span className="font-semibold text-charcoal flex items-center gap-1 bg-[#FAF7F2] px-2.5 py-1 rounded-xl border border-black/5">
+                <Lock className="w-3 h-3 text-charcoal/40" />
+                <span>@{profile.username}</span>
+                <span className="text-[10px] text-charcoal/40 font-normal">(Permanent Link)</span>
               </span>
-              <span className="text-xs text-charcoal/70 font-mono flex items-center gap-1 bg-[#FAF7F2] px-2 py-0.5 rounded-md border border-black/5">
+              <span className="font-semibold text-charcoal flex items-center gap-1 bg-[#FAF7F2] px-2.5 py-1 rounded-xl border border-black/5">
                 <Phone className="w-3 h-3 text-emerald-600" />
-                {profile.mobileNumber || '+91 98765 43210'}
-                <span className="text-[9px] text-emerald-700 font-sans font-bold">Verified</span>
+                <span>{profile.mobileNumber || '+91 98765 43210'}</span>
+                <span className="text-[10px] text-emerald-700 font-bold">Verified</span>
               </span>
             </div>
-            <p className="text-[11px] text-charcoal/50 mt-1 font-medium">
-              Member since January 2026 &bull; Verified Creator Platform
+            <p className="text-[11px] text-charcoal/50 mt-1.5 font-medium">
+              Verified Creator &bull; Active Plan &bull; Member since 2026
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={handleShareProfile}
+            className="px-4 py-2.5 rounded-full bg-[#FAF7F2] hover:bg-gray-100 text-charcoal text-xs font-black border border-black/10 flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Share2 className="w-3.5 h-3.5 text-[#4F83FF]" />
+            <span>Share Profile</span>
+          </button>
+
           <a
             href={`/${profile.username}`}
             target="_blank"
             rel="noreferrer"
-            className="px-4 py-2.5 rounded-full bg-[#FAF7F2] hover:bg-gray-100 text-charcoal text-xs font-bold border border-black/10 flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-4 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer shadow-xs"
           >
-            <span>Live Bio Profile</span>
-            <ExternalLink className="w-3.5 h-3.5 text-[#4F83FF]" />
+            <span>View Bio Page</span>
+            <ExternalLink className="w-3.5 h-3.5 text-[#FDF166]" />
           </a>
 
           <button
@@ -171,11 +287,11 @@ export default function AccountOrdersSection({
         </div>
       </div>
 
-      {/* Grid: Plan & Subscription + Active Hardware Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Grid: Plan & Subscription + Live Metal Card & Dynamic QR Showcase */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
         
         {/* Active Plan & Expiry Card */}
-        <div className="p-6 rounded-4xl bg-white border border-black/5 shadow-soft flex flex-col justify-between">
+        <div className="p-6 md:p-7 rounded-4xl bg-white border border-black/5 shadow-soft flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-[#EFF4FF] text-[#4F83FF] border border-[#4F83FF]/20">
@@ -190,8 +306,8 @@ export default function AccountOrdersSection({
             <h3 className="text-2xl font-black text-charcoal mt-4">
               Pro Annual Membership
             </h3>
-            <p className="text-xs text-charcoal/60 mt-1 font-medium">
-              Full access to link in bio, slidable product showcase, dynamic QR, custom wallpaper uploads, and NFC contactless beaming.
+            <p className="text-xs text-charcoal/60 mt-1 font-medium leading-relaxed">
+              Full access to link-in-bio, slidable product showcase, permanent dynamic QR code, custom theme palettes, visiting card downloads, and contactless NFC beaming.
             </p>
 
             {/* Expiry Pill Countdown */}
@@ -229,49 +345,152 @@ export default function AccountOrdersSection({
           </div>
         </div>
 
-        {/* Security & Active Sessions Card */}
-        <div className="p-6 rounded-4xl bg-white border border-black/5 shadow-soft flex flex-col justify-between">
+        {/* Live Customer Metal Card & Dynamic QR Showcase (Replaces 2FA & Authorized Devices) */}
+        <div className="p-6 md:p-7 rounded-4xl bg-white border border-black/5 shadow-soft flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-[#FAF7F2] text-charcoal border border-black/10">
-                Security &amp; Device Access
+              <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-[#B6F554] text-charcoal border border-black/10">
+                Your Hardware &amp; QR
               </span>
-              <span className="text-[10px] font-bold text-charcoal/50">1 Active Session</span>
+              <button
+                type="button"
+                onClick={() => setIsCardFlipped(!isCardFlipped)}
+                className="flex items-center gap-1 text-[11px] font-black text-charcoal/70 hover:text-black bg-[#FAF7F2] hover:bg-black/5 px-2.5 py-1 rounded-full border border-black/10 transition-colors cursor-pointer"
+              >
+                <RotateCcw className="w-3 h-3 text-[#4F83FF]" />
+                <span>Flip Card ({isCardFlipped ? 'Back' : 'Front'})</span>
+              </button>
             </div>
 
-            <h3 className="text-lg font-black text-charcoal mt-4">
-              Authorized Device Sessions
+            <h3 className="text-lg font-black text-charcoal mt-3">
+              Metal NFC Card &amp; Dynamic QR
             </h3>
-            <p className="text-xs text-charcoal/60 mt-1 font-medium">
-              Manage where your account is currently signed in.
+            <p className="text-xs text-charcoal/60 mt-0.5 font-medium">
+              Your real-time card and permanent vector QR code. Click to flip, share, or download.
             </p>
 
-            <div className="mt-4 space-y-2.5">
-              <div className="p-3.5 rounded-2xl bg-[#FAF7F2] border border-black/5 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-white border border-black/10 flex items-center justify-center text-charcoal">
-                    <Laptop className="w-4 h-4 text-[#4F83FF]" />
-                  </div>
-                  <div>
-                    <p className="font-black text-charcoal flex items-center gap-1.5">
-                      <span>Windows 11 &bull; Chrome Desktop</span>
-                      <span className="text-[8px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-md">
-                        CURRENT
+            {/* Interactive Card & QR Layout */}
+            <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
+              {/* Interactive 3D Card Preview */}
+              <div
+                onClick={() => setIsCardFlipped(!isCardFlipped)}
+                className="w-full sm:w-60 h-36 rounded-2xl cursor-pointer perspective-1000 select-none relative shrink-0 transition-transform hover:scale-[1.02]"
+                title="Click to flip front/back"
+              >
+                <div className={`w-full h-full relative transition-transform duration-500 transform-style-3d ${isCardFlipped ? 'rotate-y-180' : ''}`}>
+                  {/* FRONT SIDE */}
+                  <div
+                    className={`absolute inset-0 backface-hidden rounded-2xl p-4 flex flex-col justify-between overflow-hidden shadow-md border border-black/15 ${matClass}`}
+                    style={isCustomMat ? { backgroundColor: nfcCard.customColor || '#141518', color: '#FFFFFF' } : undefined}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black tracking-widest uppercase">
+                        {nfcCard.frontSide?.topLabel || 'TAPPING'}
                       </span>
-                    </p>
-                    <p className="text-[10px] text-charcoal/60 font-medium">
-                      Bengaluru, Karnataka, India &bull; IP 49.37.112.98
-                    </p>
+                      {/* Chip icon */}
+                      <div className="w-6 h-4 rounded-sm bg-amber-400 border border-amber-600/60 flex flex-col justify-around p-0.5 shadow-2xs">
+                        <div className="w-full h-px bg-amber-700/60" />
+                        <div className="w-full h-px bg-amber-700/60" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[12px] font-black uppercase tracking-wider leading-tight">
+                        {nfcCard.frontSide?.primaryText || profile.displayName.toUpperCase()}
+                      </p>
+                      <p className="text-[8px] font-mono opacity-80 uppercase tracking-widest mt-0.5">
+                        {nfcCard.frontSide?.secondaryText || 'VERIFIED CREATOR'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* BACK SIDE */}
+                  <div
+                    className={`absolute inset-0 backface-hidden rotate-y-180 rounded-2xl p-4 flex items-center justify-between overflow-hidden shadow-md border border-black/15 ${matClass}`}
+                    style={isCustomMat ? { backgroundColor: nfcCard.customColor || '#141518', color: '#FFFFFF' } : undefined}
+                  >
+                    <div className="flex flex-col justify-between h-full">
+                      <div>
+                        <span className="text-[8px] font-black uppercase tracking-wider block opacity-75">
+                          TAP TO CONNECT
+                        </span>
+                        <p className="text-[9px] font-mono font-bold mt-0.5">
+                          {displayHost}/{profile.username}
+                        </p>
+                      </div>
+                      <p className="text-[7px] font-mono opacity-60">
+                        NFC 13.56MHz Contactless
+                      </p>
+                    </div>
+                    {qrCodeDataUrl ? (
+                      <div className="w-14 h-14 rounded-lg bg-white p-1 shrink-0 flex items-center justify-center shadow-xs">
+                        <img src={qrCodeDataUrl} alt="Dynamic QR" className="w-full h-full object-contain" />
+                      </div>
+                    ) : (
+                      <div className="w-14 h-14 rounded-lg bg-white/20 animate-pulse" />
+                    )}
                   </div>
                 </div>
-                <span className="text-[10px] font-mono text-charcoal/50">Active Now</span>
+              </div>
+
+              {/* Dynamic QR Display & Direct QR Action */}
+              <div className="flex-1 w-full bg-[#FAF7F2] p-3 rounded-2xl border border-black/5 flex items-center gap-3">
+                {qrCodeDataUrl ? (
+                  <div className="w-14 h-14 rounded-xl bg-white p-1 border border-black/10 shrink-0 shadow-2xs">
+                    <img src={qrCodeDataUrl} alt="Profile QR" className="w-full h-full object-contain" />
+                  </div>
+                ) : (
+                  <div className="w-14 h-14 rounded-xl bg-gray-200 animate-pulse shrink-0" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-black text-charcoal truncate">Dynamic Vector QR</p>
+                  <p className="text-[9px] text-charcoal/60 truncate">Permanently points to @{profile.username}</p>
+                  <button
+                    type="button"
+                    onClick={handleDownloadQr}
+                    className="mt-1 text-[10px] font-black text-[#4F83FF] hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Download className="w-2.5 h-2.5" />
+                    <span>Download QR Image</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="pt-6 mt-6 border-t border-black/5 flex items-center justify-between">
-            <span className="text-xs font-bold text-charcoal/60">Two-Factor Authentication</span>
-            <span className="text-xs font-black text-emerald-600">Enabled (SMS &amp; Email)</span>
+          {/* Action Row: Export PNG, PDF, Share */}
+          <div className="pt-5 mt-5 border-t border-black/5 flex flex-wrap items-center justify-between gap-2">
+            <span className="text-[11px] font-bold text-charcoal/60">Direct Exports:</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                disabled={isDownloading}
+                onClick={handleDownloadCardPng}
+                className="px-3 py-1.5 rounded-xl bg-[#FAF7F2] hover:bg-gray-100 text-charcoal text-[11px] font-black border border-black/10 flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                title="Download 300 DPI high-resolution PNG"
+              >
+                <Download className="w-3 h-3 text-[#4F83FF]" />
+                <span>Card PNG</span>
+              </button>
+              <button
+                type="button"
+                disabled={isDownloading}
+                onClick={handleDownloadCardPdf}
+                className="px-3 py-1.5 rounded-xl bg-[#FAF7F2] hover:bg-gray-100 text-charcoal text-[11px] font-black border border-black/10 flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                title="Download print-ready vector PDF"
+              >
+                <Download className="w-3 h-3 text-[#4F83FF]" />
+                <span>Card PDF</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleShareProfile}
+                className="px-3 py-1.5 rounded-xl bg-[#141518] hover:bg-black text-white text-[11px] font-black flex items-center gap-1 transition-transform active:scale-95 cursor-pointer shadow-xs"
+                title="Share profile link"
+              >
+                <Share2 className="w-3 h-3 text-[#B6F554]" />
+                <span>Share Link</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -333,7 +552,10 @@ export default function AccountOrdersSection({
                           {order.orderNumber}
                         </span>
                         <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-white text-charcoal border border-black/10">
-                          {order.material.replace('_', ' ').toUpperCase()}
+                          {order.material === 'custom_color' ? `CUSTOM (${order.customColor || 'SHADE'})` : order.material.replace('_', ' ').toUpperCase()}
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          {order.paymentMethod === 'COD' ? 'Cash on Delivery (COD)' : 'UPI Paid'}
                         </span>
                       </div>
                       <p className="text-xs text-charcoal/70 mt-1 font-medium">
@@ -411,26 +633,6 @@ export default function AccountOrdersSection({
         )}
       </div>
 
-      {/* Platform Administrator Access Badge & Direct Portal Link */}
-      <div className="p-5 rounded-3xl bg-white border border-black/10 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#FAF7F2] border border-black/10 flex items-center justify-center text-charcoal shrink-0 shadow-2xs">
-            <ShieldCheck className="w-5 h-5 text-[#4F83FF]" />
-          </div>
-          <div>
-            <p className="text-xs font-black text-charcoal">Tapping Central Administrator Gateway</p>
-            <p className="text-[11px] text-charcoal/60 font-medium">Owner console to manage all registered creators, order fulfillment, and payments.</p>
-          </div>
-        </div>
-        <a
-          href="/admin"
-          className="px-4 py-2.5 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 self-start sm:self-center transition-transform active:scale-95 shrink-0 shadow-xs"
-        >
-          <span>Open Admin Console</span>
-          <ExternalLink className="w-3.5 h-3.5 text-[#FDF166]" />
-        </a>
-      </div>
-
       {/* Danger Zone: Permanent Customer Profile Deletion */}
       <div className="p-6 md:p-8 rounded-4xl bg-rose-50/60 border border-rose-200/80 shadow-soft">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -479,7 +681,7 @@ export default function AccountOrdersSection({
               <button
                 type="button"
                 onClick={() => setShowDeleteModal(false)}
-                className="p-1.5 rounded-full hover:bg-black/5 text-charcoal/50 hover:text-charcoal"
+                className="p-1.5 rounded-full hover:bg-black/5 text-charcoal/50 hover:text-charcoal cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -513,7 +715,7 @@ export default function AccountOrdersSection({
               <button
                 type="button"
                 onClick={() => setShowDeleteModal(false)}
-                className="flex-1 py-3 px-4 rounded-2xl bg-[#FAF7F2] hover:bg-black/5 text-xs font-bold text-charcoal transition-colors"
+                className="flex-1 py-3 px-4 rounded-2xl bg-[#FAF7F2] hover:bg-black/5 text-xs font-bold text-charcoal transition-colors cursor-pointer"
               >
                 Cancel
               </button>
