@@ -230,11 +230,233 @@ export default function AdminOrdersTab({
     }
   };
 
-  const handleDirectPrintTicket = (order: MetalCardOrder) => {
+  const handleOpenCleanPrintSheet = (order: MetalCardOrder) => {
+    try {
+      const isCustom = order.material === 'custom_color';
+      const bgColor = isCustom ? (order.customColor || '#1A365D') : (
+        order.material === 'matte_black' ? '#17181C' :
+        order.material === 'brushed_gold' ? '#D4AF37' :
+        order.material === 'rose_gold' ? '#D896A2' : '#E2E6EB'
+      );
+      const isDark = order.material === 'matte_black' || (isCustom && isColorDark(order.customColor));
+      const textColor = order.frontSide?.textColor || (isDark ? '#FFFFFF' : '#141518');
+      const font = order.frontSide?.fontFamily?.replace(/'/g, '').split(',')[0] || 'Plus Jakarta Sans';
+      const dateStr = new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      const targetUrl = order.qrUrl || `https://tapping.bio/${order.userName.toLowerCase().replace(/\s+/g, '')}`;
+
+      const printWin = window.open('', '_blank', 'width=950,height=1000');
+      if (printWin) {
+        printWin.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Laser Job Ticket - ${order.orderNumber}</title>
+            <style>
+              @page { size: A4 portrait; margin: 10mm; }
+              * { box-sizing: border-box; margin: 0; padding: 0; }
+              body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #111; background: #fff; line-height: 1.3; }
+              .header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-start; }
+              .header h1 { font-size: 22px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; }
+              .header p { font-size: 10px; font-family: monospace; color: #666; text-transform: uppercase; margin-top: 2px; }
+              .order-num { font-size: 20px; font-weight: 900; font-family: monospace; text-align: right; }
+              .order-date { font-size: 11px; font-family: monospace; color: #666; text-align: right; }
+              
+              .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; border: 1.5px solid #000; padding: 12px; margin-bottom: 16px; font-size: 11px; font-family: monospace; }
+              .specs-box h4 { font-size: 10px; font-weight: 900; color: #666; text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px solid #ddd; padding-bottom: 3px; }
+              .specs-box p { margin: 3px 0; }
+              
+              .notes-box { border: 1.5px solid #000; padding: 10px; margin-bottom: 16px; font-size: 11px; background: #fbfbfb; }
+              .notes-box strong { font-size: 10px; text-transform: uppercase; font-family: monospace; display: block; margin-bottom: 3px; }
+              
+              .blueprint-title { font-size: 11px; font-weight: 900; font-family: monospace; text-transform: uppercase; border-bottom: 1.5px solid #000; padding-bottom: 4px; margin-bottom: 14px; }
+              .cards-container { display: flex; justify-content: space-around; gap: 20px; margin-bottom: 20px; }
+              .card-column { display: flex; flex-direction: column; align-items: center; text-align: center; }
+              .card-label { font-size: 10px; font-family: monospace; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; }
+              .card-sub { font-size: 9px; font-family: monospace; color: #666; margin-top: 6px; }
+              
+              /* 1:1 Scale CR-80 Metal Card (85.6mm x 53.98mm = 340px x 214px) */
+              .card-frame {
+                width: 340px;
+                height: 214px;
+                border-radius: 16px;
+                border: 1.5px solid #000;
+                position: relative;
+                overflow: hidden;
+                padding: 18px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                text-align: left;
+                background-color: ${bgColor};
+                color: ${textColor};
+                font-family: '${font}', -apple-system, sans-serif;
+                box-sizing: border-box;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+              }
+              
+              .card-brand { font-size: 12px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; }
+              .card-uid { font-size: 8px; font-family: monospace; opacity: 0.75; }
+              .card-chip { width: 34px; height: 24px; border-radius: 4px; background: #fbbf24; border: 1px solid #d97706; position: absolute; top: 16px; right: 16px; display: flex; flex-direction: column; justify-content: space-around; padding: 2px; }
+              .card-chip-line { width: 100%; height: 2px; background: rgba(180,83,9,0.5); }
+              .card-tagline { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.85; }
+              .card-name { font-size: 16px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin: 2px 0; }
+              .card-url { font-size: 8px; font-family: monospace; opacity: 0.8; }
+              
+              .qr-box { width: 56px; height: 56px; background: #fff; padding: 4px; border-radius: 8px; border: 1px solid #000; position: absolute; bottom: 16px; right: 16px; display: flex; align-items: center; justify-content: center; }
+              .qr-img { width: 100%; height: 100%; object-fit: contain; }
+              
+              .qa-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; border-top: 2px solid #000; padding-top: 12px; font-size: 9px; font-family: monospace; margin-top: 20px; }
+              .qa-item { border: 1px solid #ccc; padding: 8px; }
+              .qa-item strong { display: block; margin-bottom: 2px; }
+              .qa-sign-line { height: 26px; border-bottom: 1px dashed #888; margin-top: 8px; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div>
+                <h1>TAPPING CONTACTLESS HARDWARE</h1>
+                <p>CNC FIBER LASER WORKSHOP &bull; HARDWARE PRODUCTION BLUEPRINT</p>
+              </div>
+              <div>
+                <div class="order-num">${order.orderNumber}</div>
+                <div class="order-date">DATE: ${dateStr}</div>
+              </div>
+            </div>
+
+            <div class="specs-grid">
+              <div class="specs-box">
+                <h4>CUSTOMER &amp; DELIVERY DESTINATION</h4>
+                <p><strong>Recipient:</strong> ${order.shippingAddress?.name || order.userName}</p>
+                <p><strong>Mobile:</strong> ${order.userPhone}</p>
+                <p><strong>Email:</strong> ${order.userEmail}</p>
+                <p><strong>Address:</strong> ${order.shippingAddress?.street}, ${order.shippingAddress?.city}, ${order.shippingAddress?.state} ${order.shippingAddress?.zip}</p>
+                <p><strong>Courier:</strong> ${order.shippingCarrier || 'Delhivery Express'} (${order.trackingNumber || 'Pending Tracking'})</p>
+              </div>
+
+              <div class="specs-box">
+                <h4>MACHINE &amp; SUBSTRATE CALIBRATION</h4>
+                <p><strong>Substrate:</strong> ${getMaterialName(order.material, order.customColor)}</p>
+                ${order.customColor ? `<p><strong>Custom Hex:</strong> ${order.customColor}</p>` : ''}
+                <p><strong>Side Mode:</strong> ${order.sideMode === 'single_sided' ? 'Single Sided (Plain Reverse)' : 'Double Sided Laser Etched'}</p>
+                <p><strong>Laser Infill:</strong> ${order.frontSide?.textColor || '#FFFFFF'}</p>
+                <p><strong>Typography Font:</strong> ${font}</p>
+                <p><strong>NFC Hardware Chip:</strong> NXP NTAG216 (888 Bytes) 13.56 MHz</p>
+                <p><strong>Dynamic QR:</strong> ${targetUrl}</p>
+              </div>
+            </div>
+
+            ${order.notes ? `
+              <div class="notes-box">
+                <strong>Customer Notes &amp; Special Engraving Instructions:</strong>
+                <p>${order.notes}</p>
+              </div>
+            ` : ''}
+
+            <div class="blueprint-title">
+              1:1 SCALE LASER ETCHING WORKSHOP BLUEPRINT (ISO 7810 CR-80 &bull; 85.60 mm × 53.98 mm)
+            </div>
+
+            <div class="cards-container">
+              <!-- FRONT FACE -->
+              <div class="card-column">
+                <span class="card-label">FRONT FACE (SIDE A)</span>
+                <div class="card-frame" style="${order.frontSide?.artworkUrl ? `background-image: url('${order.frontSide.artworkUrl}'); background-size: ${order.frontSide.artworkZoom ?? 100}%; background-position: center;` : ''}">
+                  <div>
+                    <div class="card-brand">${order.frontSide?.topLabel || 'TAPPING'}</div>
+                    <div class="card-uid">${order.frontSide?.bottomLabel || `NFC 13.56MHz • ${order.orderNumber}`}</div>
+                  </div>
+                  <div class="card-chip">
+                    <div class="card-chip-line"></div>
+                    <div class="card-chip-line"></div>
+                  </div>
+                  <div>
+                    <div class="card-tagline">${order.frontSide?.secondaryText || order.engravedTagline || 'DIGITAL CREATOR & FOUNDER'}</div>
+                    <div class="card-name">${order.frontSide?.primaryText || order.engravedName || order.userName.toUpperCase()}</div>
+                    <div class="card-url">${targetUrl.replace('https://', '').replace('http://', '')}</div>
+                  </div>
+                  ${(order.sideMode === 'single_sided' || order.frontSide?.showQrCode) && inspectingQrDataUrl ? `
+                    <div class="qr-box">
+                      <img src="${inspectingQrDataUrl}" class="qr-img" />
+                    </div>
+                  ` : ''}
+                </div>
+                <span class="card-sub">Dimensions: 85.60 mm × 53.98 mm &bull; Core: 0.8mm</span>
+              </div>
+
+              <!-- REVERSE FACE -->
+              <div class="card-column">
+                <span class="card-label">REVERSE FACE (SIDE B)</span>
+                <div class="card-frame" style="${order.backSide?.artworkUrl ? `background-image: url('${order.backSide.artworkUrl}'); background-size: ${order.backSide.artworkZoom ?? 100}%; background-position: center;` : ''}">
+                  ${order.backSide?.isPlain ? `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; text-align: center;">
+                      <span style="font-size: 10px; font-family: monospace; text-transform: uppercase; opacity: 0.8; border: 1px solid rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 20px;">
+                        Plain Metal Finish (No Markings)
+                      </span>
+                    </div>
+                  ` : `
+                    <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; max-width: 200px;">
+                      <div>
+                        <div style="font-size: 12px; font-weight: bold; text-transform: uppercase;">
+                          ${order.backSide?.primaryText || 'TAP ANY PHONE TO CONNECT'}
+                        </div>
+                        <div style="font-size: 10px; font-family: monospace; margin-top: 4px; opacity: 0.9;">
+                          ${order.backSide?.secondaryText || targetUrl}
+                        </div>
+                      </div>
+                      <div style="font-size: 8px; font-family: monospace; opacity: 0.7;">
+                        ${order.backSide?.bottomLabel || `UID: ${order.orderNumber}-BLK`}<br />
+                        ${order.backSide?.customNote || 'Encrypted NTAG216 Chip • 888 Bytes'}
+                      </div>
+                    </div>
+                    ${inspectingQrDataUrl && order.backSide?.showQrCode !== false ? `
+                      <div class="qr-box">
+                        <img src="${inspectingQrDataUrl}" class="qr-img" />
+                      </div>
+                    ` : ''}
+                  `}
+                </div>
+                <span class="card-sub">${order.sideMode === 'single_sided' ? 'Pristine Plain Finish' : 'Dynamic Scannable QR'}</span>
+              </div>
+            </div>
+
+            <div class="qa-grid">
+              <div class="qa-item">
+                <strong>[ &nbsp; ] LASER ENGRAVE PASS</strong>
+                <span style="color:#666;">Fiber 1064nm, 2x pass OK</span>
+              </div>
+              <div class="qa-item">
+                <strong>[ &nbsp; ] ULTRASONIC CLEAN</strong>
+                <span style="color:#666;">De-ionized residue wash</span>
+              </div>
+              <div class="qa-item">
+                <strong>[ &nbsp; ] NFC CHIP 13.56MHz</strong>
+                <span style="color:#666;">Read/Write tested OK</span>
+              </div>
+              <div class="qa-item">
+                <strong>OPERATOR SIGNOFF</strong>
+                <div class="qa-sign-line"></div>
+              </div>
+            </div>
+          </body>
+          </html>
+        `);
+        printWin.document.close();
+        printWin.focus();
+        setTimeout(() => {
+          printWin.print();
+        }, 300);
+        return;
+      }
+    } catch (e) {
+      console.warn('Popup blocked, using window.print()', e);
+    }
+
+    // Fallback: In-page print
     setInspectingOrder(order);
     setTimeout(() => {
       window.print();
-    }, 250);
+    }, 200);
   };
 
   // Render a single side of the card with 100% fidelity & fixed standard credit card landscape geometry
@@ -461,7 +683,8 @@ export default function AdminOrdersTab({
   };
 
   return (
-    <div className="space-y-6 text-left">
+    <>
+      <div className="space-y-6 text-left print:hidden">
       {/* Header Card */}
       <div className="p-6 rounded-4xl bg-white border border-black/10 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -681,7 +904,7 @@ export default function AdminOrdersTab({
                           {/* DIRECT PRINT BUTTON */}
                           <button
                             type="button"
-                            onClick={() => handleDirectPrintTicket(order)}
+                            onClick={() => handleOpenCleanPrintSheet(order)}
                             className="p-2 rounded-xl bg-white hover:bg-gray-100 text-charcoal border border-black/10 text-xs font-bold transition-all shadow-2xs cursor-pointer"
                             title="Direct Print Laser Workshop Blueprint"
                           >
@@ -716,7 +939,7 @@ export default function AdminOrdersTab({
           THE FULL LASER WORKSHOP PRODUCTION & CARD BLUEPRINT INSPECTION MODAL
           ========================================================================= */}
       {inspectingOrder && (
-        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 md:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 md:p-6 overflow-y-auto print:hidden">
           <div className="bg-white rounded-4xl w-full max-w-5xl border border-black/10 shadow-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
             
             {/* Modal Header */}
@@ -764,7 +987,7 @@ export default function AdminOrdersTab({
 
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => handleOpenCleanPrintSheet(inspectingOrder)}
                   className="px-3.5 py-2 rounded-xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
                   title="Print A4 Workshop Job Ticket"
                 >
@@ -1150,7 +1373,7 @@ export default function AdminOrdersTab({
 
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => handleOpenCleanPrintSheet(inspectingOrder)}
                   className="flex-1 sm:flex-none px-5 py-2.5 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95 cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5 text-[#B6F554]" />
@@ -1163,11 +1386,80 @@ export default function AdminOrdersTab({
         </div>
       )}
 
+      {/* EDIT TRACKING MODAL */}
+      {selectedOrderForTracking && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 print:hidden">
+          <form onSubmit={handleSaveTracking} className="bg-white rounded-4xl p-6 max-w-sm w-full border border-black/10 shadow-2xl text-left animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-black/5">
+              <h3 className="font-black text-sm text-charcoal">
+                Tracking for {selectedOrderForTracking.orderNumber}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSelectedOrderForTracking(null)}
+                className="p-1 rounded-lg hover:bg-gray-100 text-charcoal/60 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="py-4 space-y-3 text-xs">
+              <div>
+                <label className="text-[10px] font-bold text-charcoal/60 block mb-1">
+                  Courier Tracking ID (Delhivery, BlueDart, SpeedPost)
+                </label>
+                <input
+                  type="text"
+                  value={trackingInput}
+                  onChange={(e) => setTrackingInput(e.target.value)}
+                  placeholder="e.g. DEL-992817401"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal font-mono focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-charcoal/60 block mb-1">
+                  Shipping Courier
+                </label>
+                <select
+                  value={carrierInput}
+                  onChange={(e) => setCarrierInput(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                >
+                  <option value="Delhivery Surface Pro">Delhivery Surface Pro</option>
+                  <option value="Delhivery Express Air">Delhivery Express Air</option>
+                  <option value="BlueDart Air Apex">BlueDart Air Apex</option>
+                  <option value="India Post SpeedPost">India Post SpeedPost</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-black/5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setSelectedOrderForTracking(null)}
+                className="flex-1 py-2.5 rounded-full bg-[#FAF7F2] text-xs font-bold text-charcoal border border-black/10"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-sm"
+              >
+                Save &amp; Mark Shipped
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+      </div>
+
       {/* =========================================================================
-          DEDICATED LASER HARDWARE WORKSHOP JOB TICKET FOR WINDOW.PRINT()
+          DEDICATED LASER HARDWARE WORKSHOP JOB TICKET FOR WINDOW.PRINT() ONLY
           ========================================================================= */}
       {inspectingOrder && (
-        <div id="laser-workshop-ticket" className="print-only p-6 bg-white text-black text-left">
+        <div id="laser-workshop-ticket" className="p-6 bg-white text-black text-left">
           {/* Header */}
           <div className="border-b-2 border-black pb-4 mb-4 flex items-start justify-between">
             <div>
@@ -1261,74 +1553,6 @@ export default function AdminOrdersTab({
           </div>
         </div>
       )}
-
-      {/* EDIT TRACKING MODAL */}
-      {selectedOrderForTracking && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <form onSubmit={handleSaveTracking} className="bg-white rounded-4xl p-6 max-w-sm w-full border border-black/10 shadow-2xl text-left animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-black/5">
-              <h3 className="font-black text-sm text-charcoal">
-                Tracking for {selectedOrderForTracking.orderNumber}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setSelectedOrderForTracking(null)}
-                className="p-1 rounded-lg hover:bg-gray-100 text-charcoal/60 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="py-4 space-y-3 text-xs">
-              <div>
-                <label className="text-[10px] font-bold text-charcoal/60 block mb-1">
-                  Courier Tracking ID (Delhivery, BlueDart, SpeedPost)
-                </label>
-                <input
-                  type="text"
-                  value={trackingInput}
-                  onChange={(e) => setTrackingInput(e.target.value)}
-                  placeholder="e.g. DEL-992817401"
-                  className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal font-mono focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold text-charcoal/60 block mb-1">
-                  Shipping Courier
-                </label>
-                <select
-                  value={carrierInput}
-                  onChange={(e) => setCarrierInput(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
-                >
-                  <option value="Delhivery Surface Pro">Delhivery Surface Pro</option>
-                  <option value="Delhivery Express Air">Delhivery Express Air</option>
-                  <option value="BlueDart Air Apex">BlueDart Air Apex</option>
-                  <option value="India Post SpeedPost">India Post SpeedPost</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-black/5 flex gap-2">
-              <button
-                type="button"
-                onClick={() => setSelectedOrderForTracking(null)}
-                className="flex-1 py-2.5 rounded-full bg-[#FAF7F2] text-xs font-bold text-charcoal border border-black/10"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-sm"
-              >
-                Save &amp; Mark Shipped
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-    </div>
+    </>
   );
 }

@@ -189,25 +189,29 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-[#F7F5EE] text-charcoal font-sans flex flex-col">
       {/* Top Header */}
-      <AdminHeader
-        session={session}
-        onLogout={handleLogout}
-        onOpenLiveSite={() => router.push('/')}
-      />
+      <div className="print:hidden">
+        <AdminHeader
+          session={session}
+          onLogout={handleLogout}
+          onOpenLiveSite={() => router.push('/')}
+        />
+      </div>
 
       {/* Main Admin Workspace with Sidebar */}
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Left Sidebar */}
-        <AdminSidebar
-          activeTab={activeTab}
-          onSelectTab={setActiveTab}
-          userCount={users.length}
-          orderCount={orders.length}
-          expiringCount={expiringCount}
-        />
+        <div className="print:hidden">
+          <AdminSidebar
+            activeTab={activeTab}
+            onSelectTab={setActiveTab}
+            userCount={users.length}
+            orderCount={orders.length}
+            expiringCount={expiringCount}
+          />
+        </div>
 
         {/* Right Active Tab Content */}
-        <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full print:p-0 print:m-0 print:max-w-none">
           {activeTab === 'overview' && (
             <AdminOverviewTab
               users={users}
