@@ -60,27 +60,27 @@ body {
 
 /* Solid Flat Metal Finishes (Zero Multi-Gradients) */
 .metal-matte-black {
-  background-color: #191B1F;
-  border: 1px solid #2D3036;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+  background: radial-gradient(circle at 30% 25%, #2B2E36 0%, #17181C 55%, #0B0C0E 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .metal-brushed-gold {
-  background-color: #C8A44D;
-  border: 1px solid #B28F38;
-  box-shadow: 0 10px 25px -5px rgba(178, 143, 56, 0.25);
+  background: linear-gradient(135deg, #ECC86B 0%, #D4AF37 40%, #B8922C 70%, #ECC86B 100%);
+  border: 1px solid rgba(138, 100, 20, 0.4);
+  box-shadow: 0 15px 35px -5px rgba(212, 175, 55, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .metal-rose-gold {
-  background-color: #C98A94;
-  border: 1px solid #B57580;
-  box-shadow: 0 10px 25px -5px rgba(181, 117, 128, 0.25);
+  background: linear-gradient(135deg, #E6ADB7 0%, #D896A2 40%, #BF7A88 70%, #E6ADB7 100%);
+  border: 1px solid rgba(168, 90, 105, 0.4);
+  box-shadow: 0 15px 35px -5px rgba(216, 150, 162, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .metal-titanium-silver {
-  background-color: #E2E5EA;
-  border: 1px solid #CCD2DA;
-  box-shadow: 0 10px 25px -5px rgba(100, 116, 139, 0.2);
+  background: linear-gradient(135deg, #FFFFFF 0%, #E2E6EB 40%, #CAD1D9 70%, #E8ECF0 100%);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  box-shadow: 0 15px 35px -5px rgba(100, 116, 139, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 /* Continuous Horizontal Infinite Marquee */

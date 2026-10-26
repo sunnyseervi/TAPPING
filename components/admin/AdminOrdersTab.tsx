@@ -25,7 +25,8 @@ import {
   CreditCard,
   Palette,
   Type,
-  Maximize2
+  Maximize2,
+  RotateCw
 } from 'lucide-react';
 import { MetalCardOrder, CardSideConfig, CardMaterial, NFCCardDesign } from '@/lib/types';
 import { useToast } from '@/components/ui/Toast';
@@ -236,8 +237,8 @@ export default function AdminOrdersTab({
     }, 250);
   };
 
-  // Render a single side of the card with 100% fidelity
-  const renderCardSurface = (order: MetalCardOrder, side: 'front' | 'back') => {
+  // Render a single side of the card with 100% fidelity & fixed standard credit card landscape geometry
+  const renderCardSurface = (order: MetalCardOrder, side: 'front' | 'back', widthPx = 400, heightPx = 252) => {
     const isFront = side === 'front';
     const cfg: CardSideConfig = isFront ? (order.frontSide || {}) : (order.backSide || {});
     const isCustom = order.material === 'custom_color';
@@ -247,8 +248,12 @@ export default function AdminOrdersTab({
 
     return (
       <div 
-        className={`w-full max-w-[390px] h-[245px] rounded-3xl p-6 relative select-none shadow-2xl border border-black/15 overflow-hidden flex flex-col justify-between ${isCustom ? '' : getMaterialClasses(order.material)}`}
+        className={`rounded-3xl p-6 relative select-none shadow-2xl border border-black/15 overflow-hidden shrink-0 flex flex-col justify-between ${isCustom ? '' : getMaterialClasses(order.material)}`}
         style={{
+          width: `${widthPx}px`,
+          height: `${heightPx}px`,
+          maxWidth: '100%',
+          aspectRatio: '85.6 / 53.98',
           fontFamily,
           backgroundColor: isCustom ? (order.customColor || '#1A365D') : undefined,
           color: textColor,
@@ -268,12 +273,14 @@ export default function AdminOrdersTab({
         )}
 
         {/* Specular Metallic Sheen Lighting */}
-        <div className="absolute inset-0 z-1 bg-gradient-to-tr from-white/10 via-transparent to-black/25 pointer-events-none" />
+        <div className="absolute inset-0 z-1 bg-gradient-to-tr from-white/20 via-transparent to-black/30 pointer-events-none" />
 
         {/* 5mm Safe Print Boundary (Dashed overlay for workshop precision) */}
         {showSafeGuides && (
-          <div className="absolute inset-[18px] z-5 border border-dashed border-emerald-400/40 rounded-2xl pointer-events-none flex items-start justify-end p-1">
-            <span className="text-[7px] font-mono uppercase tracking-wider text-emerald-400/80 bg-black/40 px-1 rounded">5mm Safe Zone</span>
+          <div className="absolute inset-[18px] z-5 border border-dashed border-emerald-400/50 rounded-2xl pointer-events-none flex items-start justify-end p-1">
+            <span className="text-[7px] font-mono uppercase tracking-wider text-emerald-400 bg-black/60 px-1 py-0.5 rounded">
+              5mm Safe Zone
+            </span>
           </div>
         )}
 
@@ -313,7 +320,7 @@ export default function AdminOrdersTab({
               {/* Hardware Contactless Chip */}
               {cfg.showChip !== false && (
                 <div className={`absolute z-10 ${getChipPositionClass(cfg.chipPosition)}`}>
-                  <div className="w-9 h-6 rounded-md bg-amber-400/90 border border-amber-600/50 flex flex-col justify-around p-1 shadow-2xs">
+                  <div className="w-10 h-7 rounded-md bg-amber-400 border border-amber-600/50 flex flex-col justify-around p-1 shadow-xs">
                     <div className="w-full h-0.5 bg-amber-800/40" />
                     <div className="w-full h-0.5 bg-amber-800/40" />
                   </div>
@@ -322,7 +329,7 @@ export default function AdminOrdersTab({
 
               {/* Engraved Primary Name & Tagline */}
               <div 
-                className={`absolute z-10 ${getNamePositionClass(cfg.namePosition)} max-w-[210px]`}
+                className={`absolute z-10 ${getNamePositionClass(cfg.namePosition)} max-w-[220px]`}
                 style={{
                   transform: `translate(${cfg.nameOffsetX || 0}px, ${cfg.nameOffsetY || 0}px)`,
                 }}
@@ -349,11 +356,8 @@ export default function AdminOrdersTab({
                   {cfg.primaryText || order.engravedName || order.userName.toUpperCase()}
                 </h3>
                 <p 
-                  className="opacity-80 mt-0.5 truncate font-mono"
-                  style={{ 
-                    color: textColor,
-                    fontSize: `${Math.max(7, Math.round((cfg.secondaryTextSize || 9) * 0.9))}px`
-                  }}
+                  className="opacity-75 mt-0.5 truncate font-mono text-[9px]"
+                  style={{ color: textColor }}
                 >
                   {order.qrUrl.replace('https://', '').replace('http://', '')}
                 </p>
@@ -383,13 +387,13 @@ export default function AdminOrdersTab({
               {cfg.isPlain ? (
                 /* Plain Surface Mode */
                 <div className="w-full h-full flex flex-col items-center justify-center text-center p-4">
-                  <span className="text-[10px] font-mono tracking-widest uppercase px-3 py-1 rounded-full bg-black/25 backdrop-blur-xs border border-white/10 opacity-75">
-                    Plain Anodized Finish (No Laser Markings)
+                  <span className="text-[10px] font-mono tracking-widest uppercase px-3 py-1.5 rounded-full bg-black/25 backdrop-blur-xs border border-white/10 opacity-75">
+                    Plain Metal Finish (No Markings)
                   </span>
                 </div>
               ) : (
                 /* Standard Dual-Sided Back Face */
-                <div className="flex items-center justify-between h-full">
+                <div className="flex items-center justify-between h-full w-full">
                   <div 
                     className="flex flex-col justify-between h-full min-w-0 pr-4"
                     style={{
@@ -830,28 +834,60 @@ export default function AdminOrdersTab({
                 </div>
 
                 {/* The Physical Metal Card Visual Proof Container */}
-                <div className="w-full p-4 md:p-6 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col items-center justify-center min-h-[300px]">
+                <div className="w-full p-4 md:p-6 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col items-center justify-center min-h-[340px]">
                   {activeSide === 'both' ? (
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-4 w-full">
-                      <div className="flex flex-col items-center gap-1.5 w-full max-w-[320px]">
-                        <span className="text-[10px] font-mono font-bold text-charcoal/60 uppercase">Front Face</span>
-                        <div className="scale-90 origin-top">
-                          {renderCardSurface(inspectingOrder, 'front')}
-                        </div>
+                    <div className="flex flex-col xl:flex-row items-center justify-center gap-6 w-full">
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="text-[10px] font-mono font-bold text-charcoal/60 uppercase">
+                          Front Face (Identity &amp; Hardware Chip)
+                        </span>
+                        {renderCardSurface(inspectingOrder, 'front', 360, 227)}
                       </div>
-                      <div className="flex flex-col items-center gap-1.5 w-full max-w-[320px]">
-                        <span className="text-[10px] font-mono font-bold text-charcoal/60 uppercase">Reverse Face</span>
-                        <div className="scale-90 origin-top">
-                          {renderCardSurface(inspectingOrder, 'back')}
-                        </div>
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="text-[10px] font-mono font-bold text-charcoal/60 uppercase">
+                          Reverse Face (Dynamic QR &amp; Core UID)
+                        </span>
+                        {renderCardSurface(inspectingOrder, 'back', 360, 227)}
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="text-[11px] font-mono font-bold text-charcoal/60 uppercase">
-                        {activeSide === 'front' ? 'FRONT FACE BLUEPRINT' : 'REVERSE FACE BLUEPRINT'}
-                      </span>
-                      {renderCardSurface(inspectingOrder, activeSide)}
+                    <div className="w-full flex flex-col items-center justify-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-mono font-bold text-charcoal/60 uppercase tracking-wider">
+                          {activeSide === 'front' ? 'FRONT FACE BLUEPRINT' : 'REVERSE FACE BLUEPRINT'}
+                        </span>
+                        <span className="text-[10px] text-charcoal/40 font-mono">
+                          (Click card to flip)
+                        </span>
+                      </div>
+
+                      {/* 3D Flip Interactive Card Frame */}
+                      <div 
+                        onClick={() => setActiveSide(activeSide === 'front' ? 'back' : 'front')}
+                        className="perspective-1000 w-[400px] max-w-full h-[252px] relative select-none cursor-pointer group shrink-0"
+                        title="Click to flip between Front and Back faces"
+                      >
+                        <div 
+                          className={`w-full h-full preserve-3d transition-transform duration-700 relative rounded-3xl ${
+                            activeSide === 'back' ? 'rotate-y-180' : ''
+                          }`}
+                        >
+                          {/* Front Side */}
+                          <div className="absolute inset-0 backface-hidden">
+                            {renderCardSurface(inspectingOrder, 'front', 400, 252)}
+                          </div>
+
+                          {/* Back Side */}
+                          <div className="absolute inset-0 backface-hidden rotate-y-180">
+                            {renderCardSurface(inspectingOrder, 'back', 400, 252)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-[11px] font-mono text-charcoal/50 mt-1">
+                        <RotateCw className="w-3.5 h-3.5 text-[#4F83FF]" />
+                        <span>Interactive 3D Proof &bull; Click card to flip face</span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1188,7 +1224,7 @@ export default function AdminOrdersTab({
               <div className="flex flex-col items-center gap-1.5">
                 <span className="text-[10px] font-mono font-bold uppercase">FRONT FACE (SIDE A)</span>
                 <div className="border-2 border-black p-1 bg-white">
-                  {renderCardSurface(inspectingOrder, 'front')}
+                  {renderCardSurface(inspectingOrder, 'front', 360, 227)}
                 </div>
                 <span className="text-[9px] font-mono text-neutral-600">Dimensions: 85.60 mm × 53.98 mm</span>
               </div>
@@ -1197,7 +1233,7 @@ export default function AdminOrdersTab({
               <div className="flex flex-col items-center gap-1.5">
                 <span className="text-[10px] font-mono font-bold uppercase">REVERSE FACE (SIDE B)</span>
                 <div className="border-2 border-black p-1 bg-white">
-                  {renderCardSurface(inspectingOrder, 'back')}
+                  {renderCardSurface(inspectingOrder, 'back', 360, 227)}
                 </div>
                 <span className="text-[9px] font-mono text-neutral-600">Dimensions: 85.60 mm × 53.98 mm</span>
               </div>
