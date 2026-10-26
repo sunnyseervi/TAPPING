@@ -34,6 +34,7 @@ import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 import { CardMaterial } from '@/lib/types';
 import TappingLogo from '@/components/brand/TappingLogo';
+import IndianFlag from '@/components/ui/IndianFlag';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -149,7 +150,7 @@ export default function LandingPage() {
       handle: 'aarav',
       role: 'Founder & Hardware Architect',
       location: 'Bengaluru, India',
-      avatar: 'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=400&auto=format&fit=crop&q=80',
+      avatar: 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80',
       bio: 'Building contactless NFC hardware and digital identity infrastructure in Bengaluru.',
       badge: 'Hardware & Tech',
       links: [
@@ -252,9 +253,9 @@ export default function LandingPage() {
       {/* HERO SECTION (LINKTREE INSPIRED WITH APPLE-GRADE TYPOGRAPHY) */}
       <section className="max-w-7xl mx-auto px-6 pt-10 pb-16 flex flex-col items-center text-center relative z-10">
         
-        {/* Top Accent Pill */}
+        {/* Top Accent Pill with Indian Flag */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-black/10 shadow-2xs text-[11px] font-black uppercase tracking-wider text-charcoal/80 mb-6">
-          <span className="w-2 h-2 rounded-full bg-[#141518]" />
+          <IndianFlag className="w-4 h-2.8 rounded-xs" />
           <span>The Next-Generation Link-in-Bio for India</span>
         </div>
 
@@ -348,14 +349,22 @@ export default function LandingPage() {
                 {/* SCROLLABLE INNER PHONE SCREEN SHOWING REAL GENERATED CONTENT */}
                 <div className="w-full bg-[#FAF7F2] rounded-b-[40px] overflow-y-auto max-h-[580px] no-scrollbar px-4 pt-1 pb-6 flex flex-col items-center text-center">
                   
-                  {/* Squircle Avatar with Clean Thin Border */}
+                  {/* Squircle Avatar with Authentic Indian Flag Picture & Flag Badge */}
                   <div className="relative mt-2">
-                    <div className="w-20 h-20 rounded-[24px] overflow-hidden ring-1.5 ring-white/80 border border-black/10 shadow-sm bg-white flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-[24px] overflow-hidden ring-2 ring-white/90 border border-black/10 shadow-sm bg-[#FAF7F2] flex items-center justify-center relative">
                       <img
-                        src="https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=400&auto=format&fit=crop&q=80"
-                        alt="Aarav Sharma"
+                        src="https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80"
+                        alt="Indian Flag - Aarav Sharma"
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Resilient fallback to reliable Indian flag URL
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1597058712635-3182d1eacc1e?w=600&auto=format&fit=crop&q=80';
+                        }}
                       />
+                    </div>
+                    {/* Official Indian Flag Badge on Avatar */}
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-black/10 shadow-sm flex items-center justify-center overflow-hidden">
+                      <IndianFlag className="w-4 h-2.8 rounded-xs" />
                     </div>
                   </div>
 
@@ -367,8 +376,9 @@ export default function LandingPage() {
                     @{handle || 'aarav'}
                   </p>
 
-                  {/* Work & Location */}
-                  <div className="inline-flex items-center gap-1 mt-1 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-white text-charcoal border border-black/10 shadow-2xs">
+                  {/* Work & Location with Indian Flag */}
+                  <div className="inline-flex items-center gap-1.5 mt-1 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-white text-charcoal border border-black/10 shadow-2xs">
+                    <IndianFlag className="w-3.5 h-2.5 rounded-xs" />
                     <Briefcase className="w-3 h-3 text-[#141518]" />
                     <span>Founder & Architect • Tapping Technologies India</span>
                   </div>
@@ -463,8 +473,9 @@ export default function LandingPage() {
                     </a>
                   </div>
 
-                  <p className="text-[9px] font-black uppercase tracking-widest text-charcoal/40 mt-4">
-                    Tapping • Made for India
+                  <p className="text-[9px] font-black uppercase tracking-widest text-charcoal/50 mt-4 flex items-center justify-center gap-1.5">
+                    <IndianFlag className="w-3.5 h-2.5 rounded-xs" />
+                    <span>Tapping • Made for India</span>
                   </p>
                 </div>
               </div>
@@ -975,9 +986,10 @@ export default function LandingPage() {
 
       {/* FOOTER */}
       <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-black/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-charcoal/60">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <TappingLogo size="xs" variant="full" />
-          <span className="text-charcoal/40">• Made for Indian Creators</span>
+          <IndianFlag className="w-4 h-2.8 rounded-xs" />
+          <span className="text-charcoal/50">• Made for Indian Creators</span>
         </div>
         <div className="flex items-center gap-6">
           <Link href="/admin" className="text-charcoal/70 hover:text-black hover:underline">

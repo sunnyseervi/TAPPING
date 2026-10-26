@@ -55,6 +55,7 @@ import {
   getFontFamilyStyle 
 } from '@/lib/themes';
 import PublicStore from '@/components/store/PublicStore';
+import IndianFlag from '@/components/ui/IndianFlag';
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -474,8 +475,11 @@ export default function PublicProfilePage() {
         {/* Avatar with Crisp Thin Ring & Shadow (Modern Rounded Square / Squircle) */}
         <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] sm:rounded-[32px] overflow-hidden ring-1.5 ring-white/80 border border-black/10 shadow-sm bg-white relative flex items-center justify-center shrink-0 mt-1">
           <img
-            src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
+            src={profile.avatarUrl || 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80'}
             alt={profile.displayName}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80';
+            }}
             className={`w-full h-full transition-transform ${profile.avatarFit === 'cover' ? 'object-cover' : 'object-contain'}`}
             style={{
               transform: `scale(${(profile.avatarZoom ?? 100) / 100}) translate(${profile.avatarPosX ?? 0}px, ${profile.avatarPosY ?? 0}px)`,

@@ -23,6 +23,7 @@ import { downloadVCardFile } from '@/lib/vcard';
 import { incrementLinkClick } from '@/lib/storage';
 import { useToast } from '@/components/ui/Toast';
 import { THEMES, getFontFamilyClass, getPatternClass, resolveLinkCardClasses, isDarkTheme, isPatternDark, isColorDark, getFontFamilyStyle } from '@/lib/themes';
+import IndianFlag from '@/components/ui/IndianFlag';
 
 interface LivePreviewProps {
   profile: Profile;
@@ -235,14 +236,21 @@ export default function LivePhonePreview({
               <div className="relative mt-2">
                 <div className="w-20 h-20 rounded-[24px] overflow-hidden ring-1.5 ring-white/80 border border-black/10 shadow-sm bg-white relative flex items-center justify-center">
                   <img
-                    src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
+                    src={profile.avatarUrl || 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80'}
                     alt={profile.displayName}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80';
+                    }}
                     className={`w-full h-full transition-transform ${profile.avatarFit === 'cover' ? 'object-cover' : 'object-contain'}`}
                     style={{
                       transform: `scale(${(profile.avatarZoom ?? 100) / 100}) translate(${profile.avatarPosX ?? 0}px, ${profile.avatarPosY ?? 0}px)`,
                       transformOrigin: 'center center',
                     }}
                   />
+                </div>
+                {/* Official Indian Flag Badge on bottom-right corner of Avatar */}
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-black/10 shadow-sm flex items-center justify-center overflow-hidden">
+                  <IndianFlag className="w-4 h-2.8 rounded-xs" />
                 </div>
               </div>
 

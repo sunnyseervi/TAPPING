@@ -58,6 +58,9 @@ export function getStoredProfile(): Profile {
     const data = localStorage.getItem(KEYS.PROFILE);
     if (!data) return initialProfile;
     const parsed = JSON.parse(data);
+    if (!parsed.avatarUrl || parsed.avatarUrl.includes('photo-1628157582853') || parsed.avatarUrl.includes('photo-1507003211169')) {
+      parsed.avatarUrl = 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80';
+    }
     return { ...initialProfile, ...parsed };
   } catch {
     return initialProfile;
@@ -496,7 +499,7 @@ const INITIAL_USERS: UserRecord[] = [
     username: 'aarav',
     email: 'aarav@tapping.bio',
     displayName: 'Aarav Sharma',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+    avatarUrl: 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80',
     mobileNumber: '+91 98765 43210',
     isActivated: true,
     status: 'active',

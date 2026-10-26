@@ -123,8 +123,11 @@ export default function AppSidebar({
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl overflow-hidden bg-[#FAF7F2] shrink-0 border border-black/10 shadow-xs relative">
                 <img
-                  src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
+                  src={profile.avatarUrl || 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80'}
                   alt={profile.displayName}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80';
+                  }}
                   className={`w-full h-full ${profile.avatarFit === 'cover' ? 'object-cover' : 'object-contain'}`}
                   style={{
                     transform: `scale(${(profile.avatarZoom ?? 100) / 100}) translate(${profile.avatarPosX ?? 0}px, ${profile.avatarPosY ?? 0}px)`,
