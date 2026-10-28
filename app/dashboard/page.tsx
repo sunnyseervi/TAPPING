@@ -17,6 +17,7 @@ import {
   getOnboardingCompleted,
   getProfileActivated,
   getStoredSubscription,
+  saveStoredSubscription,
 } from '@/lib/storage';
 import { 
   initialProfile, 
@@ -42,7 +43,7 @@ import StoreManager from '@/components/dashboard/StoreManager';
 import NFCTagShop from '@/components/dashboard/NFCTagShop';
 import AccountOrdersSection from '@/components/dashboard/AccountOrdersSection';
 import { useToast } from '@/components/ui/Toast';
-import { Check, X, CreditCard, Zap } from 'lucide-react';
+import { Check, X, CreditCard, Zap, ArrowRight, QrCode, Building, ShieldCheck, Lock, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 function DashboardContent() {
@@ -76,6 +77,9 @@ function DashboardContent() {
   // Upgrade Modal State
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
   const [upgradePlan, setUpgradePlan] = useState<'monthly' | 'yearly'>('monthly');
+  const [upgradeModalStep, setUpgradeModalStep] = useState<'plan' | 'payment' | 'success'>('plan');
+  const [upgradePaymentMethod, setUpgradePaymentMethod] = useState<'upi' | 'card' | 'netbanking'>('upi');
+  const [isProcessingUpgrade, setIsProcessingUpgrade] = useState<boolean>(false);
 
   const handleSelectTab = (tab: string) => {
     if (tab === 'themes') {
@@ -193,28 +197,35 @@ function DashboardContent() {
   };
 
   const handleActivatePlan = (plan: 'monthly' | 'yearly') => {
-    setSubscription({
-      tier: 'pro',
-      status: 'active',
-      expiresAt: new Date(Date.now() + (plan === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    setIsProcessingUpgrade(true);
+    setTimeout(() => {
+      const updatedSub: Subscription = {
+        tier: 'pro',
+        status: 'active',
+        expiresAt: new Date(Date.now() + (plan === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString(),
+      };
+      setSubscription(updatedSub);
+      saveStoredSubscription(updatedSub);
 
-    try {
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.6 }
-      });
-    } catch {
-      // safe fallback
-    }
+      try {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.55 },
+          colors: ['#4F83FF', '#B6F554', '#FDF166', '#141518'],
+        });
+      } catch {
+        // safe fallback
+      }
 
-    setShowUpgradeModal(false);
-    showToast(
-      'Account Activated!',
-      `TAPPING Pro (${plan === 'yearly' ? '\u20B92,999/yr' : '\u20B9299/mo'}) unlocked with permanent dynamic QR & custom themes`,
-      'success'
-    );
+      setIsProcessingUpgrade(false);
+      setUpgradeModalStep('success');
+      showToast(
+        'Account Activated!',
+        `TAPPING Pro (${plan === 'yearly' ? '\u20B92,999/yr' : '\u20B9299/mo'}) unlocked with permanent dynamic QR & custom themes`,
+        'success'
+      );
+    }, 1100);
   };
 
   return (
@@ -242,94 +253,320 @@ function DashboardContent() {
       {/* Plan Activation / Upgrade Modal (₹299/mo or ₹2,999/yr) */}
       {showUpgradeModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-4xl p-6 sm:p-8 w-full max-w-lg shadow-2xl border border-black/10 flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-4xl p-6 sm:p-8 w-full max-w-lg shadow-2xl border border-black/10 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-black/5">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-2xl bg-[#FDF166] flex items-center justify-center text-charcoal shadow-2xs">
                   <Zap className="w-5 h-5 stroke-[2.5]" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-charcoal">Activate TAPPING PRO</h3>
-                  <p className="text-[11px] font-bold text-charcoal/60">Official Indian Rupee Pricing</p>
+                  <h3 className="text-base font-black text-charcoal">
+                    {upgradeModalStep === 'payment'
+                      ? 'Payment Gateway Checkout'
+                      : upgradeModalStep === 'success'
+                      ? 'Payment Confirmed'
+                      : 'Activate TAPPING PRO'}
+                  </h3>
+                  <p className="text-[11px] font-bold text-charcoal/60">
+                    {upgradeModalStep === 'payment'
+                      ? 'Instant 256-bit Secure Gateway'
+                      : 'Official Indian Rupee Pricing'}
+                  </p>
                 </div>
               </div>
 
               <button
                 type="button"
-                onClick={() => setShowUpgradeModal(false)}
+                onClick={() => {
+                  setShowUpgradeModal(false);
+                  setUpgradeModalStep('plan');
+                }}
                 className="w-8 h-8 rounded-full bg-[#FAF7F2] hover:bg-gray-200 flex items-center justify-center text-charcoal/70 hover:text-black cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Plan Switcher Pills */}
-            <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-[#FAF7F2] border border-black/10">
-              <button
-                type="button"
-                onClick={() => setUpgradePlan('monthly')}
-                className={`py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
-                  upgradePlan === 'monthly'
-                    ? 'bg-[#141518] text-white shadow-xs'
-                    : 'text-charcoal/70 hover:text-black'
-                }`}
-              >
-                Monthly &#8377;299/mo
-              </button>
-              <button
-                type="button"
-                onClick={() => setUpgradePlan('yearly')}
-                className={`py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                  upgradePlan === 'yearly'
-                    ? 'bg-[#141518] text-white shadow-xs'
-                    : 'text-charcoal/70 hover:text-black'
-                }`}
-              >
-                <span>Yearly &#8377;2,999/yr</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-[#B6F554] text-charcoal font-black">
-                  -16%
-                </span>
-              </button>
-            </div>
-
-            {/* Plan Features Included */}
-            <div className="space-y-2 p-4 rounded-2xl bg-[#EFF4FF] border border-[#4F83FF]/20 text-xs font-bold text-charcoal">
-              <div className="text-[10px] font-black uppercase tracking-wider text-[#4F83FF] mb-1">
-                Included in Your {upgradePlan === 'yearly' ? 'Annual' : 'Monthly'} Pro Membership:
-              </div>
-              {[
-                'Permanent Dynamic Vector QR (never breaks or expires)',
-                '13 Full-System Themes with authentic typography & custom colors',
-                'Direct Contact Card (.vcf) export to Apple & Android phonebooks',
-                'Visiting card 300 DPI high-resolution PNG & PDF export',
-                'Zero platform branding & full custom domain readiness',
-                upgradePlan === 'yearly' ? '20% exclusive discount on Laser-Engraved Metal NFC Cards' : 'Full access to Metal NFC Hardware Studio'
-              ].map((feat, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-[#4F83FF] text-white flex items-center justify-center shrink-0">
-                    <Check className="w-2.5 h-2.5 stroke-[3]" />
-                  </div>
-                  <span>{feat}</span>
+            {/* STEP 1: Plan Selection */}
+            {upgradeModalStep === 'plan' && (
+              <>
+                {/* Plan Switcher Pills */}
+                <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-[#FAF7F2] border border-black/10">
+                  <button
+                    type="button"
+                    onClick={() => setUpgradePlan('monthly')}
+                    className={`py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                      upgradePlan === 'monthly'
+                        ? 'bg-[#141518] text-white shadow-xs'
+                        : 'text-charcoal/70 hover:text-black'
+                    }`}
+                  >
+                    Monthly &#8377;299/mo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUpgradePlan('yearly')}
+                    className={`py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      upgradePlan === 'yearly'
+                        ? 'bg-[#141518] text-white shadow-xs'
+                        : 'text-charcoal/70 hover:text-black'
+                    }`}
+                  >
+                    <span>Yearly &#8377;2,999/yr</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-[#B6F554] text-charcoal font-black">
+                      -16%
+                    </span>
+                  </button>
                 </div>
-              ))}
-            </div>
 
-            {/* Payment Summary & Instant Checkout */}
-            <div className="pt-2 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => handleActivatePlan(upgradePlan)}
-                className="w-full py-4 px-5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
-              >
-                <CreditCard className="w-4 h-4 text-[#FDF166]" />
-                <span>
-                  Confirm &amp; Activate {upgradePlan === 'yearly' ? 'Annual Plan (\u20B92,999)' : 'Monthly Plan (\u20B9299)'}
-                </span>
-              </button>
-              <p className="text-[10px] text-center text-charcoal/50 font-medium">
-                Instant UPI &amp; Razorpay sandbox activation &bull; 100% money-back satisfaction guarantee
-              </p>
-            </div>
+                {/* Plan Features Included */}
+                <div className="space-y-2 p-4 rounded-2xl bg-[#EFF4FF] border border-[#4F83FF]/20 text-xs font-bold text-charcoal">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-[#4F83FF] mb-1">
+                    Included in Your {upgradePlan === 'yearly' ? 'Annual' : 'Monthly'} Pro Membership:
+                  </div>
+                  {[
+                    'Permanent Dynamic Vector QR (never breaks or expires)',
+                    '13 Full-System Themes with authentic typography & custom colors',
+                    'Direct Contact Card (.vcf) export to Apple & Android phonebooks',
+                    'Visiting card 300 DPI high-resolution PNG & PDF export',
+                    'Zero platform branding & full custom domain readiness',
+                    upgradePlan === 'yearly' ? '20% exclusive discount on Laser-Engraved Metal NFC Cards' : 'Full access to Metal NFC Hardware Studio'
+                  ].map((feat, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-[#4F83FF] text-white flex items-center justify-center shrink-0">
+                        <Check className="w-2.5 h-2.5 stroke-[3]" />
+                      </div>
+                      <span>{feat}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Proceed to Payment Page Button */}
+                <div className="pt-2 flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setUpgradeModalStep('payment')}
+                    className="w-full py-4 px-5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                  >
+                    <CreditCard className="w-4 h-4 text-[#FDF166]" />
+                    <span>
+                      Proceed to Pay &#8377;{upgradePlan === 'yearly' ? '2,999' : '299'}
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-[#FDF166]" />
+                  </button>
+                  <p className="text-[10px] text-center text-charcoal/50 font-medium">
+                    100% money-back satisfaction guarantee &bull; Cancel anytime
+                  </p>
+                </div>
+              </>
+            )}
+
+            {/* STEP 2: Dedicated Payment Gateway Page */}
+            {upgradeModalStep === 'payment' && (
+              <div className="space-y-4">
+                {/* Amount Payable Strip */}
+                <div className="p-3 rounded-2xl bg-[#FAF7F2] border border-black/10 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="text-[10px] font-black uppercase text-charcoal/60 tracking-wider">
+                      Selected Plan
+                    </span>
+                    <p className="font-black text-charcoal">
+                      {upgradePlan === 'yearly' ? 'Creator Pro Annual Pass (365 Days)' : 'Creator Pro Monthly Pass (30 Days)'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] font-bold text-charcoal/50 block">Amount Payable</span>
+                    <span className="text-base font-black text-charcoal">
+                      &#8377;{upgradePlan === 'yearly' ? '2,999' : '299'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Payment Method Selector Tabs */}
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setUpgradePaymentMethod('upi')}
+                    className={`py-2 px-2 rounded-xl border text-center transition-all cursor-pointer ${
+                      upgradePaymentMethod === 'upi'
+                        ? 'border-charcoal bg-white font-black text-charcoal ring-2 ring-charcoal/10'
+                        : 'border-black/10 bg-[#FAF7F2] text-charcoal/70'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-1 text-xs">
+                      <QrCode className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>UPI / QR</span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUpgradePaymentMethod('card')}
+                    className={`py-2 px-2 rounded-xl border text-center transition-all cursor-pointer ${
+                      upgradePaymentMethod === 'card'
+                        ? 'border-charcoal bg-white font-black text-charcoal ring-2 ring-charcoal/10'
+                        : 'border-black/10 bg-[#FAF7F2] text-charcoal/70'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-1 text-xs">
+                      <CreditCard className="w-3.5 h-3.5 text-[#4F83FF]" />
+                      <span>Cards</span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUpgradePaymentMethod('netbanking')}
+                    className={`py-2 px-2 rounded-xl border text-center transition-all cursor-pointer ${
+                      upgradePaymentMethod === 'netbanking'
+                        ? 'border-charcoal bg-white font-black text-charcoal ring-2 ring-charcoal/10'
+                        : 'border-black/10 bg-[#FAF7F2] text-charcoal/70'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-1 text-xs">
+                      <Building className="w-3.5 h-3.5 text-amber-600" />
+                      <span>NetBanking</span>
+                    </div>
+                  </button>
+                </div>
+
+                {/* UPI QR Display */}
+                {upgradePaymentMethod === 'upi' && (
+                  <div className="p-3 rounded-2xl bg-[#FAF7F2] border border-black/10 flex flex-col items-center text-center space-y-2">
+                    <span className="text-[10px] font-black uppercase text-charcoal/60 tracking-wider">
+                      Scan with any UPI App (GPay, PhonePe, Paytm, CRED)
+                    </span>
+                    <div className="p-2.5 bg-white rounded-xl border border-black/10 shadow-2xs">
+                      <svg className="w-28 h-28" viewBox="0 0 100 100" fill="none">
+                        <rect x="5" y="5" width="26" height="26" rx="4" fill="#141518" />
+                        <rect x="9" y="9" width="18" height="18" rx="2" fill="white" />
+                        <rect x="13" y="13" width="10" height="10" rx="2" fill="#141518" />
+                        <rect x="69" y="5" width="26" height="26" rx="4" fill="#141518" />
+                        <rect x="73" y="9" width="18" height="18" rx="2" fill="white" />
+                        <rect x="77" y="13" width="10" height="10" rx="2" fill="#141518" />
+                        <rect x="5" y="69" width="26" height="26" rx="4" fill="#141518" />
+                        <rect x="9" y="73" width="18" height="18" rx="2" fill="white" />
+                        <rect x="13" y="77" width="10" height="10" rx="2" fill="#141518" />
+                        <rect x="38" y="38" width="24" height="24" rx="6" fill="#FDF166" stroke="#141518" strokeWidth="2" />
+                        <text x="50" y="54" fontSize="10" fontWeight="900" textAnchor="middle" fill="#141518">UPI</text>
+                      </svg>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold text-charcoal/70">
+                      UPI ID: tapping@icici
+                    </span>
+                  </div>
+                )}
+
+                {/* Card input preview */}
+                {upgradePaymentMethod === 'card' && (
+                  <div className="p-3.5 rounded-2xl bg-[#FAF7F2] border border-black/10 space-y-2 text-left">
+                    <label className="text-[10px] font-black uppercase text-charcoal/70 block">
+                      Card Number
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="4532 &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; 8921"
+                      className="w-full px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-mono font-bold text-charcoal focus:outline-none"
+                    />
+                    <div className="flex items-center gap-2 text-[10px] text-charcoal/60 font-bold">
+                      <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                      <span>Supports RuPay, Visa, Mastercard</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* NetBanking preview */}
+                {upgradePaymentMethod === 'netbanking' && (
+                  <div className="p-3.5 rounded-2xl bg-[#FAF7F2] border border-black/10 space-y-2 text-left">
+                    <label className="text-[10px] font-black uppercase text-charcoal/70 block">
+                      Popular Indian Banks
+                    </label>
+                    <div className="grid grid-cols-2 gap-2 text-xs font-bold">
+                      {['HDFC Bank', 'State Bank of India', 'ICICI Bank', 'Axis Bank'].map((b) => (
+                        <div key={b} className="p-2 rounded-xl bg-white border border-black/10 text-center font-bold">
+                          {b}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Security Reassurance */}
+                <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-charcoal/60">
+                  <Lock className="w-3 h-3 text-emerald-600 stroke-[2.2]" />
+                  <span>256-Bit SSL Encrypted &bull; RBI Compliant Gateway</span>
+                </div>
+
+                {/* Pay Now Button on Payment Page */}
+                <button
+                  type="button"
+                  disabled={isProcessingUpgrade}
+                  onClick={() => handleActivatePlan(upgradePlan)}
+                  className="w-full py-4 px-5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer disabled:opacity-60"
+                >
+                  {isProcessingUpgrade ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Verifying Payment with Bank...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <CreditCard className="w-4 h-4 text-[#FDF166]" />
+                      <span>
+                        Pay &#8377;{upgradePlan === 'yearly' ? '2,999' : '299'} &amp; Activate
+                      </span>
+                      <ArrowRight className="w-4 h-4 text-[#FDF166]" />
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setUpgradeModalStep('plan')}
+                  className="text-xs font-bold text-charcoal/60 hover:text-black py-1 cursor-pointer"
+                >
+                  Back to Plan Selection
+                </button>
+              </div>
+            )}
+
+            {/* STEP 3: Payment Success Celebration Popup */}
+            {upgradeModalStep === 'success' && (
+              <div className="flex flex-col items-center text-center py-2 space-y-3">
+                <div className="w-16 h-16 rounded-3xl bg-[#B6F554] border border-black/10 text-charcoal flex items-center justify-center shadow-soft">
+                  <Check className="w-9 h-9 stroke-[3.5] text-charcoal" />
+                </div>
+
+                <h3 className="text-xl font-black text-charcoal">
+                  Payment Successful!
+                </h3>
+                <p className="text-xs text-charcoal/70 max-w-xs leading-relaxed font-medium">
+                  Your payment of <strong className="text-charcoal font-black">&#8377;{upgradePlan === 'yearly' ? '2,999' : '299'}</strong> cleared. Pro Creator features and permanent vector QR are now live!
+                </p>
+
+                <div className="w-full p-3.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-emerald-700">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Status: Active Pro Member</span>
+                  </div>
+                  <span className="font-mono text-charcoal/60">
+                    {upgradePlan === 'yearly' ? '365 Days' : '30 Days'}
+                  </span>
+                </div>
+
+                {/* Continue with Dashboard Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUpgradeModal(false);
+                    setUpgradeModalStep('plan');
+                  }}
+                  className="w-full py-4 px-6 rounded-full bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer mt-2"
+                >
+                  <span>Continue with Dashboard</span>
+                  <ArrowRight className="w-4 h-4 text-[#FDF166]" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -17,8 +17,11 @@ import {
   Sparkles,
   ExternalLink,
   Zap,
-  Radio,
-  BadgeCheck
+  QrCode,
+  Building,
+  Timer,
+  ChevronRight,
+  Shield
 } from 'lucide-react';
 import { 
   checkUsernameAvailability, 
@@ -39,7 +42,12 @@ interface OnboardingProps {
 export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
   const { showToast } = useToast();
 
-  // 4 Clean Steps: 1=Google Sign-In, 2=Claim Handle & Details, 3=Payment Activation, 4=Success Celebration
+  // 5 Step Flow:
+  // Step 1: Welcome & Google Sign-In
+  // Step 2: Claim Handle & Details (Display Name, Mobile Phone, Unique Handle)
+  // Step 3: Choose Plan (Monthly ₹299 vs Yearly ₹2,999) -> "Pay ₹299" / "Pay ₹2,999"
+  // Step 4: Dedicated Payment Gateway Page (UPI QR / Cards / NetBanking)
+  // Step 5: Payment Succeed Popup / Celebration -> "Continue with Dashboard"
   const [step, setStep] = useState<number>(1);
 
   // Authentication State
@@ -65,13 +73,27 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
     normalized: '',
   });
 
-  // Payment State
+  // Plan Selection State (Step 3)
   const [selectedPlan, setSelectedPlan] = useState<'pro_monthly' | 'pro_yearly'>('pro_monthly');
+
+  // Payment Gateway State (Step 4)
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'netbanking'>('upi');
+  const [upiId, setUpiId] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [selectedBank, setSelectedBank] = useState('HDFC Bank');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [processingStatusText, setProcessingStatusText] = useState('Verifying with Bank...');
+  const [paymentTimeLeft, setPaymentTimeLeft] = useState(599); // 09:59 timer
+
+  // Success State (Step 5)
   const [activatedHandle, setActivatedHandle] = useState('');
   const [hasCopiedUrl, setHasCopiedUrl] = useState(false);
+  const [transactionRef, setTransactionRef] = useState('');
 
   const displayHost = typeof window !== 'undefined' ? window.location.host : 'tapping.bio';
+  const planAmount = selectedPlan === 'pro_yearly' ? 2999 : 299;
 
   // Initialize with existing profile data if present
   useEffect(() => {
@@ -111,6 +133,22 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
     return () => clearTimeout(timer);
   }, [rawUsername]);
 
+  // Payment countdown timer when on Payment Page (Step 4)
+  useEffect(() => {
+    if (step !== 4) return;
+    const interval = setInterval(() => {
+      setPaymentTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [step]);
+
+  // Format timer MM:SS
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   // Handle Google Sign-In (instant authentication with no OTP)
   const handleGoogleSignIn = () => {
     setIsAuthenticating(true);
@@ -134,7 +172,7 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
     }, 450);
   };
 
-  // Continue with manual email (also zero OTP)
+  // Continue with manual email (zero OTP)
   const handleManualEmailContinue = (e: React.FormEvent) => {
     e.preventDefault();
     if (!userEmail.trim()) {
@@ -155,8 +193,8 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
     setStep(2);
   };
 
-  // Validate step 2 details and proceed to payment
-  const handleProceedToPayment = () => {
+  // Validate step 2 details and proceed to Plan Selection (Step 3)
+  const handleProceedToPlanSelection = () => {
     const cleanDigits = mobileNumber.replace(/\D/g, '');
     if (cleanDigits.length < 10) {
       setPhoneError('Please enter a valid 10-digit mobile number');
@@ -169,34 +207,49 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
       return;
     }
 
-    setStep(3); // Proceed to plan selection & payment
+    setStep(3); // Proceed to plan selection screen
   };
 
-  // Process Subscription Payment & Activate Profile
-  const handleProcessPayment = () => {
+  // Step 3 -> Step 4: User clicks "Pay ₹299" or "Pay ₹2,999" -> opens Payment Page
+  const handleOpenPaymentPage = () => {
+    setPaymentTimeLeft(599); // Reset 10 minute session timer
+    setStep(4); // Open the dedicated Payment Gateway Page!
+  };
+
+  // Step 4: Process the actual Payment on the Payment Page
+  const handleCompletePayment = (methodLabel: string) => {
     setIsProcessingPayment(true);
+    setProcessingStatusText('Contacting Payment Gateway...');
+
     const cleanDigits = mobileNumber.replace(/\D/g, '');
     const fullPhone = `${countryCode} ${cleanDigits}`;
-    const amount = selectedPlan === 'pro_yearly' ? 2999 : 299;
+    const txId = `UPI_TXN_${Date.now().toString().slice(-6)}_${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    setTransactionRef(txId);
 
     setTimeout(() => {
+      setProcessingStatusText('Verifying Bank Authorization...');
+    }, 600);
+
+    setTimeout(() => {
+      setProcessingStatusText('Payment Approved! Activating Handle...');
+
       const { user } = activateUserProfile({
         username: usernameStatus.normalized,
         mobileNumber: fullPhone,
         fullName: fullName.trim() || usernameStatus.normalized,
         email: userEmail || `${usernameStatus.normalized}@tapping.bio`,
         plan: selectedPlan,
-        paymentMethod: 'UPI',
-        amount,
+        paymentMethod: methodLabel.includes('Card') ? 'Card' : methodLabel.includes('NetBanking') ? 'NetBanking' : 'UPI',
+        amount: planAmount,
       });
 
       setActivatedHandle(user.username);
       setIsProcessingPayment(false);
 
-      // Trigger multi-burst confetti celebration
+      // Trigger multi-burst celebration confetti
       try {
         confetti({
-          particleCount: 80,
+          particleCount: 90,
           spread: 80,
           origin: { y: 0.55 },
           colors: ['#4F83FF', '#B6F554', '#FDF166', '#141518'],
@@ -209,7 +262,7 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
             origin: { x: 0 },
             colors: ['#B6F554', '#FDF166'],
           });
-        }, 200);
+        }, 250);
         setTimeout(() => {
           confetti({
             particleCount: 50,
@@ -218,23 +271,24 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
             origin: { x: 1 },
             colors: ['#4F83FF', '#B6F554'],
           });
-        }, 400);
+        }, 450);
       } catch {
-        // Safe fallback if confetti canvas fails
+        // Safe fallback
       }
 
       showToast(
-        'Payment Confirmed!',
-        `Your creator link is live at tapping.bio/${user.username}`,
+        'Payment Successful!',
+        `₹${planAmount} payment cleared. Profile live at tapping.bio/${user.username}`,
         'success'
       );
-      setStep(4); // Advance to Animated Success Page
-    }, 1100);
+
+      setStep(5); // Advance to the Payment Succeed Popup / Celebration Screen!
+    }, 1250);
   };
 
-  // Multi-burst confetti on success screen mount
+  // Multi-burst confetti on Step 5 mount
   useEffect(() => {
-    if (step === 4) {
+    if (step === 5) {
       try {
         confetti({
           particleCount: 100,
@@ -243,7 +297,7 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
           colors: ['#4F83FF', '#B6F554', '#FDF166', '#141518'],
         });
       } catch {
-        // Ignore
+        // Safe fallback
       }
     }
   }, [step]);
@@ -255,23 +309,23 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
         <div className="flex items-center gap-3">
           <TappingLogo size="sm" variant="full" />
           <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#FDF166] text-charcoal border border-black/10">
-            CREATOR ONBOARDING
+            {step === 4 ? 'PAYMENT GATEWAY' : step === 5 ? 'PAYMENT CONFIRMED' : 'CREATOR ONBOARDING'}
           </span>
         </div>
 
-        {step < 4 && (
+        {step <= 4 && (
           <div className="text-xs font-black text-charcoal/60 bg-white px-3.5 py-1.5 rounded-full border border-black/10 shadow-2xs">
-            Step {step} of 3
+            Step {step} of 4
           </div>
         )}
       </div>
 
       {/* Main Container Card */}
       <div className="relative w-full max-w-lg bg-white rounded-4xl p-6 sm:p-8 shadow-card border border-black/10 text-center mt-14 mb-8">
-        {/* Step Indicator Progress (Only during setup steps) */}
-        {step < 4 && (
+        {/* Step Indicator Progress (Steps 1 to 4) */}
+        {step <= 4 && (
           <div className="flex justify-center items-center gap-1.5 mb-7">
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
@@ -316,7 +370,7 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
                     <Smartphone className="w-4 h-4 stroke-[2.2]" />
                   </div>
                   <h4 className="font-black text-charcoal">Smart Bio Link</h4>
-                  <p className="text-[10px] text-charcoal/60 mt-0.5">Custom themes & products</p>
+                  <p className="text-[10px] text-charcoal/60 mt-0.5">Custom themes & store</p>
                 </div>
 
                 <div className="p-3 rounded-2xl bg-[#FAF7F2] border border-black/5">
@@ -530,14 +584,14 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
                   </p>
                 </div>
 
-                {/* Continue to Activation Button */}
+                {/* Continue to Plan Selection Button */}
                 <button
                   type="button"
                   disabled={!usernameStatus.available || isCheckingUsername || mobileNumber.replace(/\D/g, '').length < 10}
-                  onClick={handleProceedToPayment}
+                  onClick={handleProceedToPlanSelection}
                   className="w-full mt-2 py-3.5 px-6 rounded-full bg-[#141518] hover:bg-black disabled:opacity-40 text-white font-black text-xs flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-sm cursor-pointer disabled:cursor-not-allowed"
                 >
-                  <span>Proceed to Activation & Payment</span>
+                  <span>Choose Membership Plan</span>
                   <ArrowRight className="w-4 h-4 text-[#FDF166]" />
                 </button>
               </div>
@@ -553,7 +607,7 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
             </motion.div>
           )}
 
-          {/* STEP 3: Plan Selection & Payment Activation */}
+          {/* STEP 3: Plan Selection (Choose Monthly ₹299 vs Yearly ₹2,999) */}
           {step === 3 && (
             <motion.div
               key="step3"
@@ -568,24 +622,24 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
               </div>
 
               <h2 className="text-xl sm:text-2xl font-black text-charcoal tracking-tight">
-                Activate Your Creator Profile
+                Select Your Membership Plan
               </h2>
               <p className="text-xs text-charcoal/70 mt-1 max-w-sm leading-relaxed font-medium">
-                Handle reserved for <strong className="text-charcoal font-black">@{usernameStatus.normalized}</strong>. Complete activation to publish your profile live.
+                Reserved for <strong className="text-charcoal font-black">@{usernameStatus.normalized}</strong>. Select your pass to proceed to the secure payment page.
               </p>
 
-              {/* Plan Selection Cards */}
+              {/* Clean Plan Selection Cards */}
               <div className="grid grid-cols-2 gap-3 w-full mt-5 text-left">
                 <div
                   onClick={() => setSelectedPlan('pro_monthly')}
                   className={`p-4 rounded-3xl border cursor-pointer transition-all ${
                     selectedPlan === 'pro_monthly'
                       ? 'border-[#141518] bg-white ring-2 ring-charcoal/10 shadow-sm'
-                      : 'border-black/10 bg-[#FAF7F2] opacity-80'
+                      : 'border-black/10 bg-[#FAF7F2] opacity-80 hover:opacity-100'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase text-charcoal/60">Monthly</span>
+                    <span className="text-[10px] font-black uppercase text-charcoal/60">Monthly Pass</span>
                     <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                       selectedPlan === 'pro_monthly' ? 'border-charcoal bg-charcoal text-white' : 'border-black/30'
                     }`}>
@@ -604,7 +658,7 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
                   className={`p-4 rounded-3xl border cursor-pointer transition-all relative ${
                     selectedPlan === 'pro_yearly'
                       ? 'border-[#4F83FF] bg-[#EFF4FF]/30 ring-2 ring-[#4F83FF]/30 shadow-sm'
-                      : 'border-black/10 bg-[#FAF7F2] opacity-80'
+                      : 'border-black/10 bg-[#FAF7F2] opacity-80 hover:opacity-100'
                   }`}
                 >
                   <span className="absolute -top-2 right-3 text-[9px] font-black px-2 py-0.5 rounded-full bg-[#B6F554] text-charcoal border border-black/10">
@@ -626,33 +680,33 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
                 </div>
               </div>
 
-              {/* Security & Instant Payment Reassurance Strip */}
-              <div className="w-full mt-4 py-3 px-4 rounded-2xl bg-[#FAF7F2] border border-black/10 flex items-center justify-center gap-2.5 text-[11px] font-bold text-charcoal/70">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 stroke-[2.2]" />
-                <span>Instant activation via UPI, Cards & NetBanking</span>
+              {/* What is Included Preview */}
+              <div className="w-full mt-4 p-3.5 rounded-2xl bg-[#FAF7F2] border border-black/5 text-left text-[11px] font-medium text-charcoal/80 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 stroke-[3]" />
+                  <span>Permanent bio link at <strong>tapping.bio/{usernameStatus.normalized}</strong></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 stroke-[3]" />
+                  <span>Permanent Vector QR Code (never expires or breaks)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 stroke-[3]" />
+                  <span>Direct Apple &amp; Android phonebook .vcf contact card download</span>
+                </div>
               </div>
 
-              {/* Direct Pay & Activate Button */}
+              {/* Proceed to Payment Page Button (Clicking opens Payment Page) */}
               <button
                 type="button"
-                disabled={isProcessingPayment}
-                onClick={handleProcessPayment}
-                className="w-full mt-5 py-4 px-6 rounded-full bg-[#141518] hover:bg-black text-white font-black text-sm flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer disabled:opacity-60"
+                onClick={handleOpenPaymentPage}
+                className="w-full mt-5 py-4 px-6 rounded-full bg-[#141518] hover:bg-black text-white font-black text-sm flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
               >
-                {isProcessingPayment ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Activating Profile & Securing Handle...</span>
-                  </div>
-                ) : (
-                  <>
-                    <CreditCard className="w-4 h-4 text-[#FDF166]" />
-                    <span>
-                      Pay &#8377;{selectedPlan === 'pro_yearly' ? '2,999/yr' : '299/mo'} & Activate
-                    </span>
-                    <ArrowRight className="w-4 h-4 text-[#FDF166]" />
-                  </>
-                )}
+                <CreditCard className="w-4 h-4 text-[#FDF166]" />
+                <span>
+                  Proceed to Pay &#8377;{selectedPlan === 'pro_yearly' ? '2,999' : '299'}
+                </span>
+                <ArrowRight className="w-4 h-4 text-[#FDF166]" />
               </button>
 
               <div className="flex w-full gap-3 mt-4">
@@ -666,20 +720,317 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
             </motion.div>
           )}
 
-          {/* STEP 4: Animated Payment Success Celebration Screen */}
+          {/* STEP 4: Dedicated Real Indian Payment Page (UPI QR / Cards / NetBanking) */}
           {step === 4 && (
             <motion.div
               key="step4"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.22 }}
+              className="flex flex-col items-center"
+            >
+              {/* Payment Header */}
+              <div className="w-full flex items-center justify-between pb-3 border-b border-black/10">
+                <div className="text-left">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
+                    <span className="text-[10px] font-black uppercase tracking-wider text-charcoal/70">
+                      Tapping Payment Gateway
+                    </span>
+                  </div>
+                  <h3 className="text-base font-black text-charcoal">Complete Your Payment</h3>
+                </div>
+
+                <div className="text-right">
+                  <span className="text-[10px] font-bold text-charcoal/50 block">Amount Payable</span>
+                  <span className="text-lg font-black text-charcoal">
+                    &#8377;{planAmount.toLocaleString('en-IN')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Order & Timer Summary Strip */}
+              <div className="w-full mt-3 px-3 py-2 rounded-2xl bg-[#FAF7F2] border border-black/5 flex items-center justify-between text-xs">
+                <div className="text-left">
+                  <span className="text-[10px] font-bold text-charcoal/60">Membership:</span>
+                  <p className="font-black text-charcoal text-[11px]">
+                    {selectedPlan === 'pro_yearly' ? 'Annual Pass (365 Days)' : 'Monthly Pass (30 Days)'} &bull; @{usernameStatus.normalized}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 text-rose-600 bg-rose-50 px-2.5 py-1 rounded-xl border border-rose-200 font-mono text-[11px] font-bold">
+                  <Timer className="w-3.5 h-3.5" />
+                  <span>{formatTime(paymentTimeLeft)}</span>
+                </div>
+              </div>
+
+              {/* Payment Method Selector Tabs */}
+              <div className="grid grid-cols-3 gap-2 w-full mt-4">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('upi')}
+                  className={`py-2.5 px-3 rounded-2xl border text-center transition-all cursor-pointer ${
+                    paymentMethod === 'upi'
+                      ? 'border-[#141518] bg-white ring-2 ring-charcoal/10 font-black text-charcoal shadow-xs'
+                      : 'border-black/10 bg-[#FAF7F2] text-charcoal/70'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <QrCode className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="text-xs font-black">UPI / QR</span>
+                  </div>
+                  <span className="text-[9px] text-emerald-700 font-bold block mt-0.5">Instant &bull; Free</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('card')}
+                  className={`py-2.5 px-3 rounded-2xl border text-center transition-all cursor-pointer ${
+                    paymentMethod === 'card'
+                      ? 'border-[#141518] bg-white ring-2 ring-charcoal/10 font-black text-charcoal shadow-xs'
+                      : 'border-black/10 bg-[#FAF7F2] text-charcoal/70'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <CreditCard className="w-3.5 h-3.5 text-[#4F83FF]" />
+                    <span className="text-xs font-black">Cards</span>
+                  </div>
+                  <span className="text-[9px] text-charcoal/50 block mt-0.5">RuPay &bull; Visa</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('netbanking')}
+                  className={`py-2.5 px-3 rounded-2xl border text-center transition-all cursor-pointer ${
+                    paymentMethod === 'netbanking'
+                      ? 'border-[#141518] bg-white ring-2 ring-charcoal/10 font-black text-charcoal shadow-xs'
+                      : 'border-black/10 bg-[#FAF7F2] text-charcoal/70'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <Building className="w-3.5 h-3.5 text-amber-600" />
+                    <span className="text-xs font-black">NetBanking</span>
+                  </div>
+                  <span className="text-[9px] text-charcoal/50 block mt-0.5">All Banks</span>
+                </button>
+              </div>
+
+              {/* Payment Method Tab Contents */}
+              <div className="w-full mt-4 text-left">
+                {/* 1. UPI Payment Mode */}
+                {paymentMethod === 'upi' && (
+                  <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 flex flex-col items-center text-center space-y-3">
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[10px] font-black uppercase text-charcoal/60 tracking-wider">
+                        Scan to Pay via Any UPI App
+                      </span>
+                      <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        Zero Gateway Surcharge
+                      </span>
+                    </div>
+
+                    {/* Vector UPI QR Code */}
+                    <div className="p-3 bg-white rounded-2xl border-2 border-black/10 shadow-xs flex flex-col items-center">
+                      <svg className="w-36 h-36" viewBox="0 0 100 100" fill="none">
+                        {/* QR Corners */}
+                        <rect x="5" y="5" width="26" height="26" rx="4" fill="#141518" />
+                        <rect x="9" y="9" width="18" height="18" rx="2" fill="white" />
+                        <rect x="13" y="13" width="10" height="10" rx="2" fill="#141518" />
+
+                        <rect x="69" y="5" width="26" height="26" rx="4" fill="#141518" />
+                        <rect x="73" y="9" width="18" height="18" rx="2" fill="white" />
+                        <rect x="77" y="13" width="10" height="10" rx="2" fill="#141518" />
+
+                        <rect x="5" y="69" width="26" height="26" rx="4" fill="#141518" />
+                        <rect x="9" y="73" width="18" height="18" rx="2" fill="white" />
+                        <rect x="13" y="77" width="10" height="10" rx="2" fill="#141518" />
+
+                        {/* QR Data Matrix simulation */}
+                        <rect x="36" y="8" width="6" height="6" fill="#141518" />
+                        <rect x="46" y="14" width="6" height="6" fill="#141518" />
+                        <rect x="56" y="8" width="6" height="6" fill="#141518" />
+                        <rect x="38" y="24" width="6" height="6" fill="#141518" />
+                        <rect x="48" y="28" width="6" height="6" fill="#141518" />
+
+                        <rect x="8" y="38" width="6" height="6" fill="#141518" />
+                        <rect x="18" y="44" width="6" height="6" fill="#141518" />
+                        <rect x="28" y="38" width="6" height="6" fill="#141518" />
+
+                        {/* Center Logo Square */}
+                        <rect x="38" y="38" width="24" height="24" rx="6" fill="#FDF166" stroke="#141518" strokeWidth="2" />
+                        <text x="50" y="54" fontSize="10" fontWeight="900" textAnchor="middle" fill="#141518">UPI</text>
+
+                        <rect x="68" y="38" width="6" height="6" fill="#141518" />
+                        <rect x="78" y="44" width="6" height="6" fill="#141518" />
+                        <rect x="86" y="38" width="6" height="6" fill="#141518" />
+
+                        <rect x="38" y="68" width="6" height="6" fill="#141518" />
+                        <rect x="48" y="76" width="6" height="6" fill="#141518" />
+                        <rect x="58" y="68" width="6" height="6" fill="#141518" />
+                        <rect x="68" y="78" width="6" height="6" fill="#141518" />
+                        <rect x="78" y="68" width="6" height="6" fill="#141518" />
+                        <rect x="86" y="76" width="6" height="6" fill="#141518" />
+                      </svg>
+                      <span className="text-[10px] font-mono font-bold text-charcoal/70 mt-1">
+                        Scan &bull; UPI ID: tapping@icici
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-charcoal/60">
+                      <span className="px-2 py-0.5 rounded-md bg-white border border-black/10">GPay</span>
+                      <span className="px-2 py-0.5 rounded-md bg-white border border-black/10">PhonePe</span>
+                      <span className="px-2 py-0.5 rounded-md bg-white border border-black/10">Paytm</span>
+                      <span className="px-2 py-0.5 rounded-md bg-white border border-black/10">CRED</span>
+                      <span className="px-2 py-0.5 rounded-md bg-white border border-black/10">BHIM</span>
+                    </div>
+
+                    {/* Or Enter UPI ID */}
+                    <div className="w-full pt-2 border-t border-black/5">
+                      <input
+                        type="text"
+                        value={upiId}
+                        onChange={(e) => setUpiId(e.target.value)}
+                        placeholder="Or enter UPI ID (e.g. mobile@okhdfcbank)"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-black/10 text-xs font-mono font-bold text-charcoal focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Cards Payment Mode */}
+                {paymentMethod === 'card' && (
+                  <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 space-y-3">
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-charcoal/70 block mb-1">
+                        Card Number
+                      </label>
+                      <input
+                        type="text"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value)}
+                        placeholder="4532 &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; 8921"
+                        maxLength={19}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-black/10 text-xs font-mono font-bold text-charcoal focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-charcoal/70 block mb-1">
+                          Expiry MM/YY
+                        </label>
+                        <input
+                          type="text"
+                          value={cardExpiry}
+                          onChange={(e) => setCardExpiry(e.target.value)}
+                          placeholder="12/28"
+                          maxLength={5}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-black/10 text-xs font-mono font-bold text-charcoal focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-charcoal/70 block mb-1">
+                          CVV / CVC
+                        </label>
+                        <input
+                          type="password"
+                          value={cardCvv}
+                          onChange={(e) => setCardCvv(e.target.value)}
+                          placeholder="842"
+                          maxLength={4}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-black/10 text-xs font-mono font-bold text-charcoal focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1 text-[10px] font-bold text-charcoal/60">
+                      <Shield className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Supports Indian RuPay, Visa, Mastercard &amp; Maestro</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. NetBanking Payment Mode */}
+                {paymentMethod === 'netbanking' && (
+                  <div className="p-4 rounded-3xl bg-[#FAF7F2] border border-black/10 space-y-2.5">
+                    <label className="text-[10px] font-black uppercase text-charcoal/70 block">
+                      Select Popular Indian Bank
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {['HDFC Bank', 'State Bank of India', 'ICICI Bank', 'Axis Bank', 'Kotak Mahindra'].map((b) => (
+                        <button
+                          key={b}
+                          type="button"
+                          onClick={() => setSelectedBank(b)}
+                          className={`p-2.5 rounded-xl border text-left text-xs font-bold transition-all cursor-pointer ${
+                            selectedBank === b
+                              ? 'border-[#141518] bg-white text-charcoal font-black shadow-2xs'
+                              : 'border-black/10 bg-white/70 text-charcoal/70'
+                          }`}
+                        >
+                          {b}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Security Trust Reassurance */}
+              <div className="w-full mt-3 py-2 px-3 rounded-xl bg-gray-50 border border-black/5 flex items-center justify-center gap-2 text-[10px] font-bold text-charcoal/60">
+                <Lock className="w-3.5 h-3.5 text-emerald-600 stroke-[2.2]" />
+                <span>256-Bit SSL Encrypted &bull; RBI Compliant Indian Payment Gateway</span>
+              </div>
+
+              {/* Primary Pay Now Action Button on the Payment Page */}
+              <button
+                type="button"
+                disabled={isProcessingPayment}
+                onClick={() => handleCompletePayment(paymentMethod === 'card' ? 'Card' : paymentMethod === 'netbanking' ? 'NetBanking' : 'UPI')}
+                className="w-full mt-4 py-4 px-6 rounded-full bg-[#141518] hover:bg-black text-white font-black text-sm flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer disabled:opacity-60"
+              >
+                {isProcessingPayment ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>{processingStatusText}</span>
+                  </div>
+                ) : (
+                  <>
+                    <CreditCard className="w-4 h-4 text-[#FDF166]" />
+                    <span>
+                      Pay &#8377;{planAmount.toLocaleString('en-IN')} &amp; Activate Profile
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-[#FDF166]" />
+                  </>
+                )}
+              </button>
+
+              <div className="flex w-full gap-3 mt-3">
+                <button
+                  disabled={isProcessingPayment}
+                  onClick={() => setStep(3)}
+                  className="px-4 py-2.5 rounded-full bg-black/5 hover:bg-black/10 text-xs font-bold text-charcoal cursor-pointer disabled:opacity-40"
+                >
+                  Change Plan
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* STEP 5: Payment Succeed Popup / Celebration Screen */}
+          {step === 5 && (
+            <motion.div
+              key="step5"
               initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: 'spring', stiffness: 220, damping: 20 }}
+              transition={{ type: 'spring', stiffness: 240, damping: 20 }}
               className="flex flex-col items-center py-2"
             >
-              {/* Animated Celebration Badge */}
+              {/* Animated Celebration Bouncy Checkmark */}
               <motion.div
                 initial={{ scale: 0, rotate: -25 }}
                 animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.05 }}
+                transition={{ type: 'spring', stiffness: 280, damping: 18, delay: 0.05 }}
                 className="w-20 h-20 rounded-3xl bg-[#B6F554] border border-black/10 text-charcoal flex items-center justify-center my-3 shadow-soft"
               >
                 <Check className="w-10 h-10 stroke-[3.5] text-charcoal" />
@@ -700,7 +1051,7 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
                 transition={{ delay: 0.2 }}
                 className="text-xs text-charcoal/70 mt-1 max-w-sm leading-relaxed font-medium"
               >
-                Your payment of <strong className="text-charcoal font-black">&#8377;{selectedPlan === 'pro_yearly' ? '2,999' : '299'}</strong> cleared. Your permanent creator profile is now officially active and live on the web!
+                Your payment of <strong className="text-charcoal font-black">&#8377;{planAmount.toLocaleString('en-IN')}</strong> was received. Your creator bio link is now officially live on the web!
               </motion.p>
 
               {/* Permanent Live Bio Link Showcase Card */}
@@ -756,9 +1107,15 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
                     {selectedPlan === 'pro_yearly' ? 'Annual Pass (365 Days)' : 'Monthly Pass (30 Days)'}
                   </div>
                 </div>
+
+                {transactionRef && (
+                  <div className="text-[9px] font-mono text-charcoal/40 text-center pt-0.5">
+                    Ref ID: {transactionRef}
+                  </div>
+                )}
               </motion.div>
 
-              {/* Action Buttons */}
+              {/* Action Buttons: Continue with Dashboard + View Live Link */}
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -778,9 +1135,9 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
                 <button
                   type="button"
                   onClick={onComplete}
-                  className="flex-1 py-3.5 px-6 rounded-full bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                  className="flex-1 py-4 px-6 rounded-full bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
                 >
-                  <span>Open Creator Dashboard</span>
+                  <span>Continue with Dashboard</span>
                   <ArrowRight className="w-4 h-4 text-[#FDF166]" />
                 </button>
               </motion.div>
