@@ -319,9 +319,9 @@ function DashboardContent() {
               <button
                 type="button"
                 onClick={() => handleActivatePlan(upgradePlan)}
-                className="w-full py-3.5 px-5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                className="w-full py-4 px-5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
               >
-                <CreditCard className="w-4 h-4" />
+                <CreditCard className="w-4 h-4 text-[#FDF166]" />
                 <span>
                   Confirm &amp; Activate {upgradePlan === 'yearly' ? 'Annual Plan (\u20B92,999)' : 'Monthly Plan (\u20B9299)'}
                 </span>
