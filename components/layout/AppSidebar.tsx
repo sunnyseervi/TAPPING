@@ -121,44 +121,47 @@ export default function AppSidebar({
         <div className="p-4 border-t border-black/5 bg-white/50 backdrop-blur-sm">
           <div className="p-4 rounded-3xl bg-white border border-black/10 shadow-soft flex flex-col gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl overflow-hidden bg-[#FAF7F2] shrink-0 border border-black/10 shadow-xs relative">
-                <img
-                  src={profile.avatarUrl || 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80'}
-                  alt={profile.displayName}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80';
-                  }}
-                  className={`w-full h-full ${profile.avatarFit === 'cover' ? 'object-cover' : 'object-contain'}`}
-                  style={{
-                    transform: `scale(${(profile.avatarZoom ?? 100) / 100}) translate(${profile.avatarPosX ?? 0}px, ${profile.avatarPosY ?? 0}px)`,
-                    transformOrigin: 'center center',
-                  }}
-                />
+              <div className="w-11 h-11 rounded-2xl overflow-hidden bg-[#FDF166] shrink-0 border border-black/10 shadow-xs relative flex items-center justify-center">
+                {profile.avatarUrl ? (
+                  <img
+                    src={profile.avatarUrl}
+                    alt={profile.displayName || profile.username || 'Creator'}
+                    className={`w-full h-full ${profile.avatarFit === 'cover' ? 'object-cover' : 'object-contain'}`}
+                    style={{
+                      transform: `scale(${(profile.avatarZoom ?? 100) / 100}) translate(${profile.avatarPosX ?? 0}px, ${profile.avatarPosY ?? 0}px)`,
+                      transformOrigin: 'center center',
+                    }}
+                  />
+                ) : (
+                  <span className="text-sm font-black text-charcoal select-none">
+                    {((profile.displayName && profile.displayName !== 'Aarav Sharma' ? profile.displayName : profile.username) || 'CR').slice(0, 2).toUpperCase()}
+                  </span>
+                )}
               </div>
               <div className="min-w-0 text-left flex-1">
                 <div className="flex items-center gap-1.5">
                   <p className="text-xs font-black text-charcoal truncate leading-tight">
-                    {profile.displayName}
+                    {(profile.displayName && profile.displayName !== 'Aarav Sharma') ? profile.displayName : (profile.username || 'Creator')}
                   </p>
                   <span className="text-[9px] font-black px-1.5 py-0.2 rounded-md bg-[#FDF166] border border-black/10 text-charcoal shrink-0">
                     PRO
                   </span>
                 </div>
                 <p className="text-[10px] text-charcoal/60 truncate mt-0.5 font-bold">
-                  @{profile.username} &middot; Pro Creator
+                  @{profile.username || 'creator'} &middot; Pro Creator
                 </p>
               </div>
             </div>
 
             <a
-              href={`/${profile.username}`}
+              href={`/${profile.username || 'creator'}`}
               target="_blank"
               rel="noreferrer"
-              className="w-full py-2.5 px-3 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-xs transition-transform active:scale-95"
+              className="w-full py-2.5 px-3 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-xs transition-transform active:scale-95 cursor-pointer"
               title="Open Public Bio Profile"
             >
               <span>View Live Bio Space</span>
-              <ExternalLink className="w-3.5 h-3.5" />
+              <ExternalLink className="w-3.5 h-3.5 text-[#FDF166]" />
             </a>
           </div>
         </div>

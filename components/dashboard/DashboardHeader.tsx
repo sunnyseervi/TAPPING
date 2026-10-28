@@ -52,7 +52,7 @@ export default function DashboardHeader({
         </button>
 
         <h1 suppressHydrationWarning className="text-base sm:text-xl md:text-2xl font-black tracking-tight text-charcoal truncate">
-          {profile.displayName}
+          {(profile.displayName && profile.displayName !== 'Aarav Sharma') ? profile.displayName : (profile.username || 'Creator')}
         </h1>
       </div>
 

@@ -249,7 +249,7 @@ export default function AccountOrdersSection({
               </span>
               <span className="font-semibold text-charcoal flex items-center gap-1 bg-[#FAF7F2] px-2.5 py-1 rounded-xl border border-black/5">
                 <Phone className="w-3 h-3 text-emerald-600" />
-                <span>{profile.mobileNumber || '+91 98765 43210'}</span>
+                <span>{profile.mobileNumber || 'Contact Number Added'}</span>
                 <span className="text-[10px] text-emerald-700 font-bold">Verified</span>
               </span>
             </div>

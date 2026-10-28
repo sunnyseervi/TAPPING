@@ -31,8 +31,8 @@ export default function CreatorDashboard({
 }: CreatorDashboardProps) {
   const activeLinks = links.filter((link) => link.isActive);
   const totalClicks = links.reduce((sum, link) => sum + (link.clickCount || 0), 0);
-  const totalViews = analytics.totalViews || 1;
-  const ctr = ((totalClicks / totalViews) * 100).toFixed(1);
+  const totalViews = analytics.totalViews || 0;
+  const ctr = totalViews > 0 ? Number(((totalClicks / totalViews) * 100).toFixed(1)) : 0.0;
 
   // Sorted links by popularity (most clicks first)
   const rankedLinks = [...links].sort((a, b) => (b.clickCount || 0) - (a.clickCount || 0));
@@ -47,6 +47,10 @@ export default function CreatorDashboard({
     }));
   };
 
+  const creatorName = (profile.displayName && profile.displayName !== 'Aarav Sharma') 
+    ? profile.displayName 
+    : (profile.username || 'Creator');
+
   return (
     <section className="space-y-4 sm:space-y-6 text-left">
       {/* Top Banner Card */}
@@ -57,7 +61,7 @@ export default function CreatorDashboard({
               Creator Space
             </span>
             <h1 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-charcoal">
-              Welcome back, {profile.displayName}
+              Welcome back, {creatorName}
             </h1>
             <p className="mt-1.5 max-w-xl text-xs sm:text-sm font-medium text-charcoal/60 leading-relaxed">
               Real-time analytics and telemetry for your public link-in-bio page and smart contactless NFC hardware.

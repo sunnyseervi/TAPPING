@@ -59,7 +59,7 @@ import IndianFlag from '@/components/ui/IndianFlag';
 
 export default function PublicProfilePage() {
   const params = useParams();
-  const usernameParam = (params?.username as string) || 'aarav';
+  const usernameParam = (params?.username as string) || 'creator';
   const { showToast } = useToast();
 
   const [isHydrated, setIsHydrated] = useState(false);

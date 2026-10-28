@@ -99,13 +99,17 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
   useEffect(() => {
     const existing = getStoredProfile();
     if (existing) {
-      if (existing.displayName) setFullName(existing.displayName);
-      if (existing.socialLinks?.email) setUserEmail(existing.socialLinks.email);
+      if (existing.displayName && existing.displayName !== 'Aarav Sharma' && existing.displayName !== 'Creator') {
+        setFullName(existing.displayName);
+      }
+      if (existing.socialLinks?.email && !existing.socialLinks.email.includes('aarav')) {
+        setUserEmail(existing.socialLinks.email);
+      }
       if (existing.mobileNumber) {
         const digits = existing.mobileNumber.replace(/\D/g, '').slice(-10);
         if (digits) setMobileNumber(digits);
       }
-      if (existing.username && existing.username !== 'aarav' && existing.username !== 'alex') {
+      if (existing.username && existing.username !== 'aarav' && existing.username !== 'alex' && existing.username !== 'creator') {
         setRawUsername(existing.username);
       }
     }

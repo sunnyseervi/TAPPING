@@ -186,21 +186,21 @@ export default function NFCTagShop({ profile, vcard, username }: NFCTagShopProps
   // Chip Action & Data Filling Form States
   const [chipAction, setChipAction] = useState<string>('profile');
   const [targetUrl, setTargetUrl] = useState<string>(`https://tapping.bio/${username}`);
-  const [engravedName, setEngravedName] = useState<string>(profile.displayName || 'Aarav Sharma');
-  const [engravedTagline, setEngravedTagline] = useState<string>(vcard.jobTitle || 'Founder & Architect');
+  const [engravedName, setEngravedName] = useState<string>((profile.displayName && profile.displayName !== 'Aarav Sharma') ? profile.displayName : (profile.username || 'Creator'));
+  const [engravedTagline, setEngravedTagline] = useState<string>(vcard.jobTitle || '');
   const [laserTextColor, setLaserTextColor] = useState<string>('');
   const [customLogoUrl, setCustomLogoUrl] = useState<string>(profile.avatarUrl || '');
   const [specialInstructions, setSpecialInstructions] = useState<string>('');
 
   // Indian Shipping Address Form
-  const [fullName, setFullName] = useState<string>(profile.displayName || 'Aarav Sharma');
-  const [phone, setPhone] = useState<string>('+91 98765 43210');
-  const [email, setEmail] = useState<string>(vcard.workEmail || 'contact@aaravsharma.in');
-  const [addressLine, setAddressLine] = useState<string>('Indiranagar 100ft Road, 4th Block');
-  const [landmark, setLandmark] = useState<string>('Near BDA Complex');
-  const [city, setCity] = useState<string>('Bengaluru');
-  const [state, setState] = useState<string>('Karnataka');
-  const [pincode, setPincode] = useState<string>('560038');
+  const [fullName, setFullName] = useState<string>((profile.displayName && profile.displayName !== 'Aarav Sharma') ? profile.displayName : (profile.username || 'Creator'));
+  const [phone, setPhone] = useState<string>(profile.mobileNumber || '');
+  const [email, setEmail] = useState<string>(vcard.workEmail || profile.socialLinks?.email || '');
+  const [addressLine, setAddressLine] = useState<string>('');
+  const [landmark, setLandmark] = useState<string>('');
+  const [city, setCity] = useState<string>('');
+  const [state, setState] = useState<string>('');
+  const [pincode, setPincode] = useState<string>('');
 
   // Orders History State
   const [orders, setOrders] = useState<HardwareOrder[]>([]);
@@ -213,41 +213,19 @@ export default function NFCTagShop({ profile, vcard, username }: NFCTagShopProps
     try {
       const saved = localStorage.getItem('tapping_hardware_orders');
       if (saved) {
-        setOrders(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // Clean legacy demo orders
+          const cleaned = parsed.filter((o: HardwareOrder) => o.id !== 'TAP-IN-9482');
+          setOrders(cleaned);
+        } else {
+          setOrders([]);
+        }
       } else {
-        // Initial authentic demo order
-        const initialOrder: HardwareOrder = {
-          id: 'TAP-IN-9482',
-          productId: 'metal-nfc-card',
-          productName: 'Laser-Engraved Metal NFC Card',
-          colorName: 'Matte Stealth Black',
-          priceINR: 1499,
-          chipTargetAction: 'profile',
-          chipTargetUrl: `https://tapping.bio/${username}`,
-          engravedName: 'AARAV SHARMA',
-          engravedTagline: 'FOUNDER & ARCHITECT',
-          customLogoUrl: profile.avatarUrl || '',
-          specialInstructions: 'Precision laser engrave in uppercase font with centered alignment.',
-          shipping: {
-            fullName: 'Aarav Sharma',
-            phone: '+91 98765 43210',
-            email: 'contact@aaravsharma.in',
-            addressLine: 'Indiranagar 100ft Road, 4th Block',
-            landmark: 'Near BDA Complex',
-            city: 'Bengaluru',
-            state: 'Karnataka',
-            pincode: '560038',
-          },
-          orderStatus: 'laser_engraving',
-          trackingNumber: 'BD-IN-883921',
-          courier: 'BlueDart Express',
-          createdAt: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-        };
-        setOrders([initialOrder]);
-        localStorage.setItem('tapping_hardware_orders', JSON.stringify([initialOrder]));
+        setOrders([]);
       }
     } catch {
-      // Ignore storage errors
+      setOrders([]);
     }
   }, [username, profile.avatarUrl]);
 

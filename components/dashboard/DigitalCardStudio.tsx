@@ -154,11 +154,13 @@ export default function DigitalCardStudio({
   }, [targetUrl, qrColor]);
 
   // Card Content Data (Pulled directly from saved profile & vcard)
-  const displayName = profile?.displayName || `${vcard.firstName} ${vcard.lastName}`.trim() || 'Aarav Sharma';
-  const jobTitle = profile?.badgeTitle || vcard.jobTitle || 'Founder & Architect';
-  const company = vcard.organization || 'Tapping Technologies India';
-  const phoneNumber = vcard.workPhone || vcard.mobilePhone || profile?.socialLinks?.phone || '+91 98765 43210';
-  const emailAddress = vcard.workEmail || profile?.socialLinks?.email || 'contact@aaravsharma.in';
+  const displayName = (profile?.displayName && profile?.displayName !== 'Aarav Sharma') 
+    ? profile.displayName 
+    : `${vcard.firstName || ''} ${vcard.lastName || ''}`.trim() || profile?.username || 'Creator';
+  const jobTitle = profile?.badgeTitle || vcard.jobTitle || '';
+  const company = vcard.organization || '';
+  const phoneNumber = vcard.workPhone || vcard.mobilePhone || profile?.socialLinks?.phone || profile?.mobileNumber || '';
+  const emailAddress = vcard.workEmail || profile?.socialLinks?.email || '';
   const websiteUrl = vcard.website || `${displayHost}/${username}`;
 
   // Theme Styles Configuration

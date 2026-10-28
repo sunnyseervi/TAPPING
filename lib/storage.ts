@@ -59,8 +59,12 @@ export function getStoredProfile(): Profile {
     const data = localStorage.getItem(KEYS.PROFILE);
     if (!data) return initialProfile;
     const parsed = JSON.parse(data);
-    if (!parsed.avatarUrl || parsed.avatarUrl.includes('photo-1628157582853') || parsed.avatarUrl.includes('photo-1507003211169')) {
-      parsed.avatarUrl = 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80';
+    // Auto-clean any legacy demo data from existing localStorage
+    if (parsed.displayName === 'Aarav Sharma') {
+      parsed.displayName = (parsed.username && parsed.username !== 'aarav') ? parsed.username : 'Creator';
+    }
+    if (parsed.avatarUrl && (parsed.avatarUrl.includes('photo-1532375810709') || parsed.avatarUrl.includes('photo-1628157582853') || parsed.avatarUrl.includes('photo-1507003211169'))) {
+      parsed.avatarUrl = '';
     }
     return { ...initialProfile, ...parsed };
   } catch {
@@ -101,7 +105,12 @@ export function getStoredLinks(): LinkBlock[] {
   if (typeof window === 'undefined') return initialLinks;
   try {
     const data = localStorage.getItem(KEYS.LINKS);
-    return data ? JSON.parse(data) : initialLinks;
+    if (!data) return initialLinks;
+    const parsed = JSON.parse(data);
+    if (!Array.isArray(parsed)) return initialLinks;
+    // Auto-clean any legacy mock links (lnk_1, lnk_2, lnk_3 with fake clicks 1420, 890, 650)
+    const cleaned = parsed.filter(l => !(l.id === 'lnk_1' && l.clickCount === 1420) && !(l.id === 'lnk_2' && l.clickCount === 890) && !(l.id === 'lnk_3' && l.clickCount === 650));
+    return cleaned;
   } catch {
     return initialLinks;
   }
@@ -148,9 +157,16 @@ export function getStoredAnalytics(): AnalyticsSummary {
     const data = localStorage.getItem(KEYS.ANALYTICS);
     if (!data) return initialAnalytics;
     const parsed = JSON.parse(data);
+    const links = getStoredLinks();
+    const actualClicks = links.reduce((acc, l) => acc + (l.clickCount || 0), 0);
+    const views = parsed.totalViews || 0;
+    const calculatedCtr = views > 0 ? Number(((actualClicks / views) * 100).toFixed(1)) : 0;
     return {
       ...initialAnalytics,
       ...parsed,
+      totalClicks: actualClicks,
+      totalViews: views,
+      ctr: calculatedCtr,
       nfcTaps: parsed.nfcTaps ?? initialAnalytics.nfcTaps,
       vcardSaves: parsed.vcardSaves ?? initialAnalytics.vcardSaves,
       qrScans: parsed.qrScans ?? initialAnalytics.qrScans,

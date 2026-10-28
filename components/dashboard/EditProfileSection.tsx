@@ -216,10 +216,10 @@ export default function EditProfileSection({
   const [fontColor, setFontColor] = useState(profile.fontColor || '');
   
   // Contact Details
-  const [phone, setPhone] = useState(vcard?.workPhone || vcard?.mobilePhone || profile.socialLinks?.phone || '+91 98765 43210');
-  const [organization, setOrganization] = useState(vcard?.organization || 'Tapping Technologies India');
-  const [streetAddress, setStreetAddress] = useState(vcard?.streetAddress || 'Indiranagar 100ft Road');
-  const [city, setCity] = useState(vcard?.city || 'Bengaluru, Karnataka');
+  const [phone, setPhone] = useState(vcard?.workPhone || vcard?.mobilePhone || profile.socialLinks?.phone || profile.mobileNumber || '');
+  const [organization, setOrganization] = useState(vcard?.organization || '');
+  const [streetAddress, setStreetAddress] = useState(vcard?.streetAddress || '');
+  const [city, setCity] = useState(vcard?.city || '');
   const [country, setCountry] = useState(vcard?.country || 'India');
   const [website, setWebsite] = useState(vcard?.website || '');
 
@@ -228,8 +228,8 @@ export default function EditProfileSection({
     twitter: profile.socialLinks?.twitter || '',
     linkedin: profile.socialLinks?.linkedin || '',
     github: profile.socialLinks?.github || '',
-    email: profile.socialLinks?.email || vcard?.workEmail || 'contact@aaravsharma.in',
-    phone: profile.socialLinks?.phone || vcard?.workPhone || '+91 98765 43210',
+    email: profile.socialLinks?.email || vcard?.workEmail || '',
+    phone: profile.socialLinks?.phone || vcard?.workPhone || profile.mobileNumber || '',
   });
 
   const notifyLive = (partial: Partial<Profile>) => {
@@ -912,7 +912,7 @@ export default function EditProfileSection({
                   setSocialLinks(updatedSocial);
                   notifyLive({ socialLinks: updatedSocial });
                 }}
-                placeholder="contact@aaravsharma.in"
+                placeholder="creator@example.com"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
             </div>
@@ -1017,7 +1017,7 @@ export default function EditProfileSection({
                 type="url"
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
-                placeholder="https://aaravsharma.in"
+                placeholder="https://example.com"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-charcoal/20"
               />
             </div>
@@ -1699,7 +1699,7 @@ export default function EditProfileSection({
                     { name: 'LinkedIn', title: 'Connect on LinkedIn', subtitle: 'Professional network & experience', url: socialLinks.linkedin || 'https://linkedin.com/in/username', icon: 'briefcase', style: 'sky' },
                     { name: 'GitHub', title: 'Open Source GitHub', subtitle: 'Code repositories & open projects', url: `https://github.com/${socialLinks.github || 'username'}`, icon: 'globe', style: 'default' },
                     { name: 'WhatsApp', title: 'Chat on WhatsApp', subtitle: 'Direct message for quick inquiries', url: `https://wa.me/${phone.replace(/[^0-9]/g, '')}`, icon: 'globe', style: 'mint' },
-                    { name: 'Portfolio', title: 'Design Portfolio', subtitle: 'Curated projects & client work', url: website || 'https://aaravsharma.in', icon: 'globe', style: 'yellow' },
+                    { name: 'Portfolio', title: 'Design Portfolio', subtitle: 'Curated projects & client work', url: website || 'https://example.com', icon: 'globe', style: 'yellow' },
                   ].map((preset) => (
                     <button
                       key={preset.name}

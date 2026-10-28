@@ -70,14 +70,14 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   const [isExporting, setIsExporting] = useState(false);
 
   // Order Details Form State
-  const [shippingName, setShippingName] = useState(username.toUpperCase());
-  const [shippingPhone, setShippingPhone] = useState('+91 98765 43210');
-  const [shippingEmail, setShippingEmail] = useState('creator@tapping.bio');
-  const [shippingStreet, setShippingStreet] = useState('Flat 402, Skyline Residency, 100ft Road');
-  const [shippingCity, setShippingCity] = useState('Bengaluru');
-  const [shippingState, setShippingState] = useState('Karnataka');
-  const [shippingZip, setShippingZip] = useState('560038');
-  const [engravingNotes, setEngravingNotes] = useState('Please ensure laser engraving is high-contrast matte white finish.');
+  const [shippingName, setShippingName] = useState(username ? username.toUpperCase() : 'CREATOR');
+  const [shippingPhone, setShippingPhone] = useState('');
+  const [shippingEmail, setShippingEmail] = useState(username ? `${username}@tapping.bio` : '');
+  const [shippingStreet, setShippingStreet] = useState('');
+  const [shippingCity, setShippingCity] = useState('');
+  const [shippingState, setShippingState] = useState('');
+  const [shippingZip, setShippingZip] = useState('');
+  const [engravingNotes, setEngravingNotes] = useState('');
 
   // Font Popover Dropdown Filter States
   const [isFontDropdownOpen, setIsFontDropdownOpen] = useState(false);
@@ -1372,7 +1372,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                       {currentFontObj.name}
                     </p>
                     <p className="text-[11px] text-charcoal/50 truncate mt-0.5" style={{ fontFamily: currentConfig.fontFamily }}>
-                      {currentConfig.primaryText || 'AARAV SHARMA'} &bull; Aa Bb 123
+                      {currentConfig.primaryText || 'YOUR NAME'} &bull; Aa Bb 123
                     </p>
                   </div>
                 </div>
@@ -1459,7 +1459,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                                 className="text-xs text-charcoal/70 truncate mt-0.5"
                                 style={{ fontFamily: font.family }}
                               >
-                                {currentConfig.primaryText || 'AARAV SHARMA'} &bull; Aa Bb 123
+                                {currentConfig.primaryText || 'YOUR NAME'} &bull; Aa Bb 123
                               </span>
                             </div>
 
@@ -1484,7 +1484,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
             <div className="p-2.5 rounded-xl bg-white border border-black/5 flex items-center justify-between">
               <span className="text-[10px] font-mono text-charcoal/50">Current:</span>
               <span className="text-sm font-black text-charcoal truncate" style={{ fontFamily: currentConfig.fontFamily }}>
-                {currentConfig.primaryText || 'AARAV SHARMA'} &bull; {currentConfig.topLabel || 'TAPPING'}
+                {currentConfig.primaryText || 'YOUR NAME'} &bull; {currentConfig.topLabel || 'TAPPING'}
               </span>
             </div>
           </div>
