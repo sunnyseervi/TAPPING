@@ -26,7 +26,8 @@ import {
   TrendingUp,
   ShieldCheck,
   Zap,
-  Eye
+  Eye,
+  ChevronDown
 } from 'lucide-react';
 import { saveStoredProfile, getStoredProfile } from '@/lib/storage';
 import { downloadVCardFile } from '@/lib/vcard';
@@ -51,6 +52,7 @@ export default function LandingPage() {
 
   // Active showcase creator tab
   const [activeCreatorIndex, setActiveCreatorIndex] = useState(0);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -955,20 +957,111 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-black/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-charcoal/60">
-        <div className="flex items-center gap-2.5">
-          <TappingLogo size="xs" variant="full" />
-          <IndianFlag className="w-4 h-2.8 rounded-xs" />
-          <span className="text-charcoal/50">• Made for Indian Creators</span>
+      {/* FREQUENTLY ASKED QUESTIONS (SEO & GOOGLE RICH SNIPPETS TARGETING) */}
+      <section id="faq" className="max-w-4xl mx-auto px-6 py-20 border-t border-black/5">
+        <div className="text-center mb-12">
+          <span className="text-xs font-black px-3.5 py-1 rounded-full bg-white text-charcoal border border-black/10 shadow-2xs uppercase tracking-wider">
+            Questions &amp; Answers
+          </span>
+          <h2 className="text-3xl sm:text-5xl font-black text-[#141518] mt-3 tracking-tight">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-xs sm:text-sm text-charcoal/65 mt-2 max-w-lg mx-auto font-medium">
+            Everything you need to know about Tapping smart bio links, digital contact cards, and contactless metal NFC hardware in India.
+          </p>
         </div>
-        <div className="flex items-center gap-6">
-          <Link href="/admin" className="text-charcoal/70 hover:text-black hover:underline">
-            Admin Access
-          </Link>
-          <Link href="/dashboard" className="text-charcoal font-black hover:underline">
-            Creator Dashboard →
-          </Link>
+
+        <div className="space-y-3.5">
+          {[
+            {
+              q: 'What is Tapping and how does the link in bio work in India?',
+              a: 'Tapping is the premier link in bio and digital identity platform built specifically for Indian creators, founders, and professionals. It allows you to create an ultra-fast personal bio page (tapping.bio/yourname) containing custom links, product collections, dynamic vector QR codes, and direct vCard contact downloads with full UPI payment support.',
+            },
+            {
+              q: 'How do contactless smart metal NFC business cards work?',
+              a: 'Tapping smart metal NFC cards feature aerospace-grade stainless steel with embedded high-frequency NTAG216 microchips. Simply tapping the card on any modern iPhone or Android smartphone instantly beams your link in bio and contact information without requiring the recipient to install any app.',
+            },
+            {
+              q: 'Can visitors save my contact details directly to their phonebook?',
+              a: 'Yes! Tapping includes a native vCard 3.0 export button. With a single tap, visitors can instantly save your full name, phone number, email, company, and links directly to their Apple iOS Contacts or Google Android Contacts phonebook.',
+            },
+            {
+              q: 'Can I sell products and accept UPI payments on my Tapping bio page?',
+              a: 'Yes. Tapping includes a touch-friendly Product Slider and Creator Store module allowing creators in India to showcase items and accept orders via WhatsApp and Indian UPI payment apps like Google Pay, PhonePe, and Paytm.',
+            },
+            {
+              q: 'Is the QR code permanent and will it ever break?',
+              a: 'Every Tapping creator receives a permanent Dynamic Vector QR Code that never expires or breaks. You can update your bio links, themes, or products anytime without ever needing to reprint your QR code.',
+            },
+            {
+              q: 'How does Tapping compare to Linktree in India?',
+              a: 'Unlike standard link trees, Tapping is built specifically for the Indian ecosystem with direct UPI payments, aerospace metal NFC card pairing, direct phonebook contact saving (.vcf), 13 high-contrast themes, zero ad tracking, and local Indian Rupee pricing.',
+            },
+          ].map((item, idx) => {
+            const isOpen = openFaqIndex === idx;
+            return (
+              <div
+                key={idx}
+                className="bg-white rounded-3xl border border-black/10 shadow-2xs overflow-hidden transition-all"
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                  className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-gray-50/50 transition-colors"
+                >
+                  <span className="text-sm sm:text-base font-black text-charcoal tracking-tight">
+                    {item.q}
+                  </span>
+                  <div className={`w-8 h-8 rounded-full bg-[#FAF7F2] border border-black/10 flex items-center justify-center shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 bg-[#141518] text-white' : 'text-charcoal'}`}>
+                    <ChevronDown className="w-4 h-4 stroke-[2.5]" />
+                  </div>
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5 sm:px-6 sm:pb-6 text-xs sm:text-sm text-charcoal/70 leading-relaxed font-medium border-t border-black/5 pt-3">
+                    {item.a}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* FOOTER & SEO DIRECTORY */}
+      <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-black/10 space-y-8">
+        <div className="flex flex-wrap gap-2 items-center justify-center text-[11px] font-bold text-charcoal/60">
+          <span className="text-charcoal font-black">Popular Indian Creator Searches:</span>
+          <span className="px-2.5 py-1 rounded-full bg-white border border-black/5">Link in bio India</span>
+          <span className="px-2.5 py-1 rounded-full bg-white border border-black/5">Smart NFC Card Bangalore</span>
+          <span className="px-2.5 py-1 rounded-full bg-white border border-black/5">Digital Visiting Card vCard</span>
+          <span className="px-2.5 py-1 rounded-full bg-white border border-black/5">Vector QR Generator</span>
+          <span className="px-2.5 py-1 rounded-full bg-white border border-black/5">UPI Creator Store</span>
+          <span className="px-2.5 py-1 rounded-full bg-white border border-black/5">Metal Contactless Cards</span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-charcoal/60 pt-4 border-t border-black/5">
+          <div className="flex items-center gap-2.5">
+            <TappingLogo size="xs" variant="full" />
+            <IndianFlag className="w-4 h-2.8 rounded-xs" />
+            <span className="text-charcoal/50">&bull; Made for Indian Creators</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <a href="#features" className="text-charcoal/70 hover:text-black">
+              Features
+            </a>
+            <a href="#pricing" className="text-charcoal/70 hover:text-black">
+              Pricing
+            </a>
+            <a href="#faq" className="text-charcoal/70 hover:text-black">
+              FAQ
+            </a>
+            <Link href="/admin" className="text-charcoal/70 hover:text-black hover:underline">
+              Admin Access
+            </Link>
+            <Link href="/dashboard" className="text-charcoal font-black hover:underline">
+              Creator Dashboard &rarr;
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
