@@ -65,6 +65,8 @@ export interface SocialLinks {
   tiktok?: string;
   email?: string;
   phone?: string;
+  whatsapp?: string;
+  upiId?: string;
 }
 
 export interface Profile {
@@ -374,8 +376,10 @@ export interface PaymentRecord {
 export interface AdminSession {
   isAuthenticated: boolean;
   adminEmail: string;
+  adminName?: string;
   token: string;
   loginTime: string;
+  expiresAt?: string;
 }
 
 export interface SystemSettings {

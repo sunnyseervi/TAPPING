@@ -12,6 +12,8 @@ import {
 import { 
   getAdminSession, 
   clearAdminSession, 
+  isSuperAdminAuthorized,
+  AUTHORIZED_SUPERADMIN_EMAIL,
   getStoredUsers, 
   saveStoredUsers, 
   addStoredUser, 
@@ -50,9 +52,12 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const activeSession = getAdminSession();
-      if (activeSession && activeSession.isAuthenticated) {
+      if (isSuperAdminAuthorized()) {
+        const activeSession = getAdminSession();
         setSession(activeSession);
+      } else {
+        clearAdminSession();
+        setSession(null);
       }
       setIsCheckingAuth(false);
       setUsers(getStoredUsers());
@@ -175,7 +180,7 @@ export default function AdminPage() {
     );
   }
 
-  if (!session || !session.isAuthenticated) {
+  if (!session || !session.isAuthenticated || session.adminEmail.toLowerCase() !== AUTHORIZED_SUPERADMIN_EMAIL.toLowerCase()) {
     return <AdminLoginScreen onLoginSuccess={(sess) => setSession(sess)} />;
   }
 

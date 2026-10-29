@@ -29,7 +29,7 @@ import {
   Eye,
   ChevronDown
 } from 'lucide-react';
-import { saveStoredProfile, getStoredProfile } from '@/lib/storage';
+import { saveStoredProfile, getStoredProfile, getStoredVCard } from '@/lib/storage';
 import { downloadVCardFile } from '@/lib/vcard';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
@@ -75,7 +75,7 @@ export default function LandingPage() {
   };
 
   const handleCopyLink = () => {
-    const liveUrl = typeof window !== 'undefined' ? `${window.location.origin}/${handle || 'aarav'}` : `https://${displayHost}/${handle || 'aarav'}`;
+    const liveUrl = typeof window !== 'undefined' ? `${window.location.origin}/${handle || 'creator'}` : `https://${displayHost}/${handle || 'creator'}`;
     if (typeof window !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(liveUrl);
       setCopied(true);
@@ -85,26 +85,30 @@ export default function LandingPage() {
   };
 
   const handleDownloadVCard = () => {
+    const activeProfile = getStoredProfile();
+    const activeVCard = getStoredVCard();
+    const cleanHandle = handle || activeProfile.username || 'creator';
     try {
       downloadVCardFile({
-        id: 'vcard_aarav',
-        userId: 'aarav',
-        firstName: 'Aarav',
-        lastName: 'Sharma',
-        organization: 'Tapping Technologies India',
-        jobTitle: 'Founder & Product Architect',
-        workPhone: '+91 98765 43210',
-        mobilePhone: '+91 98765 43210',
-        workEmail: 'aarav@tapping.bio',
-        streetAddress: 'Indiranagar 100ft Road',
-        website: typeof window !== 'undefined' ? `${window.location.origin}/aarav` : `https://${displayHost}/aarav`,
+        ...activeVCard,
+        id: `vcard_${cleanHandle}`,
+        userId: cleanHandle,
+        firstName: activeProfile.displayName?.split(' ')[0] || cleanHandle,
+        lastName: activeProfile.displayName?.split(' ').slice(1).join(' ') || '',
+        organization: 'Tapping Creator Platform',
+        jobTitle: activeProfile.badgeTitle || 'Digital Identity & NFC',
+        workPhone: activeProfile.mobileNumber || '+91 98765 43210',
+        mobilePhone: activeProfile.mobileNumber || '+91 98765 43210',
+        workEmail: activeProfile.socialLinks?.email || 'hello@tapping.bio',
+        streetAddress: '100ft Road',
+        website: typeof window !== 'undefined' ? `${window.location.origin}/${cleanHandle}` : `https://${displayHost}/${cleanHandle}`,
         city: 'Bengaluru, Karnataka',
         country: 'India',
         note: 'Saved via Tapping Contact & NFC Platform'
-      }, 'aarav-sharma.vcf');
-      showToast('Contact Saved to Phone', 'Directly exported Aarav Sharma contact card (.vcf)', 'success');
+      }, `${cleanHandle}-contact.vcf`);
+      showToast('Contact Saved to Phone', `Directly exported @${cleanHandle} contact card (.vcf)`, 'success');
     } catch {
-      showToast('Contact Exported', 'Directly imported Aarav Sharma to phonebook', 'info');
+      showToast('Contact Exported', 'Directly imported contact to phonebook', 'info');
     }
   };
 
@@ -141,8 +145,8 @@ export default function LandingPage() {
 
   const showcaseCreators = [
     {
-      name: 'Aarav Sharma',
-      handle: 'aarav',
+      name: 'Aryan Verma',
+      handle: 'aryanverma',
       role: 'Founder & Hardware Architect',
       location: 'Bengaluru, India',
       avatar: 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80',
@@ -212,7 +216,7 @@ export default function LandingPage() {
           <a href="#hardware" className="hover:text-black transition-colors">Metal NFC</a>
           <a href="#features" className="hover:text-black transition-colors">Features</a>
           <a href="#pricing" className="hover:text-black transition-colors">Pricing (₹299)</a>
-          <Link href="/aarav" className="hover:text-black transition-colors">Sample Bio Link</Link>
+          <Link href="/dashboard" className="hover:text-black transition-colors">Bio Studio</Link>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
@@ -305,7 +309,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-2 mb-3">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-black text-charcoal tracking-tight">
-                Live Bio Profile Preview • @{handle || 'aarav'}
+                Live Bio Profile Preview &bull; @{handle || 'creator'}
               </span>
             </div>
 
@@ -336,10 +340,9 @@ export default function LandingPage() {
                     <div className="w-20 h-20 rounded-[24px] overflow-hidden ring-2 ring-white/90 border border-black/10 shadow-sm bg-[#FAF7F2] flex items-center justify-center relative">
                       <img
                         src="https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80"
-                        alt="Indian Flag - Aarav Sharma"
+                        alt="Indian Flag - Tapping Creator"
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          // Resilient fallback to reliable Indian flag URL
                           (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1597058712635-3182d1eacc1e?w=600&auto=format&fit=crop&q=80';
                         }}
                       />
@@ -352,10 +355,10 @@ export default function LandingPage() {
 
                   {/* Name & Handle */}
                   <h2 className="text-base font-black text-charcoal mt-2.5 tracking-tight leading-tight">
-                    Aarav Sharma
+                    {handle ? `@${handle}` : 'Creator Space'}
                   </h2>
                   <p className="text-[11px] font-bold text-charcoal/60 mt-0.5 font-mono">
-                    @{handle || 'aarav'}
+                    @{handle || 'creator'}
                   </p>
 
                   {/* Work & Location with Indian Flag */}
@@ -394,11 +397,11 @@ export default function LandingPage() {
                       <span>+91 98765 43210</span>
                     </a>
                     <a
-                      href="mailto:aarav@tapping.bio"
+                      href="mailto:hello@tapping.bio"
                       className="py-1.5 px-2 rounded-xl bg-white border border-black/10 text-[10px] font-bold text-charcoal flex items-center justify-center gap-1 shadow-2xs truncate"
                     >
                       <Mail className="w-2.5 h-2.5 text-[#4F83FF]" />
-                      <span className="truncate">Email Aarav</span>
+                      <span className="truncate">Email Direct</span>
                     </a>
                   </div>
 
@@ -439,7 +442,7 @@ export default function LandingPage() {
                     </a>
 
                     <a
-                      href="mailto:aarav@tapping.bio"
+                      href="mailto:contact@tapping.bio"
                       className="p-2.5 rounded-2xl bg-white hover:bg-gray-50 border border-black/10 text-charcoal flex items-center justify-between text-left shadow-2xs transition-all hover:scale-[1.01] active:scale-98 cursor-pointer"
                     >
                       <div className="flex items-center gap-2 min-w-0">
@@ -509,11 +512,11 @@ export default function LandingPage() {
                       FOUNDER & ARCHITECT
                     </p>
                     <h3 className="font-mono font-bold text-xl tracking-widest mt-1 uppercase">
-                      AARAV SHARMA
+                      {(handle || 'YOUR NAME').toUpperCase()}
                     </h3>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-[9px] font-mono tracking-wider opacity-80">
-                        NFC SMART TAP HARDWARE • TAP-IN-9482
+                        NFC SMART TAP HARDWARE &bull; TAP-IN-10001
                       </span>
                     </div>
                   </div>
@@ -527,7 +530,7 @@ export default function LandingPage() {
                         TAP ANY PHONE TO CONNECT
                       </span>
                       <p className="font-mono text-xs mt-1 opacity-90 font-bold">
-                        {displayHost}/{handle || 'aarav'}
+                        {displayHost}/{handle || 'creator'}
                       </p>
                     </div>
                     <p className="text-[9px] font-mono opacity-60">

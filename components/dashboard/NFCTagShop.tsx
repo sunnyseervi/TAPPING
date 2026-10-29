@@ -248,7 +248,8 @@ export default function NFCTagShop({ profile, vcard, username }: NFCTagShopProps
     } else if (action === 'reviews') {
       setTargetUrl(`https://g.page/r/your-google-business-review/review`);
     } else if (action === 'upi') {
-      setTargetUrl(`upi://pay?pa=aarav@upi&pn=${encodeURIComponent(engravedName)}&cu=INR`);
+      const upiHandle = profile.socialLinks?.upiId || `${username}@upi`;
+      setTargetUrl(`upi://pay?pa=${encodeURIComponent(upiHandle)}&pn=${encodeURIComponent(engravedName)}&cu=INR`);
     }
   };
 
@@ -777,7 +778,7 @@ export default function NFCTagShop({ profile, vcard, username }: NFCTagShopProps
                       value={engravedName}
                       onChange={(e) => setEngravedName(e.target.value)}
                       className="w-full px-3.5 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-black uppercase"
-                      placeholder="e.g. AARAV SHARMA"
+                      placeholder="e.g. YOUR NAME"
                       maxLength={32}
                     />
                   </div>
@@ -937,7 +938,7 @@ export default function NFCTagShop({ profile, vcard, username }: NFCTagShopProps
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-black"
-                      placeholder="Aarav Sharma"
+                      placeholder="Your Full Name"
                     />
                   </div>
                 </div>
@@ -971,7 +972,7 @@ export default function NFCTagShop({ profile, vcard, username }: NFCTagShopProps
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-black"
-                    placeholder="contact@aaravsharma.in"
+                    placeholder="your.email@example.com"
                   />
                 </div>
               </div>

@@ -191,7 +191,7 @@ export default function AdminSettingsTab({
             className="px-4 py-2.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-black border border-rose-200 transition-colors cursor-pointer flex items-center gap-1.5"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Demo DB</span>
+            <span>Purge Storage Cache</span>
           </button>
 
           <button
@@ -204,13 +204,13 @@ export default function AdminSettingsTab({
         </div>
       </form>
 
-      {/* Confirmation Modal for Resetting Database */}
+      {/* Confirmation Modal for Clearing Cache */}
       <ConfirmModal
         isOpen={showResetConfirm}
-        title="Reset All Mock Databases?"
-        description="Are you sure you want to reset all mock databases to default? This will restore the original demo users, orders, and payments."
+        title="Purge Local Device Cache?"
+        description="Are you sure you want to clear local storage cache? This will reset local device states and sync with fresh database records."
         variant="danger"
-        confirmLabel="Yes, Reset Database"
+        confirmLabel="Yes, Clear Cache"
         cancelLabel="Cancel"
         onConfirm={handleResetDefaults}
         onCancel={() => setShowResetConfirm(false)}

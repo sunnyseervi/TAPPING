@@ -94,3 +94,27 @@ export async function compressLinkCardImage(file: File): Promise<CompressedImage
     quality: 0.8,
   });
 }
+
+/**
+ * Compresses physical NFC card custom artwork logos and vector graphics (1200x750 max).
+ * Ensures crisp print resolution while keeping payload under 150KB for zero-lag rendering.
+ */
+export async function compressCardArtworkImage(file: File): Promise<CompressedImage> {
+  return compressImageFile(file, {
+    maxWidth: 1200,
+    maxHeight: 750,
+    quality: 0.84,
+  });
+}
+
+/**
+ * Compresses store product catalog pictures (800x800 max).
+ * Drastically reduces store bandwidth and eliminates catalog carousel lag.
+ */
+export async function compressProductImage(file: File): Promise<CompressedImage> {
+  return compressImageFile(file, {
+    maxWidth: 800,
+    maxHeight: 800,
+    quality: 0.8,
+  });
+}

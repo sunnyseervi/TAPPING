@@ -260,7 +260,14 @@ export default function AdminPaymentsTab({
               </tr>
             </thead>
             <tbody className="divide-y divide-black/5 font-medium">
-              {payments.map((p) => {
+              {payments.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-charcoal/50 font-bold">
+                    No payment transactions recorded yet. Real customer UPI, card, and membership payments will appear in this ledger.
+                  </td>
+                </tr>
+              ) : (
+                payments.map((p) => {
                 const dateStr = new Date(p.createdAt).toLocaleDateString('en-IN', {
                   day: 'numeric',
                   month: 'short',
@@ -292,7 +299,7 @@ export default function AdminPaymentsTab({
                     </td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>

@@ -13,7 +13,15 @@ import {
   AdminSession,
   SystemSettings
 } from './types';
-import { initialProfile, initialVCard, initialLinks, initialNFCCard, initialAnalytics, initialSubscription, initialStore } from './mockData';
+import { 
+  initialProfile, 
+  initialVCard, 
+  initialLinks, 
+  initialNFCCard, 
+  initialAnalytics, 
+  initialSubscription, 
+  initialStore 
+} from './mockData';
 
 const KEYS = {
   PROFILE: 'tapping_profile_v3',
@@ -32,47 +40,104 @@ const KEYS = {
   SETTINGS: 'tapping_admin_settings_v1',
 };
 
+// ==========================================
+// HIGH-PERFORMANCE IN-MEMORY CACHE LAYER
+// ==========================================
+interface MemoryCache {
+  profile?: Profile;
+  vcard?: VCardProfile;
+  links?: LinkBlock[];
+  nfc?: NFCCardDesign;
+  analytics?: AnalyticsSummary;
+  subscription?: Subscription;
+  store?: StoreConfig;
+  users?: UserRecord[];
+  orders?: MetalCardOrder[];
+  payments?: PaymentRecord[];
+  adminSession?: AdminSession | null;
+  settings?: SystemSettings;
+}
+
+const memoryCache: MemoryCache = {};
+
+export function invalidateStorageCache(): void {
+  Object.keys(memoryCache).forEach((k) => {
+    delete (memoryCache as any)[k];
+  });
+}
+
+// ==========================================
+// STORE STORAGE
+// ==========================================
 export function getStoredStore(): StoreConfig {
+  if (memoryCache.store) return memoryCache.store;
   if (typeof window === 'undefined') return initialStore;
   try {
     const data = localStorage.getItem(KEYS.STORE);
-    if (!data) return initialStore;
+    if (!data) {
+      memoryCache.store = initialStore;
+      return initialStore;
+    }
     const parsed = JSON.parse(data);
-    return { ...initialStore, ...parsed, products: Array.isArray(parsed.products) ? parsed.products : initialStore.products };
+    const result: StoreConfig = { 
+      ...initialStore, 
+      ...parsed, 
+      products: Array.isArray(parsed.products) ? parsed.products : initialStore.products 
+    };
+    memoryCache.store = result;
+    return result;
   } catch {
+    memoryCache.store = initialStore;
     return initialStore;
   }
 }
 
 export function saveStoredStore(store: StoreConfig): void {
+  memoryCache.store = store;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(KEYS.STORE, JSON.stringify(store));
+    window.dispatchEvent(new CustomEvent('tapping-store-updated', { detail: store }));
   } catch (e) {
     console.error('Error saving store', e);
   }
 }
 
+// ==========================================
+// PROFILE STORAGE
+// ==========================================
 export function getStoredProfile(): Profile {
+  if (memoryCache.profile) return memoryCache.profile;
   if (typeof window === 'undefined') return initialProfile;
   try {
     const data = localStorage.getItem(KEYS.PROFILE);
-    if (!data) return initialProfile;
+    if (!data) {
+      memoryCache.profile = initialProfile;
+      return initialProfile;
+    }
     const parsed = JSON.parse(data);
     // Auto-clean any legacy demo data from existing localStorage
     if (parsed.displayName === 'Aarav Sharma') {
       parsed.displayName = (parsed.username && parsed.username !== 'aarav') ? parsed.username : 'Creator';
     }
-    if (parsed.avatarUrl && (parsed.avatarUrl.includes('photo-1532375810709') || parsed.avatarUrl.includes('photo-1628157582853') || parsed.avatarUrl.includes('photo-1507003211169'))) {
+    if (parsed.avatarUrl && (
+      parsed.avatarUrl.includes('photo-1532375810709') || 
+      parsed.avatarUrl.includes('photo-1628157582853') || 
+      parsed.avatarUrl.includes('photo-1507003211169')
+    )) {
       parsed.avatarUrl = '';
     }
-    return { ...initialProfile, ...parsed };
+    const result: Profile = { ...initialProfile, ...parsed };
+    memoryCache.profile = result;
+    return result;
   } catch {
+    memoryCache.profile = initialProfile;
     return initialProfile;
   }
 }
 
 export function saveStoredProfile(profile: Profile): void {
+  memoryCache.profile = profile;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(KEYS.PROFILE, JSON.stringify(profile));
@@ -82,17 +147,25 @@ export function saveStoredProfile(profile: Profile): void {
   }
 }
 
+// ==========================================
+// VCARD STORAGE
+// ==========================================
 export function getStoredVCard(): VCardProfile {
+  if (memoryCache.vcard) return memoryCache.vcard;
   if (typeof window === 'undefined') return initialVCard;
   try {
     const data = localStorage.getItem(KEYS.VCARD);
-    return data ? JSON.parse(data) : initialVCard;
+    const parsed = data ? JSON.parse(data) : initialVCard;
+    memoryCache.vcard = parsed;
+    return parsed;
   } catch {
+    memoryCache.vcard = initialVCard;
     return initialVCard;
   }
 }
 
 export function saveStoredVCard(vcard: VCardProfile): void {
+  memoryCache.vcard = vcard;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(KEYS.VCARD, JSON.stringify(vcard));
@@ -101,48 +174,77 @@ export function saveStoredVCard(vcard: VCardProfile): void {
   }
 }
 
+// ==========================================
+// LINKS STORAGE
+// ==========================================
 export function getStoredLinks(): LinkBlock[] {
+  if (memoryCache.links) return memoryCache.links;
   if (typeof window === 'undefined') return initialLinks;
   try {
     const data = localStorage.getItem(KEYS.LINKS);
-    if (!data) return initialLinks;
+    if (!data) {
+      memoryCache.links = initialLinks;
+      return initialLinks;
+    }
     const parsed = JSON.parse(data);
-    if (!Array.isArray(parsed)) return initialLinks;
-    // Auto-clean any legacy mock links (lnk_1, lnk_2, lnk_3 with fake clicks 1420, 890, 650)
-    const cleaned = parsed.filter(l => !(l.id === 'lnk_1' && l.clickCount === 1420) && !(l.id === 'lnk_2' && l.clickCount === 890) && !(l.id === 'lnk_3' && l.clickCount === 650));
+    if (!Array.isArray(parsed)) {
+      memoryCache.links = initialLinks;
+      return initialLinks;
+    }
+    // Auto-clean any legacy mock links
+    const cleaned = parsed.filter(l => 
+      !(l.id === 'lnk_1' && l.clickCount === 1420) && 
+      !(l.id === 'lnk_2' && l.clickCount === 890) && 
+      !(l.id === 'lnk_3' && l.clickCount === 650)
+    );
+    memoryCache.links = cleaned;
     return cleaned;
   } catch {
+    memoryCache.links = initialLinks;
     return initialLinks;
   }
 }
 
 export function saveStoredLinks(links: LinkBlock[]): void {
+  memoryCache.links = links;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(KEYS.LINKS, JSON.stringify(links));
+    window.dispatchEvent(new CustomEvent('tapping-links-updated', { detail: links }));
   } catch (e) {
     console.error('Error saving links', e);
   }
 }
 
+// ==========================================
+// NFC CARD DESIGN STORAGE
+// ==========================================
 export function getStoredNFCCard(): NFCCardDesign {
+  if (memoryCache.nfc) return memoryCache.nfc;
   if (typeof window === 'undefined') return initialNFCCard;
   try {
     const data = localStorage.getItem(KEYS.NFC);
-    if (!data) return initialNFCCard;
+    if (!data) {
+      memoryCache.nfc = initialNFCCard;
+      return initialNFCCard;
+    }
     const parsed = JSON.parse(data);
-    return {
+    const result: NFCCardDesign = {
       ...initialNFCCard,
       ...parsed,
       frontSide: { ...initialNFCCard.frontSide, ...(parsed.frontSide || {}) },
       backSide: { ...initialNFCCard.backSide, ...(parsed.backSide || {}) },
     };
+    memoryCache.nfc = result;
+    return result;
   } catch {
+    memoryCache.nfc = initialNFCCard;
     return initialNFCCard;
   }
 }
 
 export function saveStoredNFCCard(nfc: NFCCardDesign): void {
+  memoryCache.nfc = nfc;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(KEYS.NFC, JSON.stringify(nfc));
@@ -151,17 +253,24 @@ export function saveStoredNFCCard(nfc: NFCCardDesign): void {
   }
 }
 
+// ==========================================
+// ANALYTICS & TELEMETRY
+// ==========================================
 export function getStoredAnalytics(): AnalyticsSummary {
+  if (memoryCache.analytics) return memoryCache.analytics;
   if (typeof window === 'undefined') return initialAnalytics;
   try {
     const data = localStorage.getItem(KEYS.ANALYTICS);
-    if (!data) return initialAnalytics;
+    if (!data) {
+      memoryCache.analytics = initialAnalytics;
+      return initialAnalytics;
+    }
     const parsed = JSON.parse(data);
     const links = getStoredLinks();
     const actualClicks = links.reduce((acc, l) => acc + (l.clickCount || 0), 0);
     const views = parsed.totalViews || 0;
     const calculatedCtr = views > 0 ? Number(((actualClicks / views) * 100).toFixed(1)) : 0;
-    return {
+    const result: AnalyticsSummary = {
       ...initialAnalytics,
       ...parsed,
       totalClicks: actualClicks,
@@ -171,7 +280,10 @@ export function getStoredAnalytics(): AnalyticsSummary {
       vcardSaves: parsed.vcardSaves ?? initialAnalytics.vcardSaves,
       qrScans: parsed.qrScans ?? initialAnalytics.qrScans,
     };
+    memoryCache.analytics = result;
+    return result;
   } catch {
+    memoryCache.analytics = initialAnalytics;
     return initialAnalytics;
   }
 }
@@ -185,7 +297,7 @@ export function incrementLinkClick(linkId: string): void {
 
     const analytics = getStoredAnalytics();
     analytics.totalClicks += 1;
-    analytics.ctr = Number(((analytics.totalClicks / (analytics.totalViews || 1)) * 100).toFixed(1));
+    analytics.ctr = analytics.totalViews > 0 ? Number(((analytics.totalClicks / analytics.totalViews) * 100).toFixed(1)) : 0;
     const title = links.find((l) => l.id === linkId)?.title;
     const target = analytics.topLinks.find((t) => t.title === title);
     if (target) {
@@ -193,6 +305,7 @@ export function incrementLinkClick(linkId: string): void {
     } else if (title) {
       analytics.topLinks.push({ title, clicks: 1 });
     }
+    memoryCache.analytics = analytics;
     localStorage.setItem(KEYS.ANALYTICS, JSON.stringify(analytics));
   } catch (e) {
     console.error('Error incrementing click', e);
@@ -204,7 +317,8 @@ export function recordPageView(): void {
   try {
     const analytics = getStoredAnalytics();
     analytics.totalViews += 1;
-    analytics.ctr = Number(((analytics.totalClicks / (analytics.totalViews || 1)) * 100).toFixed(1));
+    analytics.ctr = analytics.totalViews > 0 ? Number(((analytics.totalClicks / analytics.totalViews) * 100).toFixed(1)) : 0;
+    memoryCache.analytics = analytics;
     localStorage.setItem(KEYS.ANALYTICS, JSON.stringify(analytics));
   } catch (e) {
     console.error('Error recording page view', e);
@@ -217,7 +331,8 @@ export function recordNFCTap(): void {
     const analytics = getStoredAnalytics();
     analytics.nfcTaps = (analytics.nfcTaps || 0) + 1;
     analytics.totalViews += 1;
-    analytics.ctr = Number(((analytics.totalClicks / (analytics.totalViews || 1)) * 100).toFixed(1));
+    analytics.ctr = analytics.totalViews > 0 ? Number(((analytics.totalClicks / analytics.totalViews) * 100).toFixed(1)) : 0;
+    memoryCache.analytics = analytics;
     localStorage.setItem(KEYS.ANALYTICS, JSON.stringify(analytics));
   } catch (e) {
     console.error('Error recording NFC tap', e);
@@ -230,7 +345,8 @@ export function recordVCardDownload(): void {
     const analytics = getStoredAnalytics();
     analytics.vcardSaves = (analytics.vcardSaves || 0) + 1;
     analytics.totalClicks += 1;
-    analytics.ctr = Number(((analytics.totalClicks / (analytics.totalViews || 1)) * 100).toFixed(1));
+    analytics.ctr = analytics.totalViews > 0 ? Number(((analytics.totalClicks / analytics.totalViews) * 100).toFixed(1)) : 0;
+    memoryCache.analytics = analytics;
     localStorage.setItem(KEYS.ANALYTICS, JSON.stringify(analytics));
   } catch (e) {
     console.error('Error recording vCard save', e);
@@ -243,23 +359,32 @@ export function recordQRScan(): void {
     const analytics = getStoredAnalytics();
     analytics.qrScans = (analytics.qrScans || 0) + 1;
     analytics.totalViews += 1;
+    memoryCache.analytics = analytics;
     localStorage.setItem(KEYS.ANALYTICS, JSON.stringify(analytics));
   } catch (e) {
     console.error('Error recording QR scan', e);
   }
 }
 
+// ==========================================
+// SUBSCRIPTION STORAGE
+// ==========================================
 export function getStoredSubscription(): Subscription {
+  if (memoryCache.subscription) return memoryCache.subscription;
   if (typeof window === 'undefined') return initialSubscription;
   try {
     const data = localStorage.getItem(KEYS.SUBSCRIPTION);
-    return data ? JSON.parse(data) : initialSubscription;
+    const parsed = data ? JSON.parse(data) : initialSubscription;
+    memoryCache.subscription = parsed;
+    return parsed;
   } catch {
+    memoryCache.subscription = initialSubscription;
     return initialSubscription;
   }
 }
 
 export function saveStoredSubscription(sub: Subscription): void {
+  memoryCache.subscription = sub;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(KEYS.SUBSCRIPTION, JSON.stringify(sub));
@@ -386,7 +511,7 @@ export function activateUserProfile(params: {
   };
   saveStoredProfile(updatedProfile);
 
-  // 2. Update vCard with phone number and website
+  // 2. Update vCard
   const currentVCard = getStoredVCard();
   saveStoredVCard({
     ...currentVCard,
@@ -397,7 +522,7 @@ export function activateUserProfile(params: {
     website: `https://tapping.bio/${normalized}`,
   });
 
-  // 3. Create and record payment
+  // 3. Create payment transaction
   const payment: PaymentRecord = {
     id: `pay_${Date.now()}`,
     userId: currentProfile.id || `usr_${Date.now()}`,
@@ -463,7 +588,6 @@ export function activateUserProfile(params: {
     expiresAt: planExpiresAt,
   });
 
-  // 6. Set flags
   setOnboardingCompleted(true);
   setProfileActivated(true);
 
@@ -474,14 +598,13 @@ export function deleteCurrentCustomerAccount(): void {
   if (typeof window === 'undefined') return;
   const currentProfile = getStoredProfile();
   
-  // Remove from users list
   const users = getStoredUsers();
   const filtered = users.filter(
     (u) => u.username.toLowerCase() !== currentProfile.username.toLowerCase() && u.id !== currentProfile.id
   );
   saveStoredUsers(filtered);
 
-  // Reset local items
+  invalidateStorageCache();
   localStorage.removeItem(KEYS.PROFILE);
   localStorage.removeItem(KEYS.VCARD);
   localStorage.removeItem(KEYS.LINKS);
@@ -497,6 +620,7 @@ export function deleteCurrentCustomerAccount(): void {
 
 export function resetAllToDefault(): void {
   if (typeof window === 'undefined') return;
+  invalidateStorageCache();
   localStorage.setItem(KEYS.PROFILE, JSON.stringify(initialProfile));
   localStorage.setItem(KEYS.VCARD, JSON.stringify(initialVCard));
   localStorage.setItem(KEYS.LINKS, JSON.stringify(initialLinks));
@@ -505,248 +629,6 @@ export function resetAllToDefault(): void {
   localStorage.setItem(KEYS.SUBSCRIPTION, JSON.stringify(initialSubscription));
   localStorage.setItem(KEYS.STORE, JSON.stringify(initialStore));
 }
-
-// ==========================================
-// SEED DATA FOR ADMIN PANEL & MULTI-USER HUB
-// ==========================================
-
-const INITIAL_USERS: UserRecord[] = [
-  {
-    id: 'usr_001',
-    username: 'aarav',
-    email: 'aarav@tapping.bio',
-    displayName: 'Aarav Sharma',
-    avatarUrl: 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80',
-    mobileNumber: '+91 98765 43210',
-    isActivated: true,
-    status: 'active',
-    plan: 'pro_yearly',
-    createdAt: '2026-01-15T10:30:00Z',
-    planExpiresAt: '2027-01-15T10:30:00Z',
-    profile: initialProfile,
-    links: [
-      {
-        id: 'lnk_1',
-        userId: 'usr_001',
-        type: 'link',
-        title: 'Design Portfolio & Works',
-        url: 'https://github.com',
-        icon: 'briefcase',
-        styleVariant: 'sky',
-        bgColor: '#3B82F6',
-        textColor: '#FFFFFF',
-        isActive: true,
-        sortOrder: 0,
-        clickCount: 1420,
-      },
-      {
-        id: 'lnk_2',
-        userId: 'usr_001',
-        type: 'link',
-        title: 'Book 1:1 Product Advisory',
-        url: 'https://cal.com',
-        icon: 'phone',
-        styleVariant: 'yellow',
-        bgColor: '#FDF166',
-        textColor: '#141518',
-        isActive: true,
-        sortOrder: 1,
-        clickCount: 890,
-      },
-      {
-        id: 'lnk_3',
-        userId: 'usr_001',
-        type: 'link',
-        title: 'Bengaluru Tech Keynote RSVP',
-        url: 'https://tapping.bio/aarav',
-        icon: 'calendar',
-        styleVariant: 'peach',
-        bgColor: '#EF4444',
-        textColor: '#FFFFFF',
-        isActive: true,
-        sortOrder: 2,
-        clickCount: 650,
-      },
-    ],
-    products: [
-      {
-        id: 'prod_1',
-        name: 'Matte Stealth Black NFC Card',
-        description: 'Laser engraved aerospace grade stainless steel contactless NFC card.',
-        price: 1499,
-        imageUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600',
-        variants: ['Black'],
-        isActive: true,
-        sortOrder: 0,
-        viewCount: 1240,
-        cartAdds: 88,
-      },
-      {
-        id: 'prod_2',
-        name: 'Studio Notebook & Pen Set',
-        description: 'Hardcover debossed notebook with 120gsm bamboo paper.',
-        price: 499,
-        imageUrl: 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=600',
-        variants: ['A5 Size'],
-        isActive: true,
-        sortOrder: 1,
-        viewCount: 650,
-        cartAdds: 42,
-      },
-    ],
-    nfcCard: initialNFCCard,
-    totalViews: 24912,
-    totalClicks: 8430,
-    lastActiveAt: '2026-10-25T23:45:00Z',
-  },
-  {
-    id: 'usr_002',
-    username: 'priya',
-    email: 'priya.patel@designstudio.in',
-    displayName: 'Priya Patel',
-    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
-    mobileNumber: '+91 98200 12345',
-    isActivated: true,
-    status: 'active',
-    plan: 'pro_monthly',
-    createdAt: '2026-02-10T14:20:00Z',
-    planExpiresAt: '2026-11-10T14:20:00Z', // Expiring in 15 days
-    profile: {
-      ...initialProfile,
-      id: 'usr_002',
-      username: 'priya',
-      displayName: 'Priya Patel',
-      bio: 'Principal UX Director & Keynote Speaker. Designing ethical interfaces for millions.',
-      avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
-      badgeTitle: 'UX Director',
-    },
-    links: [
-      {
-        id: 'lnk_p1',
-        userId: 'usr_002',
-        type: 'link',
-        title: 'Keynote Talk: Generative Interfaces',
-        url: 'https://youtube.com',
-        icon: 'video',
-        styleVariant: 'peach',
-        isActive: true,
-        sortOrder: 0,
-        clickCount: 3120,
-      },
-    ],
-    products: [],
-    totalViews: 18340,
-    totalClicks: 5210,
-    lastActiveAt: '2026-10-25T22:15:00Z',
-  },
-  {
-    id: 'usr_003',
-    username: 'rohit',
-    email: 'rohit.beats@indieaudio.co',
-    displayName: 'Rohit Verma',
-    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
-    mobileNumber: '+91 99300 54321',
-    isActivated: true,
-    status: 'active',
-    plan: 'pro_yearly',
-    createdAt: '2026-03-01T09:10:00Z',
-    planExpiresAt: '2027-03-01T09:10:00Z',
-    profile: {
-      ...initialProfile,
-      id: 'usr_003',
-      username: 'rohit',
-      displayName: 'Rohit Verma',
-      bio: 'Music Producer & Sound Designer. Listen to my latest ambient EP streaming now.',
-      avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
-      badgeTitle: 'Indie Producer',
-    },
-    links: [
-      {
-        id: 'lnk_r1',
-        userId: 'usr_003',
-        type: 'link',
-        title: 'Listen on Spotify: Monsoon Echoes',
-        url: 'https://spotify.com',
-        icon: 'music',
-        styleVariant: 'mint',
-        isActive: true,
-        sortOrder: 0,
-        clickCount: 4890,
-      },
-    ],
-    products: [],
-    totalViews: 12050,
-    totalClicks: 4980,
-    lastActiveAt: '2026-10-25T19:30:00Z',
-  },
-  {
-    id: 'usr_004',
-    username: 'aanya',
-    email: 'aanya.pottery@studio.in',
-    displayName: 'Aanya Sen',
-    avatarUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400',
-    mobileNumber: '+91 97110 98765',
-    isActivated: true,
-    status: 'active',
-    plan: 'pro_monthly',
-    createdAt: '2026-04-18T16:40:00Z',
-    planExpiresAt: '2026-10-31T16:40:00Z', // Expiring in 5 days!
-    profile: {
-      ...initialProfile,
-      id: 'usr_004',
-      username: 'aanya',
-      displayName: 'Aanya Sen',
-      bio: 'Maker, ceramic artist and studio owner. Crafting functional stoneware in Bengaluru.',
-      avatarUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400',
-      badgeTitle: 'Studio Ceramicist',
-    },
-    links: [],
-    products: [
-      {
-        id: 'prod_a1',
-        name: 'Sculpted Ceramic Mug No. 2',
-        description: 'Hand-thrown stoneware mug with organic raw clay texture.',
-        price: 1299,
-        imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400',
-        variants: ['Sand White', 'Speckled Charcoal'],
-        isActive: true,
-        sortOrder: 0,
-        viewCount: 880,
-        cartAdds: 35,
-      },
-    ],
-    totalViews: 9840,
-    totalClicks: 2190,
-    lastActiveAt: '2026-10-25T18:10:00Z',
-  },
-  {
-    id: 'usr_005',
-    username: 'vikram',
-    email: 'vikram@growthconsulting.in',
-    displayName: 'Vikram Joshi',
-    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
-    mobileNumber: '+91 98100 11223',
-    isActivated: false,
-    status: 'blocked',
-    plan: 'free',
-    createdAt: '2026-05-12T11:00:00Z',
-    planExpiresAt: '2026-06-12T11:00:00Z',
-    profile: {
-      ...initialProfile,
-      id: 'usr_005',
-      username: 'vikram',
-      displayName: 'Vikram Joshi',
-      bio: 'Growth advisor & angel investor helping early stage founders scale.',
-      avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
-      badgeTitle: 'Angel Advisor',
-    },
-    links: [],
-    products: [],
-    totalViews: 6210,
-    totalClicks: 1410,
-    lastActiveAt: '2026-10-20T12:00:00Z',
-  },
-];
 
 function isColorDark(hex?: string): boolean {
   if (!hex) return true;
@@ -841,474 +723,92 @@ export function enrichOrderBlueprint(order: MetalCardOrder): MetalCardOrder {
   };
 }
 
-const INITIAL_ORDERS: MetalCardOrder[] = [
-  {
-    id: 'ord_10893',
-    orderNumber: 'TAP-10893',
-    userId: 'usr_005',
-    userName: 'Vikram Malhotra',
-    userEmail: 'vikram@malhotradesign.in',
-    userPhone: '+91 99887 76655',
-    material: 'custom_color',
-    customColor: '#1A365D',
-    engravedName: 'VIKRAM MALHOTRA',
-    engravedTagline: 'CHIEF DESIGN OFFICER',
-    qrUrl: 'https://tapping.bio/vikram',
-    status: 'in_production',
-    trackingNumber: 'DEL-9918234',
-    shippingCarrier: 'Delhivery Surface Pro',
-    amount: 1499,
-    currency: 'INR',
-    paymentStatus: 'paid',
-    paymentMethod: 'UPI',
-    createdAt: '2026-10-25T14:20:00Z',
-    sideMode: 'double_sided',
-    notes: 'Laser engrave with 24K gold foil infill on Prussian Blue custom color metal surface.',
-    frontSide: {
-      topLabel: 'MALHOTRA & CO.',
-      bottomLabel: 'NFC 13.56MHz • TAP-IN-10893',
-      primaryText: 'VIKRAM MALHOTRA',
-      secondaryText: 'CHIEF DESIGN OFFICER',
-      fontFamily: "'Cinzel', serif",
-      brandPosition: 'top-left',
-      namePosition: 'bottom-left',
-      chipPosition: 'top-right',
-      qrPosition: 'bottom-right',
-      showChip: true,
-      showQrCode: false,
-      primaryTextSize: 19,
-      secondaryTextSize: 9,
-      brandSize: 14,
-      qrSize: 56,
-      textColor: '#FDF166',
-      artworkUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800',
-      artworkOpacity: 35,
-      artworkZoom: 115,
-      artworkPosX: 0,
-      artworkPosY: 0,
-      nameOffsetX: 0,
-      nameOffsetY: 0,
-      brandOffsetX: 0,
-      brandOffsetY: 0,
-      qrOffsetX: 0,
-      qrOffsetY: 0,
-      isPlain: false,
-      customNote: 'Custom Anodized Navy Alloy',
-    },
-    backSide: {
-      topLabel: 'MALHOTRA & CO.',
-      bottomLabel: 'UID: TAP-10893-NVY',
-      primaryText: 'TAP PHONE OR SCAN TO CONNECT',
-      secondaryText: 'tapping.bio/vikram',
-      fontFamily: "'Cinzel', serif",
-      brandPosition: 'top-left',
-      namePosition: 'bottom-left',
-      chipPosition: 'hidden',
-      qrPosition: 'bottom-right',
-      showChip: false,
-      showQrCode: true,
-      primaryTextSize: 13,
-      secondaryTextSize: 11,
-      brandSize: 13,
-      qrSize: 64,
-      textColor: '#FDF166',
-      customNote: 'Encrypted NTAG216 Chip • 888 Bytes',
-      isPlain: false,
-      artworkUrl: '',
-      artworkOpacity: 85,
-      artworkZoom: 100,
-      artworkPosX: 0,
-      artworkPosY: 0,
-    },
-    shippingAddress: {
-      name: 'Vikram Malhotra',
-      street: 'Tower B, Suite 1104, One Horizon Center, Golf Course Road',
-      city: 'Gurugram',
-      state: 'Haryana',
-      zip: '122002',
-      country: 'India',
-    },
-  },
-  {
-    id: 'ord_10892',
-    orderNumber: 'TAP-10892',
-    userId: 'usr_001',
-    userName: 'Aarav Sharma',
-    userEmail: 'aarav@tapping.bio',
-    userPhone: '+91 98765 43210',
-    material: 'matte_black',
-    engravedName: 'AARAV SHARMA',
-    engravedTagline: 'FOUNDER & ARCHITECT',
-    qrUrl: 'https://tapping.bio/aarav',
-    status: 'in_production',
-    trackingNumber: 'DEL-9482110',
-    shippingCarrier: 'Delhivery Surface Pro',
-    amount: 1499,
-    currency: 'INR',
-    paymentStatus: 'paid',
-    paymentMethod: 'UPI',
-    createdAt: '2026-10-24T12:30:00Z',
-    sideMode: 'double_sided',
-    notes: 'High-contrast matte white laser etch on aerospace matte black steel.',
-    frontSide: {
-      topLabel: 'TAPPING',
-      bottomLabel: 'NFC 13.56MHz • TAP-IN-9482',
-      primaryText: 'AARAV SHARMA',
-      secondaryText: 'FOUNDER & ARCHITECT',
-      fontFamily: "'Space Mono', monospace",
-      brandPosition: 'top-left',
-      namePosition: 'bottom-left',
-      chipPosition: 'top-right',
-      qrPosition: 'bottom-right',
-      showChip: true,
-      showQrCode: false,
-      primaryTextSize: 18,
-      secondaryTextSize: 9,
-      brandSize: 13,
-      qrSize: 56,
-      textColor: '#FFFFFF',
-      artworkUrl: '',
-      artworkOpacity: 90,
-      artworkZoom: 100,
-      artworkPosX: 0,
-      artworkPosY: 0,
-      nameOffsetX: 0,
-      nameOffsetY: 0,
-      brandOffsetX: 0,
-      brandOffsetY: 0,
-      qrOffsetX: 0,
-      qrOffsetY: 0,
-      isPlain: false,
-      customNote: '',
-    },
-    backSide: {
-      topLabel: 'TAPPING',
-      bottomLabel: 'UID: TAP-9482-BLK',
-      primaryText: 'TAP ANY PHONE TO CONNECT',
-      secondaryText: 'tapping.bio/aarav',
-      fontFamily: "'Space Mono', monospace",
-      brandPosition: 'top-left',
-      namePosition: 'bottom-left',
-      chipPosition: 'hidden',
-      qrPosition: 'bottom-right',
-      showChip: false,
-      showQrCode: true,
-      primaryTextSize: 13,
-      secondaryTextSize: 11,
-      brandSize: 13,
-      qrSize: 64,
-      textColor: '#FFFFFF',
-      customNote: 'ISO 14443A • NTAG216 Chip • Bengaluru Workshop',
-      isPlain: false,
-      artworkUrl: '',
-      artworkOpacity: 85,
-      artworkZoom: 100,
-      artworkPosX: 0,
-      artworkPosY: 0,
-    },
-    shippingAddress: {
-      name: 'Aarav Sharma',
-      street: 'Flat 402, Skyline Residency, 100ft Road, Indiranagar',
-      city: 'Bengaluru',
-      state: 'Karnataka',
-      zip: '560038',
-      country: 'India',
-    },
-  },
-  {
-    id: 'ord_10891',
-    orderNumber: 'TAP-10891',
-    userId: 'usr_002',
-    userName: 'Priya Patel',
-    userEmail: 'priya.patel@designstudio.in',
-    userPhone: '+91 98234 56789',
-    material: 'brushed_gold',
-    engravedName: 'PRIYA PATEL',
-    engravedTagline: 'PRINCIPAL UX DIRECTOR',
-    qrUrl: 'https://tapping.bio/priya',
-    status: 'shipped',
-    trackingNumber: 'BLUEDART-882910',
-    shippingCarrier: 'BlueDart Air Apex',
-    amount: 1499,
-    currency: 'INR',
-    paymentStatus: 'paid',
-    paymentMethod: 'UPI',
-    createdAt: '2026-10-22T09:15:00Z',
-    sideMode: 'double_sided',
-    notes: 'Deep obsidian laser mark on 24K brushed brass alloy.',
-    frontSide: {
-      topLabel: 'STUDIO PATEL',
-      bottomLabel: 'NFC 13.56MHz • TAP-IN-10891',
-      primaryText: 'PRIYA PATEL',
-      secondaryText: 'PRINCIPAL UX DIRECTOR',
-      fontFamily: "'Plus Jakarta Sans', sans-serif",
-      brandPosition: 'top-left',
-      namePosition: 'bottom-left',
-      chipPosition: 'top-right',
-      qrPosition: 'bottom-right',
-      showChip: true,
-      showQrCode: false,
-      primaryTextSize: 18,
-      secondaryTextSize: 9,
-      brandSize: 13,
-      qrSize: 56,
-      textColor: '#1C1917',
-      artworkUrl: '',
-      artworkOpacity: 90,
-      artworkZoom: 100,
-      artworkPosX: 0,
-      artworkPosY: 0,
-      isPlain: false,
-    },
-    backSide: {
-      topLabel: 'STUDIO PATEL',
-      bottomLabel: 'UID: TAP-10891-GLD',
-      primaryText: 'SCAN OR TAP TO CONNECT',
-      secondaryText: 'tapping.bio/priya',
-      fontFamily: "'Plus Jakarta Sans', sans-serif",
-      brandPosition: 'top-left',
-      namePosition: 'bottom-left',
-      chipPosition: 'hidden',
-      qrPosition: 'bottom-right',
-      showChip: false,
-      showQrCode: true,
-      primaryTextSize: 13,
-      secondaryTextSize: 11,
-      brandSize: 13,
-      qrSize: 64,
-      textColor: '#1C1917',
-      customNote: 'Bespoke Milled 24K Finish',
-      isPlain: false,
-    },
-    shippingAddress: {
-      name: 'Priya Patel',
-      street: '12B, Palm Grove Avenue, Bandra West',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      zip: '400050',
-      country: 'India',
-    },
-  },
-  {
-    id: 'ord_10890',
-    orderNumber: 'TAP-10890',
-    userId: 'usr_003',
-    userName: 'Rohit Verma',
-    userEmail: 'rohit.beats@indieaudio.co',
-    userPhone: '+91 97112 34567',
-    material: 'titanium_silver',
-    engravedName: 'ROHIT VERMA',
-    engravedTagline: 'AUDIO PRODUCER',
-    qrUrl: 'https://tapping.bio/rohit',
-    status: 'delivered',
-    trackingNumber: 'DEL-8819201',
-    shippingCarrier: 'Delhivery Express',
-    amount: 1499,
-    currency: 'INR',
-    paymentStatus: 'paid',
-    paymentMethod: 'COD',
-    createdAt: '2026-10-15T15:45:00Z',
-    sideMode: 'single_sided',
-    notes: 'Single-sided laser pass. Front side has QR code and logo; back side is plain brushed titanium.',
-    frontSide: {
-      topLabel: 'INDIE AUDIO',
-      bottomLabel: 'NFC 13.56MHz • TAP-IN-10890',
-      primaryText: 'ROHIT VERMA',
-      secondaryText: 'AUDIO PRODUCER',
-      fontFamily: "'Space Grotesk', sans-serif",
-      brandPosition: 'top-left',
-      namePosition: 'bottom-left',
-      chipPosition: 'top-right',
-      qrPosition: 'bottom-right',
-      showChip: true,
-      showQrCode: true,
-      primaryTextSize: 18,
-      secondaryTextSize: 9,
-      brandSize: 13,
-      qrSize: 56,
-      textColor: '#0F172A',
-      isPlain: false,
-    },
-    backSide: {
-      topLabel: 'INDIE AUDIO',
-      bottomLabel: '',
-      primaryText: '',
-      secondaryText: '',
-      fontFamily: "'Space Grotesk', sans-serif",
-      showChip: false,
-      showQrCode: false,
-      textColor: '#0F172A',
-      customNote: '',
-      isPlain: true,
-    },
-    shippingAddress: {
-      name: 'Rohit Verma',
-      street: 'Block C, Sector 15',
-      city: 'Gurugram',
-      state: 'Haryana',
-      zip: '122001',
-      country: 'India',
-    },
-  },
-  {
-    id: 'ord_10889',
-    orderNumber: 'TAP-10889',
-    userId: 'usr_004',
-    userName: 'Aanya Sen',
-    userEmail: 'aanya.pottery@studio.in',
-    userPhone: '+91 96123 45678',
-    material: 'rose_gold',
-    engravedName: 'AANYA SEN',
-    engravedTagline: 'STUDIO CERAMICIST',
-    qrUrl: 'https://tapping.bio/aanya',
-    status: 'delivered',
-    trackingNumber: 'BLUEDART-772911',
-    shippingCarrier: 'BlueDart Air Apex',
-    amount: 1499,
-    currency: 'INR',
-    paymentStatus: 'paid',
-    paymentMethod: 'UPI',
-    createdAt: '2026-10-10T11:20:00Z',
-    sideMode: 'double_sided',
-    notes: 'Delicate hairline laser etching on satin champagne rose gold.',
-    frontSide: {
-      topLabel: 'AANYA CERAMICS',
-      bottomLabel: 'NFC 13.56MHz • TAP-IN-10889',
-      primaryText: 'AANYA SEN',
-      secondaryText: 'STUDIO CERAMICIST',
-      fontFamily: "'Playfair Display', serif",
-      brandPosition: 'top-left',
-      namePosition: 'bottom-left',
-      chipPosition: 'top-right',
-      qrPosition: 'bottom-right',
-      showChip: true,
-      showQrCode: false,
-      primaryTextSize: 18,
-      secondaryTextSize: 9,
-      brandSize: 13,
-      qrSize: 56,
-      textColor: '#1C1917',
-      isPlain: false,
-    },
-    backSide: {
-      topLabel: 'AANYA CERAMICS',
-      bottomLabel: 'UID: TAP-10889-ROSE',
-      primaryText: 'CONNECT TO VIEW GALLERY',
-      secondaryText: 'tapping.bio/aanya',
-      fontFamily: "'Playfair Display', serif",
-      brandPosition: 'top-left',
-      namePosition: 'bottom-left',
-      chipPosition: 'hidden',
-      qrPosition: 'bottom-right',
-      showChip: false,
-      showQrCode: true,
-      primaryTextSize: 13,
-      secondaryTextSize: 11,
-      brandSize: 13,
-      qrSize: 64,
-      textColor: '#1C1917',
-      customNote: 'Handmade Studio Objects',
-      isPlain: false,
-    },
-    shippingAddress: {
-      name: 'Aanya Sen',
-      street: 'Plot 88, Whitefield Main Road',
-      city: 'Bengaluru',
-      state: 'Karnataka',
-      zip: '560066',
-      country: 'India',
-    },
-  },
-];
+// ==========================================
+// REAL DATA SANITIZERS (PURGE LEGACY MOCK DATA)
+// ==========================================
+function filterOutMockUsers(users: UserRecord[]): UserRecord[] {
+  if (!Array.isArray(users)) return [];
+  return users.filter((u) => {
+    if (!u || !u.id) return false;
+    if (['usr_001', 'usr_002', 'usr_003', 'usr_004', 'usr_005'].includes(u.id)) return false;
+    if (u.displayName === 'Aarav Sharma' || u.email?.includes('aarav@tapping.bio')) return false;
+    return true;
+  });
+}
 
-const INITIAL_PAYMENTS: PaymentRecord[] = [
-  {
-    id: 'pay_001',
-    userId: 'usr_001',
-    userEmail: 'aarav@tapping.bio',
-    amount: 2999,
-    currency: 'INR',
-    type: 'subscription_yearly',
-    status: 'succeeded',
-    method: 'UPI',
-    transactionRef: 'upi_ref_99281749',
-    createdAt: '2026-01-15T10:35:00Z',
-    planName: 'Pro Annual Membership',
-  },
-  {
-    id: 'pay_002',
-    userId: 'usr_001',
-    userEmail: 'aarav@tapping.bio',
-    amount: 1499,
-    currency: 'INR',
-    type: 'metal_card',
-    status: 'succeeded',
-    method: 'UPI',
-    transactionRef: 'upi_ref_99281982',
-    createdAt: '2026-10-24T12:31:00Z',
-    planName: 'Matte Stealth Black NFC Hardware',
-  },
-  {
-    id: 'pay_003',
-    userId: 'usr_002',
-    userEmail: 'priya.patel@designstudio.in',
-    amount: 299,
-    currency: 'INR',
-    type: 'subscription_monthly',
-    status: 'succeeded',
-    method: 'Card',
-    transactionRef: 'card_ref_88291024',
-    createdAt: '2026-10-10T14:21:00Z',
-    planName: 'Pro Monthly Membership',
-  },
-  {
-    id: 'pay_004',
-    userId: 'usr_002',
-    userEmail: 'priya.patel@designstudio.in',
-    amount: 1499,
-    currency: 'INR',
-    type: 'metal_card',
-    status: 'succeeded',
-    method: 'NetBanking',
-    transactionRef: 'nb_ref_77281093',
-    createdAt: '2026-10-22T09:16:00Z',
-    planName: '24K Brushed Gold NFC Hardware',
-  },
-  {
-    id: 'pay_005',
-    userId: 'usr_003',
-    userEmail: 'rohit.beats@indieaudio.co',
-    amount: 2999,
-    currency: 'INR',
-    type: 'subscription_yearly',
-    status: 'succeeded',
-    method: 'UPI',
-    transactionRef: 'upi_ref_66192837',
-    createdAt: '2026-03-01T09:12:00Z',
-    planName: 'Pro Annual Membership',
-  },
-];
+function filterOutMockOrders(orders: MetalCardOrder[]): MetalCardOrder[] {
+  if (!Array.isArray(orders)) return [];
+  return orders.filter((o) => {
+    if (!o || !o.id) return false;
+    if (['ord_10891', 'ord_10892', 'ord_10893', 'ord_10894', 'ord_10895'].includes(o.id)) return false;
+    if (o.userName === 'Aarav Sharma' || o.userEmail?.includes('aarav@tapping.bio')) return false;
+    return true;
+  });
+}
+
+function filterOutMockPayments(payments: PaymentRecord[]): PaymentRecord[] {
+  if (!Array.isArray(payments)) return [];
+  return payments.filter((p) => {
+    if (!p || !p.id) return false;
+    if (['pay_001', 'pay_002', 'pay_003', 'pay_004', 'pay_005'].includes(p.id)) return false;
+    if (p.userEmail?.includes('aarav@tapping.bio')) return false;
+    return true;
+  });
+}
 
 // ==========================================
 // USER MANAGEMENT STORAGE METHODS
 // ==========================================
-
 export function getStoredUsers(): UserRecord[] {
-  if (typeof window === 'undefined') return INITIAL_USERS;
+  if (memoryCache.users) return memoryCache.users;
+  if (typeof window === 'undefined') return [];
   try {
     const data = localStorage.getItem(KEYS.USERS);
-    if (!data) {
-      localStorage.setItem(KEYS.USERS, JSON.stringify(INITIAL_USERS));
-      return INITIAL_USERS;
+    let users: UserRecord[] = [];
+    if (data) {
+      const parsed = JSON.parse(data);
+      users = filterOutMockUsers(parsed);
     }
-    const parsed = JSON.parse(data);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_USERS;
+
+    // If users list is empty, automatically add the currently active creator if they've registered
+    const activeProfile = getStoredProfile();
+    if (activeProfile && activeProfile.username && activeProfile.username !== 'alex' && activeProfile.username !== 'aarav' && activeProfile.username !== 'creator') {
+      const alreadyHas = users.some(u => u.username.toLowerCase() === activeProfile.username.toLowerCase());
+      if (!alreadyHas) {
+        const autoUser: UserRecord = {
+          id: activeProfile.id || `usr_${Date.now()}`,
+          username: activeProfile.username,
+          email: activeProfile.mobileNumber ? `${activeProfile.username}@tapping.bio` : 'creator@tapping.bio',
+          displayName: activeProfile.displayName || activeProfile.username,
+          avatarUrl: activeProfile.avatarUrl,
+          mobileNumber: activeProfile.mobileNumber || '',
+          isActivated: activeProfile.isActivated !== false,
+          status: 'active',
+          plan: 'pro_monthly',
+          createdAt: activeProfile.createdAt || new Date().toISOString(),
+          planExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          profile: activeProfile,
+          links: getStoredLinks(),
+          products: getStoredStore().products,
+          totalViews: getStoredAnalytics().totalViews,
+          totalClicks: getStoredAnalytics().totalClicks,
+          lastActiveAt: new Date().toISOString(),
+        };
+        users.unshift(autoUser);
+        localStorage.setItem(KEYS.USERS, JSON.stringify(users));
+      }
+    }
+
+    memoryCache.users = users;
+    return users;
   } catch {
-    return INITIAL_USERS;
+    memoryCache.users = [];
+    return [];
   }
 }
 
 export function saveStoredUsers(users: UserRecord[]): void {
+  memoryCache.users = users;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(KEYS.USERS, JSON.stringify(users));
@@ -1331,7 +831,7 @@ export function addStoredUser(newUser: Partial<UserRecord>): UserRecord {
     username: newUser.username || `creator_${Date.now().toString().slice(-4)}`,
     email: newUser.email || 'user@example.com',
     displayName: newUser.displayName || 'New Creator',
-    avatarUrl: newUser.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
+    avatarUrl: newUser.avatarUrl || '',
     mobileNumber: newUser.mobileNumber || '+91 98000 00000',
     isActivated: newUser.isActivated !== false,
     status: newUser.status || 'active',
@@ -1363,7 +863,6 @@ export function updateStoredUser(userId: string, updates: Partial<UserRecord>): 
     users[idx] = { ...users[idx], ...updates };
     saveStoredUsers(users);
 
-    // If updating the active user (aarav/profile), also sync to active profile
     const activeProfile = getStoredProfile();
     if (activeProfile.id === userId || users[idx].username === activeProfile.username) {
       if (updates.displayName) activeProfile.displayName = updates.displayName;
@@ -1437,11 +936,12 @@ export function addUserLink(userId: string, newLink: Partial<LinkBlock>): LinkBl
 
 export function toggleUserBlock(userId: string): boolean {
   const users = getStoredUsers();
-  const target = users.find((u) => u.id === userId);
-  if (target) {
-    target.status = target.status === 'active' ? 'blocked' : 'active';
+  const idx = users.findIndex((u) => u.id === userId);
+  if (idx !== -1) {
+    const isNowBlocked = users[idx].status !== 'blocked';
+    users[idx].status = isNowBlocked ? 'blocked' : 'active';
     saveStoredUsers(users);
-    return target.status === 'blocked';
+    return isNowBlocked;
   }
   return false;
 }
@@ -1455,27 +955,28 @@ export function deleteStoredUser(userId: string): void {
 // ==========================================
 // METAL CARD ORDERS STORAGE METHODS
 // ==========================================
-
 export function getStoredOrders(): MetalCardOrder[] {
-  if (typeof window === 'undefined') return INITIAL_ORDERS;
+  if (memoryCache.orders) return memoryCache.orders;
+  if (typeof window === 'undefined') return [];
   try {
     const data = localStorage.getItem(KEYS.ORDERS);
     if (!data) {
-      localStorage.setItem(KEYS.ORDERS, JSON.stringify(INITIAL_ORDERS));
-      return INITIAL_ORDERS;
+      memoryCache.orders = [];
+      return [];
     }
     const parsed = JSON.parse(data);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      // Ensure all loaded orders have full frontSide/backSide blueprint models
-      return parsed.map((order: MetalCardOrder) => enrichOrderBlueprint(order));
-    }
-    return INITIAL_ORDERS;
+    const cleaned = filterOutMockOrders(parsed);
+    const result = cleaned.map((order: MetalCardOrder) => enrichOrderBlueprint(order));
+    memoryCache.orders = result;
+    return result;
   } catch {
-    return INITIAL_ORDERS;
+    memoryCache.orders = [];
+    return [];
   }
 }
 
 export function saveStoredOrders(orders: MetalCardOrder[]): void {
+  memoryCache.orders = orders;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(KEYS.ORDERS, JSON.stringify(orders));
@@ -1487,11 +988,11 @@ export function saveStoredOrders(orders: MetalCardOrder[]): void {
 
 export function createMetalCardOrder(orderData: Partial<MetalCardOrder>): MetalCardOrder {
   const orders = getStoredOrders();
-  const seqNum = 10893 + orders.length;
+  const seqNum = 10001 + orders.length;
   const orderNumber = `TAP-${seqNum}`;
   const isCod = orderData.paymentMethod === 'COD';
 
-  const newOrder: MetalCardOrder = {
+  const newOrder: MetalCardOrder = enrichOrderBlueprint({
     id: `ord_${Date.now()}`,
     orderNumber,
     userId: orderData.userId || 'usr_001',
@@ -1506,11 +1007,14 @@ export function createMetalCardOrder(orderData: Partial<MetalCardOrder>): MetalC
     status: 'in_production',
     trackingNumber: `DEL-${Math.floor(1000000 + Math.random() * 9000000)}`,
     shippingCarrier: 'Delhivery Surface Pro',
-    amount: 1499,
+    amount: orderData.amount || 1499,
     currency: 'INR',
     paymentStatus: isCod ? 'pending' : 'paid',
     paymentMethod: orderData.paymentMethod || 'UPI',
     createdAt: new Date().toISOString(),
+    sideMode: orderData.sideMode || 'double_sided',
+    frontSide: orderData.frontSide,
+    backSide: orderData.backSide,
     shippingAddress: orderData.shippingAddress || {
       name: orderData.userName || 'Creator',
       street: '100ft Road',
@@ -1520,11 +1024,12 @@ export function createMetalCardOrder(orderData: Partial<MetalCardOrder>): MetalC
       country: 'India',
     },
     ...orderData,
-  };
+  });
+
   orders.unshift(newOrder);
   saveStoredOrders(orders);
 
-  // Also record payment transaction
+  // Also record real payment transaction
   recordPayment({
     userId: newOrder.userId,
     userEmail: newOrder.userEmail,
@@ -1556,23 +1061,27 @@ export function updateOrderStatus(
 // ==========================================
 // PAYMENTS STORAGE METHODS
 // ==========================================
-
 export function getStoredPayments(): PaymentRecord[] {
-  if (typeof window === 'undefined') return INITIAL_PAYMENTS;
+  if (memoryCache.payments) return memoryCache.payments;
+  if (typeof window === 'undefined') return [];
   try {
     const data = localStorage.getItem(KEYS.PAYMENTS);
     if (!data) {
-      localStorage.setItem(KEYS.PAYMENTS, JSON.stringify(INITIAL_PAYMENTS));
-      return INITIAL_PAYMENTS;
+      memoryCache.payments = [];
+      return [];
     }
     const parsed = JSON.parse(data);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_PAYMENTS;
+    const cleaned = filterOutMockPayments(parsed);
+    memoryCache.payments = cleaned;
+    return cleaned;
   } catch {
-    return INITIAL_PAYMENTS;
+    memoryCache.payments = [];
+    return [];
   }
 }
 
 export function saveStoredPayments(payments: PaymentRecord[]): void {
+  memoryCache.payments = payments;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(KEYS.PAYMENTS, JSON.stringify(payments));
@@ -1603,51 +1112,117 @@ export function recordPayment(payment: Partial<PaymentRecord>): PaymentRecord {
 }
 
 // ==========================================
-// ADMIN AUTHENTICATION & SESSION
+// ADMIN AUTHENTICATION & SUPERUSER GATE
+// ONLY sunnyservi123@gmail.com IS AUTHORIZED
 // ==========================================
+
+export const AUTHORIZED_SUPERADMIN_EMAIL = 'sunnyservi123@gmail.com';
+
+export function isSuperAdminEmail(email?: string | null): boolean {
+  if (!email) return false;
+  return email.trim().toLowerCase() === AUTHORIZED_SUPERADMIN_EMAIL.toLowerCase();
+}
+
+export function createAdminGoogleSession(googleUser: {
+  email: string;
+  name?: string;
+  picture?: string;
+}): { success: boolean; session?: AdminSession; error?: string } {
+  const cleanEmail = googleUser.email.trim().toLowerCase();
+  if (cleanEmail !== AUTHORIZED_SUPERADMIN_EMAIL.toLowerCase()) {
+    return {
+      success: false,
+      error: `ACCESS DENIED: Account '${googleUser.email}' is not authorized. Only ${AUTHORIZED_SUPERADMIN_EMAIL} is granted administrator clearance.`,
+    };
+  }
+
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+  const token = `adm_sec_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+
+  const session: AdminSession = {
+    isAuthenticated: true,
+    adminEmail: AUTHORIZED_SUPERADMIN_EMAIL,
+    adminName: googleUser.name || 'Sunny',
+    token,
+    loginTime: now.toISOString(),
+    expiresAt,
+  };
+
+  saveAdminSession(session);
+  return { success: true, session };
+}
 
 export function getAdminSession(): AdminSession | null {
   if (typeof window === 'undefined') return null;
+  if (memoryCache.adminSession !== undefined) return memoryCache.adminSession;
   try {
     const data = localStorage.getItem(KEYS.ADMIN_SESSION);
-    if (!data) return null;
-    return JSON.parse(data);
+    if (!data) {
+      memoryCache.adminSession = null;
+      return null;
+    }
+    const session: AdminSession = JSON.parse(data);
+    // Strict email check
+    if (
+      !session ||
+      !session.isAuthenticated ||
+      session.adminEmail.toLowerCase() !== AUTHORIZED_SUPERADMIN_EMAIL.toLowerCase()
+    ) {
+      clearAdminSession();
+      return null;
+    }
+    // 24-hour expiration check
+    const loginTime = new Date(session.loginTime).getTime();
+    if (isNaN(loginTime) || Date.now() - loginTime > 24 * 60 * 60 * 1000) {
+      clearAdminSession();
+      return null;
+    }
+    memoryCache.adminSession = session;
+    return session;
   } catch {
+    memoryCache.adminSession = null;
     return null;
   }
 }
 
+export function isSuperAdminAuthorized(): boolean {
+  const session = getAdminSession();
+  return !!(
+    session &&
+    session.isAuthenticated &&
+    session.adminEmail.toLowerCase() === AUTHORIZED_SUPERADMIN_EMAIL.toLowerCase()
+  );
+}
+
 export function saveAdminSession(session: AdminSession): void {
+  memoryCache.adminSession = session;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(KEYS.ADMIN_SESSION, JSON.stringify(session));
+    window.dispatchEvent(new CustomEvent('tapping-admin-session-updated', { detail: session }));
   } catch (e) {
     console.error('Error saving admin session', e);
   }
 }
 
 export function clearAdminSession(): void {
+  memoryCache.adminSession = null;
   if (typeof window === 'undefined') return;
   localStorage.removeItem(KEYS.ADMIN_SESSION);
+  window.dispatchEvent(new CustomEvent('tapping-admin-session-updated', { detail: null }));
 }
 
+/**
+ * @deprecated Password login has been removed. Only sunnyservi123@gmail.com Google Auth is accepted.
+ */
 export function verifyAdminCredentials(email: string, pin: string): boolean {
-  const cleanEmail = email.trim().toLowerCase();
-  const cleanPin = pin.trim();
-  // Standard superuser or admin email with pin
-  if ((cleanEmail === 'admin@tapping.bio' || cleanEmail.includes('admin')) && 
-      (cleanPin === 'tapping2026' || cleanPin === 'admin123' || cleanPin === '0000')) {
-    return true;
-  }
-  // Allow developer master override
-  if (cleanPin === 'tapping2026') return true;
   return false;
 }
 
 // ==========================================
 // SYSTEM SETTINGS STORAGE
 // ==========================================
-
 const DEFAULT_SETTINGS: SystemSettings = {
   maintenanceMode: false,
   globalAnnouncement: 'Welcome to TAPPING Pro & Metal NFC Platform. All systems operational.',
@@ -1657,17 +1232,25 @@ const DEFAULT_SETTINGS: SystemSettings = {
 };
 
 export function getSystemSettings(): SystemSettings {
+  if (memoryCache.settings) return memoryCache.settings;
   if (typeof window === 'undefined') return DEFAULT_SETTINGS;
   try {
     const data = localStorage.getItem(KEYS.SETTINGS);
-    if (!data) return DEFAULT_SETTINGS;
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(data) };
+    if (!data) {
+      memoryCache.settings = DEFAULT_SETTINGS;
+      return DEFAULT_SETTINGS;
+    }
+    const result: SystemSettings = { ...DEFAULT_SETTINGS, ...JSON.parse(data) };
+    memoryCache.settings = result;
+    return result;
   } catch {
+    memoryCache.settings = DEFAULT_SETTINGS;
     return DEFAULT_SETTINGS;
   }
 }
 
 export function saveSystemSettings(settings: SystemSettings): void {
+  memoryCache.settings = settings;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(KEYS.SETTINGS, JSON.stringify(settings));
@@ -1675,4 +1258,3 @@ export function saveSystemSettings(settings: SystemSettings): void {
     console.error('Error saving settings', e);
   }
 }
-

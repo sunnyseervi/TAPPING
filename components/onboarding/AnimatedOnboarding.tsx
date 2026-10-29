@@ -473,7 +473,7 @@ export default function AnimatedOnboarding({ onComplete }: OnboardingProps) {
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Aarav Sharma or Brand Studio"
+                    placeholder="Your Name or Studio Name"
                     className="w-full px-4 py-3 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs font-bold text-charcoal focus:outline-none focus:ring-2 focus:ring-charcoal/20"
                   />
                 </div>

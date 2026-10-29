@@ -39,7 +39,7 @@ export default function AdminHeader({
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-[#FAF7F2] border border-black/10 text-xs">
           <div className="w-2 h-2 rounded-full bg-emerald-500" />
           <span className="font-mono text-[11px] text-charcoal/80">
-            {session?.adminEmail || 'admin@tapping.bio'}
+            {session?.adminEmail || 'sunnyservi123@gmail.com'}
           </span>
         </div>
 
