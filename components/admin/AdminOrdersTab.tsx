@@ -946,22 +946,21 @@ export default function AdminOrdersTab({
             <div className="p-5 md:p-6 bg-[#FAF7F2] border-b border-black/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                  <span className="px-3 py-1 rounded-full bg-[#141518] text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3 text-[#B6F554]" />
-                    <span>Laser Workshop Production Blueprint</span>
+                  <span className="px-3 py-1 rounded-full bg-[#141518] text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                    <span>Card Design &amp; Print Preview</span>
                   </span>
-                  <span className="text-xs font-mono font-black text-charcoal px-2.5 py-0.5 rounded-lg bg-white border border-black/10">
+                  <span className="text-xs font-mono font-bold text-charcoal px-2.5 py-0.5 rounded-lg bg-white border border-black/10">
                     {inspectingOrder.orderNumber}
                   </span>
-                  <span className="text-xs font-bold text-charcoal/70">
+                  <span className="text-xs font-medium text-charcoal/70">
                     &bull; Recipient: <strong className="text-charcoal">{inspectingOrder.userName}</strong>
                   </span>
                 </div>
-                <h3 className="text-lg md:text-xl font-black text-charcoal tracking-tight">
-                  High-Precision CNC Laser Etching &amp; NFC Encoding Job
+                <h3 className="text-lg md:text-xl font-bold text-charcoal tracking-tight">
+                  Customer Card Details
                 </h3>
                 <p className="text-xs text-charcoal/60 mt-0.5">
-                  Verify laser beam parameters, custom artwork layer, exact fonts, element coordinates, and print ticket.
+                  Review customer card customization, front and back layout, and print directly.
                 </p>
               </div>
 

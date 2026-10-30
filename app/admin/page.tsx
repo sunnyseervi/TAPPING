@@ -174,8 +174,8 @@ export default function AdminPage() {
 
   if (isCheckingAuth) {
     return (
-      <div className="min-h-screen bg-[#0F1013] text-white flex items-center justify-center font-mono text-xs">
-        Authenticating Root Ledger...
+      <div className="min-h-screen bg-[#FAF7F2] text-charcoal flex items-center justify-center font-sans text-xs">
+        <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
       </div>
     );
   }

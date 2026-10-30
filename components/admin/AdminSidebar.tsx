@@ -116,8 +116,8 @@ export default function AdminSidebar({
           <ShieldCheck className="w-4 h-4" />
         </div>
         <div className="min-w-0">
-          <p className="font-black text-[11px] text-charcoal truncate">Master Control Active</p>
-          <p className="text-[10px] text-charcoal/50 font-mono">Role: SuperAdmin</p>
+          <p className="font-bold text-[11px] text-charcoal truncate">Administrator</p>
+          <p className="text-[10px] text-charcoal/50">Online</p>
         </div>
       </div>
     </aside>

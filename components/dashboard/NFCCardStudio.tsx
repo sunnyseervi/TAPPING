@@ -328,7 +328,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
         artworkPosX: 0, 
         artworkPosY: 0 
       });
-      showToast('Artwork uploaded', `Compressed to ${result.width} by ${result.height} pixels and applied to the ${activeSide} side.`, 'success');
+      showToast('Artwork Uploaded', `Artwork applied to ${activeSide} side`, 'success');
     } catch (error) {
       showToast('Artwork upload failed', error instanceof Error ? error.message : 'Please try another image.', 'error');
     }
@@ -2731,7 +2731,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                     Order Placed Successfully!
                   </h3>
                   <p className="text-xs text-charcoal/70 mt-1 max-w-sm mx-auto font-medium">
-                    Your custom laser blueprint has been dispatched to our laser workshop for high-precision fabrication and NTAG216 encoding.
+                    Your card order has been received and queued for printing and dispatch.
                   </p>
                 </div>
 

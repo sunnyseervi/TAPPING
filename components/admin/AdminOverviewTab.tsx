@@ -56,14 +56,11 @@ export default function AdminOverviewTab({
       {/* Top Banner with Quick Actions in Clean Light Mode */}
       <div className="p-6 md:p-8 rounded-4xl bg-white text-charcoal border border-black/10 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <span className="text-[10px] font-mono font-black uppercase tracking-wider px-3 py-1 rounded-full bg-[#FAF7F2] text-charcoal border border-black/10">
-            SYSTEM MISSION CONTROL
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-black mt-3 tracking-tight text-charcoal">
-            Tapping Platform Central Ledger
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-charcoal">
+            Platform Overview
           </h1>
           <p className="text-xs text-charcoal/60 mt-1 max-w-xl font-medium">
-            Monitor real-time user registrations, bio link engagement metrics, contactless NFC hardware pipelines, and subscription revenue.
+            Summary of creator accounts, smart NFC card orders, and payments.
           </p>
         </div>
 

@@ -67,25 +67,21 @@ export default function AdminSettingsTab({
       {/* Header */}
       <div className="p-6 rounded-4xl bg-white border border-black/10 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EFF4FF] text-[#4F83FF] border border-[#4F83FF]/20 text-[10px] font-black uppercase tracking-wider mb-2">
-            <Database className="w-3.5 h-3.5" />
-            <span>Infrastructure &amp; Database</span>
-          </div>
           <h2 className="text-xl sm:text-2xl font-black text-charcoal tracking-tight">
-            Backend Architecture &amp; System Configuration
+            System Settings
           </h2>
           <p className="text-xs text-charcoal/60 mt-1 font-medium">
-            Manage Supabase PostgreSQL database tables, global announcements, and maintenance states.
+            Database connection and platform settings.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className={`px-3 py-1 rounded-full text-xs font-black border ${
+          <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
             supabaseConfig.isConfigured
               ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
               : 'bg-[#FAF7F2] text-charcoal border-black/10'
           }`}>
-            {supabaseConfig.isConfigured ? 'Supabase Connected' : 'Local Storage Cache Active'}
+            {supabaseConfig.isConfigured ? 'Supabase Connected' : 'Local Storage Mode'}
           </span>
         </div>
       </div>
@@ -94,13 +90,13 @@ export default function AdminSettingsTab({
       <div className="p-6 md:p-8 rounded-4xl bg-white border border-black/10 shadow-soft space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-black/5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#141518] text-[#B6F554] flex items-center justify-center font-mono font-black text-lg">
+            <div className="w-10 h-10 rounded-2xl bg-[#141518] text-[#B6F554] flex items-center justify-center font-mono font-bold text-lg">
               S
             </div>
             <div>
-              <h3 className="font-black text-base text-charcoal">Supabase PostgreSQL Database Engine</h3>
+              <h3 className="font-bold text-base text-charcoal">Supabase Database</h3>
               <p className="text-xs text-charcoal/60 mt-0.5">
-                Tables: profiles, links, products, metal_card_orders, payments, analytics
+                Connect and sync platform data with Supabase
               </p>
             </div>
           </div>

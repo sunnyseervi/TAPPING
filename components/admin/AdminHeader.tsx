@@ -21,16 +21,15 @@ export default function AdminHeader({
       {/* Left: Brand & Admin Shield */}
       <div className="flex items-center gap-3">
         <TappingLogo size="sm" variant="full" />
-        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FAF7F2] border border-black/10 text-[10px] font-mono font-bold text-charcoal">
-          <ShieldCheck className="w-3 h-3 text-[#4F83FF]" />
-          <span>SUPERUSER ROOT</span>
+        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FAF7F2] border border-black/10 text-[10px] font-bold text-charcoal">
+          <ShieldCheck className="w-3 h-3 text-charcoal" />
+          <span>Admin</span>
         </div>
       </div>
 
       {/* Center: Live Platform Status */}
-      <div className="hidden md:flex items-center gap-2 text-xs font-mono text-charcoal/60">
-        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-        <span>tapping.bio &bull; ALL SYSTEMS OPERATIONAL</span>
+      <div className="hidden md:flex items-center gap-2 text-xs text-charcoal/60 font-medium">
+        <span>Admin Dashboard</span>
       </div>
 
       {/* Right Controls */}

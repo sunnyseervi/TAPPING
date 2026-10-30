@@ -246,7 +246,7 @@ export default function DigitalCardStudio({
     try {
       const result = await compressImageFile(file, { maxWidth: 1600, maxHeight: 1000, quality: 0.82 });
       setCustomBgImage(result.dataUrl);
-      showToast('Card artwork applied', 'The image was compressed and saved with your visiting-card design.', 'success');
+      showToast('Artwork Applied', 'Custom background added to your digital card', 'success');
     } catch (error) {
       showToast('Artwork upload failed', error instanceof Error ? error.message : 'Please try another image.', 'error');
     }

@@ -115,11 +115,7 @@ export default function EditProfileSection({
     try {
       const result = await compressImageFile(file, { maxWidth: 1000, maxHeight: 1000, quality: 0.78 });
       setNewProdImageUrl(result.dataUrl);
-      showToast(
-        'Product Image Compressed',
-        `Reduced from ${formatFileSize(result.originalBytes)} to ${formatFileSize(result.compressedBytes)} (${result.savingsPercent}% data saved)!`,
-        'success'
-      );
+      showToast('Image Uploaded', 'Product image added', 'success');
     } catch (err) {
       showToast('Upload Failed', err instanceof Error ? err.message : 'Could not compress image', 'error');
     } finally {
@@ -321,11 +317,7 @@ export default function EditProfileSection({
       setAvatarPosX(0);
       setAvatarPosY(0);
       notifyLive({ avatarUrl: result.dataUrl, avatarFit: 'contain', avatarZoom: 100, avatarPosX: 0, avatarPosY: 0 });
-      showToast(
-        'Profile photo compressed',
-        `Compressed to ${formatFileSize(result.compressedBytes)} (${result.savingsPercent}% saved). Fits avatar & browser favicon with near-zero storage!`,
-        'success'
-      );
+      showToast('Photo Uploaded', 'Profile photo updated', 'success');
     } catch (error) {
       showToast('Photo upload failed', error instanceof Error ? error.message : 'Please try another image.', 'error');
     }
@@ -2034,8 +2026,8 @@ export default function EditProfileSection({
                     <Plus className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-black text-charcoal">Add New Product or Paste Link</h3>
-                    <p className="text-[11px] text-charcoal/60">Product picture is compressed automatically for rapid mobile loading</p>
+                    <h3 className="text-sm font-black text-charcoal">Add New Product</h3>
+                    <p className="text-[11px] text-charcoal/60">Add an item to showcase on your bio page</p>
                   </div>
                 </div>
                 <button
@@ -2110,7 +2102,7 @@ export default function EditProfileSection({
                   {/* Product Picture Upload (Universal Auto-Compression) */}
                   <div className="flex flex-col gap-1.5 sm:col-span-2">
                     <label className="text-[11px] font-bold text-charcoal/80">
-                      Product Picture (Auto-Compressed for Ultra-Fast Loading)
+                      Product Picture
                     </label>
 
                     <input
@@ -2138,10 +2130,10 @@ export default function EditProfileSection({
                           className="py-2 px-3.5 rounded-xl bg-[#141518] hover:bg-black text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer transition-all disabled:opacity-50"
                         >
                           <Upload className="w-3.5 h-3.5 text-[#FDF166]" />
-                          <span>{compressingProdImage ? 'Compressing...' : newProdImageUrl ? 'Change Picture' : 'Upload Picture'}</span>
+                          <span>{compressingProdImage ? 'Uploading...' : newProdImageUrl ? 'Change Picture' : 'Upload Picture'}</span>
                         </button>
                         <p className="text-[10px] text-charcoal/50 mt-1">
-                          PNG or JPG. Automatically converted to high-efficiency WebP.
+                          PNG, JPG or WebP image.
                         </p>
                       </div>
 
