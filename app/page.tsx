@@ -248,7 +248,7 @@ export default function LandingPage() {
           {isSignedIn ? (
             <Link
               href="/dashboard"
-              className="px-5 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
+              className="px-5 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95"
             >
               <span>Dashboard</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -269,7 +269,7 @@ export default function LandingPage() {
                   const input = document.getElementById('claim-handle-input');
                   if (input) input.focus();
                 }}
-                className="px-5 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                className="px-5 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer"
               >
                 <span>Get Started</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -317,7 +317,7 @@ export default function LandingPage() {
           </div>
           <button
             type="submit"
-            className="w-full sm:w-auto px-7 py-3.5 rounded-2xl sm:rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer shrink-0"
+            className="w-full sm:w-auto px-7 py-3.5 rounded-2xl sm:rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer shrink-0"
           >
             <span>Claim your Tapping</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -429,7 +429,7 @@ export default function LandingPage() {
                   {/* CTA: Save Contact Card */}
                   <button
                     onClick={handleDownloadVCard}
-                    className="mt-3 w-full py-2.5 px-4 rounded-2xl bg-[#141518] hover:bg-black text-white text-[11px] font-black flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95 cursor-pointer"
+                    className="mt-3 w-full py-2.5 px-4 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-[11px] font-black flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Save Contact to Phone (.vcf)</span>
@@ -620,7 +620,7 @@ export default function LandingPage() {
               <div className="mt-2">
                 <Link
                   href="/dashboard?tab=nfc"
-                  className="w-full py-3.5 px-6 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-[0.99]"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-[0.99]"
                 >
                   <span>Order Custom Metal NFC Card</span>
                   <ArrowRight className="w-4 h-4" />
@@ -652,7 +652,7 @@ export default function LandingPage() {
                 onClick={() => setActiveCreatorIndex(idx)}
                 className={`px-4 py-2 rounded-full text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
                   activeCreatorIndex === idx
-                    ? 'bg-[#141518] text-white shadow-xs'
+                    ? 'bg-[#4F83FF] text-white shadow-xs'
                     : 'bg-white hover:bg-gray-100 text-charcoal border border-black/10'
                 }`}
               >
@@ -709,7 +709,7 @@ export default function LandingPage() {
               <div className="mt-6 w-full flex flex-col gap-2">
                 <Link
                   href={`/${currentCreator.handle}`}
-                  className="w-full py-3 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-xs transition-transform active:scale-95"
+                  className="w-full py-3 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95"
                 >
                   <Eye className="w-3.5 h-3.5" />
                   <span>View Live Bio Page</span>
@@ -868,7 +868,7 @@ export default function LandingPage() {
               onClick={() => setBillingCycle('monthly')}
               className={`px-5 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${
                 billingCycle === 'monthly'
-                  ? 'bg-[#141518] text-white shadow-xs'
+                  ? 'bg-[#4F83FF] text-white shadow-xs'
                   : 'text-charcoal/70 hover:text-black'
               }`}
             >
@@ -879,7 +879,7 @@ export default function LandingPage() {
               onClick={() => setBillingCycle('yearly')}
               className={`px-5 py-2 rounded-full text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
                 billingCycle === 'yearly'
-                  ? 'bg-[#141518] text-white shadow-xs'
+                  ? 'bg-[#4F83FF] text-white shadow-xs'
                   : 'text-charcoal/70 hover:text-black'
               }`}
             >
@@ -906,7 +906,7 @@ export default function LandingPage() {
                   Monthly Membership
                 </span>
                 {billingCycle === 'monthly' && (
-                  <span className="px-3 py-1 rounded-full bg-[#141518] text-white text-[10px] font-black">
+                  <span className="px-3 py-1 rounded-full bg-[#4F83FF] text-white text-[10px] font-black">
                     Active Plan
                   </span>
                 )}
@@ -943,7 +943,7 @@ export default function LandingPage() {
 
             <Link
               href="/dashboard?action=upgrade&plan=monthly"
-              className="mt-8 w-full py-3.5 px-4 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
+              className="mt-8 w-full py-3.5 px-4 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95"
             >
               <span>Activate Monthly (₹299)</span>
               <ArrowRight className="w-4 h-4" />

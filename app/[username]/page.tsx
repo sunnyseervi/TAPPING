@@ -206,18 +206,18 @@ export default function PublicProfilePage() {
             {isTargetCurrentCreator ? (
               <a
                 href="/dashboard?action=upgrade"
-                className="w-full py-3.5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95"
+                className="w-full py-3.5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95"
               >
                 <span>Publish in Dashboard</span>
-                <ArrowUpRight className="w-4 h-4 text-[#FDF166]" />
+                <ArrowUpRight className="w-4 h-4 text-white" />
               </a>
             ) : (
               <a
                 href="/"
-                className="w-full py-3.5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95"
+                className="w-full py-3.5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95"
               >
                 <span>Claim Your Own TAPPING Handle</span>
-                <ArrowUpRight className="w-4 h-4 text-[#FDF166]" />
+                <ArrowUpRight className="w-4 h-4 text-white" />
               </a>
             )}
             <a
@@ -250,10 +250,10 @@ export default function PublicProfilePage() {
           <div className="mt-6 w-full pt-6 border-t border-black/10 flex flex-col gap-2.5">
             <a
               href="/"
-              className="w-full py-3.5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95"
+              className="w-full py-3.5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95"
             >
               <span>Claim @{usernameParam} Now</span>
-              <ArrowUpRight className="w-4 h-4 text-[#FDF166]" />
+              <ArrowUpRight className="w-4 h-4 text-white" />
             </a>
             <a
               href="/"
@@ -818,28 +818,22 @@ export default function PublicProfilePage() {
         )}
       </main>
 
-      {/* Theme-Based Link-in-Bio CTA: Single Button, Zero Stars, Full Theme Integration */}
-      <footer className="w-full pt-6 pb-8 flex flex-col items-center justify-center gap-3 mt-auto shrink-0 z-10">
+      {/* Link-in-Bio Minimal Footer: Powered by TAPPING line with small clickable text below, NO arrow, NO box */}
+      <footer className="w-full pt-8 pb-10 flex flex-col items-center justify-center gap-1.5 mt-auto shrink-0 z-10 text-center">
+        <span className={`text-[11px] font-bold tracking-wider ${contentIsDark ? 'text-white/50' : 'text-charcoal/50'}`}>
+          Powered by TAPPING &bull; Digital Cards &amp; Bio Space
+        </span>
         <a
           href="/"
-          className={`w-full max-w-md min-h-[52px] px-5 py-3.5 rounded-2xl border shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-between group ${
-            contentIsDark 
-              ? 'bg-white/10 hover:bg-white/15 text-white border-white/15 backdrop-blur-md' 
-              : 'bg-white hover:bg-gray-50 text-charcoal border-black/10'
+          className={`text-[11px] font-semibold underline underline-offset-2 transition-opacity hover:opacity-100 cursor-pointer ${
+            contentIsDark ? 'text-white/70 hover:text-white' : 'text-charcoal/70 hover:text-black'
           }`}
           style={{
             ...getFontFamilyStyle(profile.fontFamily),
           }}
         >
-          <span className="text-xs font-black truncate">
-            Create your personalized link in bio
-          </span>
-          <ArrowUpRight className="w-4 h-4 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 stroke-[2.2]" />
+          Create your personalized link in bio
         </a>
-
-        <span className={`text-[10px] font-bold tracking-wider ${contentIsDark ? 'text-white/40' : 'text-charcoal/40'}`}>
-          Powered by TAPPING &bull; Digital Cards &amp; Bio Space
-        </span>
       </footer>
     </div>
   </div>

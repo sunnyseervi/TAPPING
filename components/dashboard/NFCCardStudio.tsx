@@ -766,7 +766,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
 
           <button
             onClick={handleSaveDesign}
-            className="px-4 py-2 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
+            className="px-4 py-2 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer"
           >
             <Check className="w-3.5 h-3.5 text-[#FDF166]" />
             <span>Save Blueprint</span>
@@ -2540,7 +2540,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                   <button
                     type="button"
                     onClick={() => setOrderStep('delivery')}
-                    className="flex-2 py-3 px-6 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                    className="flex-2 py-3 px-6 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer"
                   >
                     <span>Continue to Delivery Details</span>
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -2660,7 +2660,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                       }
                       setOrderStep('payment');
                     }}
-                    className="flex-2 py-3 px-6 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                    className="flex-2 py-3 px-6 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer"
                   >
                     <span>Continue to Payment Mode</span>
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -2777,7 +2777,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                   <button
                     type="button"
                     onClick={() => setOrderStep('confirm_popup')}
-                    className="flex-2 py-3 px-6 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                    className="flex-2 py-3 px-6 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer"
                   >
                     <span>Proceed to Confirm Order</span>
                     <ChevronRight className="w-3.5 h-3.5" />

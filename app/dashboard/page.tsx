@@ -338,7 +338,7 @@ function DashboardContent() {
                     onClick={() => setUpgradePlan('monthly')}
                     className={`py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
                       upgradePlan === 'monthly'
-                        ? 'bg-[#141518] text-white shadow-xs'
+                        ? 'bg-[#4F83FF] text-white shadow-xs'
                         : 'text-charcoal/70 hover:text-black'
                     }`}
                   >
@@ -349,7 +349,7 @@ function DashboardContent() {
                     onClick={() => setUpgradePlan('yearly')}
                     className={`py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                       upgradePlan === 'yearly'
-                        ? 'bg-[#141518] text-white shadow-xs'
+                        ? 'bg-[#4F83FF] text-white shadow-xs'
                         : 'text-charcoal/70 hover:text-black'
                     }`}
                   >
@@ -387,13 +387,13 @@ function DashboardContent() {
                   <button
                     type="button"
                     onClick={() => setUpgradeModalStep('payment')}
-                    className="w-full py-4 px-5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                    className="w-full py-4 px-5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer"
                   >
                     <CreditCard className="w-4 h-4 text-[#FDF166]" />
                     <span>
                       Proceed to Pay &#8377;{upgradePlan === 'yearly' ? '2,999' : '299'}
                     </span>
-                    <ArrowRight className="w-4 h-4 text-[#FDF166]" />
+                    <ArrowRight className="w-4 h-4 text-white" />
                   </button>
                   <p className="text-[10px] text-center text-charcoal/50 font-medium">
                     100% money-back satisfaction guarantee &bull; Cancel anytime
@@ -541,7 +541,7 @@ function DashboardContent() {
                   type="button"
                   disabled={isProcessingUpgrade}
                   onClick={() => handleActivatePlan(upgradePlan)}
-                  className="w-full py-4 px-5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer disabled:opacity-60"
+                  className="w-full py-4 px-5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer disabled:opacity-60"
                 >
                   {isProcessingUpgrade ? (
                     <div className="flex items-center gap-2">
@@ -554,7 +554,7 @@ function DashboardContent() {
                       <span>
                         Pay &#8377;{upgradePlan === 'yearly' ? '2,999' : '299'} &amp; Activate
                       </span>
-                      <ArrowRight className="w-4 h-4 text-[#FDF166]" />
+                      <ArrowRight className="w-4 h-4 text-white" />
                     </>
                   )}
                 </button>
@@ -600,10 +600,10 @@ function DashboardContent() {
                     setShowUpgradeModal(false);
                     setUpgradeModalStep('plan');
                   }}
-                  className="w-full py-4 px-6 rounded-full bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer mt-2"
+                  className="w-full py-4 px-6 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer mt-2"
                 >
                   <span>Continue with Dashboard</span>
-                  <ArrowRight className="w-4 h-4 text-[#FDF166]" />
+                  <ArrowRight className="w-4 h-4 text-white" />
                 </button>
               </div>
             )}
@@ -658,7 +658,7 @@ function DashboardContent() {
                   onClick={() => setProfileViewMode('form')}
                   className={`flex-1 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                     profileViewMode === 'form'
-                      ? 'bg-[#141518] text-white shadow-xs'
+                      ? 'bg-[#4F83FF] text-white shadow-xs'
                       : 'text-charcoal/70 hover:text-black'
                   }`}
                 >

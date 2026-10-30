@@ -273,7 +273,7 @@ export default function AccountOrdersSection({
             href={`/${profile.username}`}
             target="_blank"
             rel="noreferrer"
-            className="px-4 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer shadow-xs"
+            className="px-4 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer shadow-md shadow-[#4F83FF]/20"
           >
             <span>View Bio Page</span>
             <ExternalLink className="w-3.5 h-3.5 text-[#FDF166]" />
@@ -340,7 +340,7 @@ export default function AccountOrdersSection({
             <button
               type="button"
               onClick={onUpgradeClick}
-              className="px-4 py-2 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer shadow-xs"
+              className="px-4 py-2 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer shadow-md shadow-[#4F83FF]/20"
             >
               <span>Manage Billing</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -517,7 +517,7 @@ export default function AccountOrdersSection({
               const studioBtn = document.querySelector('[title="Metal NFC Studio"]') as HTMLButtonElement;
               if (studioBtn) studioBtn.click();
             }}
-            className="px-4 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-2 shadow-xs transition-transform active:scale-95 cursor-pointer self-start sm:self-auto"
+            className="px-4 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer self-start sm:self-auto"
           >
             <ShoppingBag className="w-3.5 h-3.5 text-[#B6F554]" />
             <span>Order Another Card (&#8377;1,499)</span>

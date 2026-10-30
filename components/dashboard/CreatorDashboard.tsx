@@ -77,9 +77,9 @@ export default function CreatorDashboard({
             </button>
             <button 
               onClick={() => onSelectTab('nfc')} 
-              className="rounded-2xl bg-[#141518] hover:bg-black px-4 py-3 text-xs font-black text-white shadow-sm transition-all cursor-pointer flex items-center gap-2"
+              className="rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] px-4 py-3 text-xs font-black text-white shadow-md shadow-[#4F83FF]/20 transition-all cursor-pointer flex items-center gap-2"
             >
-              <CreditCard className="w-3.5 h-3.5 text-[#FDF166]" />
+              <CreditCard className="w-3.5 h-3.5 text-white" />
               <span>Metal NFC Studio</span>
             </button>
           </div>
@@ -176,10 +176,10 @@ export default function CreatorDashboard({
                 href={profileUrl} 
                 target="_blank" 
                 rel="noreferrer" 
-                className="px-4 py-2.5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                className="px-4 py-2.5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center gap-1.5 shadow-md shadow-[#4F83FF]/20 transition-colors cursor-pointer"
               >
                 <span>View</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-[#FDF166]" />
+                <ArrowUpRight className="w-3.5 h-3.5 text-white" />
               </a>
             </div>
           </div>

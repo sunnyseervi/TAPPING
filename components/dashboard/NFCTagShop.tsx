@@ -1173,7 +1173,7 @@ export default function NFCTagShop({ profile, vcard, username }: NFCTagShopProps
                   setOrderConfirmed(null);
                   setViewHistory(true);
                 }}
-                className="flex-1 py-3 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black transition-transform active:scale-95 cursor-pointer"
+                className="flex-1 py-3 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer"
               >
                 View Tracking &amp; Status
               </button>

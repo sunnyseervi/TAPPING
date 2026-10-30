@@ -1208,7 +1208,7 @@ export default function EditProfileSection({
             </button>
             <button
               onClick={openAddProductSliderModal}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black shadow-sm transition-transform active:scale-95 cursor-pointer shrink-0"
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer shrink-0"
               title="Add slidable product carousel block between links"
             >
               <ShoppingBag className="w-4 h-4 text-[#FDF166]" />
@@ -1452,7 +1452,7 @@ export default function EditProfileSection({
                   onUpdateLinks(links);
                   showToast('Links Saved', 'All links and block orders have been saved.', 'success');
                 }}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-sm transition-transform active:scale-95"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>Save Links Order & Changes</span>
@@ -1982,7 +1982,7 @@ export default function EditProfileSection({
             <button
               type="button"
               onClick={() => setShowAddProductModal(true)}
-              className="px-4 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer shrink-0"
+              className="px-4 py-2.5 rounded-full bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4 text-[#FDF166]" />
               <span>Add Product / Paste Link</span>
@@ -2385,7 +2385,7 @@ export default function EditProfileSection({
               <button
                 type="button"
                 onClick={() => setShowSaveConfirmModal(false)}
-                className="py-3 px-4 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-black shadow-sm transition-transform active:scale-95 cursor-pointer"
+                className="py-3 px-4 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer"
               >
                 Done
               </button>

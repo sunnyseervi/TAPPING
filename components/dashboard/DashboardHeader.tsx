@@ -82,10 +82,10 @@ export default function DashboardHeader({
           <button
             type="button"
             onClick={onPublishClick}
-            className={`px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer shrink-0 ${
+            className={`px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full text-xs font-black flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer shrink-0 ${
               isPublished 
                 ? 'bg-white hover:bg-gray-50 border border-black/15 text-charcoal shadow-2xs' 
-                : 'bg-[#141518] hover:bg-black text-white'
+                : 'bg-[#4F83FF] hover:bg-[#3B6DE6] text-white shadow-md shadow-[#4F83FF]/20'
             }`}
             title={isPublished ? 'Profile is published live' : 'Publish your bio page live'}
           >
