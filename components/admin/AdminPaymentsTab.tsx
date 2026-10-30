@@ -179,7 +179,15 @@ export default function AdminPaymentsTab({
                     <tr key={u.id} className="hover:bg-gray-50/80 transition-colors">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2.5">
-                          <img src={u.avatarUrl} alt="" className="w-8 h-8 rounded-xl object-cover" />
+                          <div className="w-8 h-8 rounded-xl overflow-hidden bg-white border border-black/10 shrink-0 flex items-center justify-center">
+                            {u.avatarUrl ? (
+                              <img src={u.avatarUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="font-bold text-[10px] text-charcoal/60 uppercase">
+                                {(u.displayName || u.username || 'U').charAt(0)}
+                              </span>
+                            )}
+                          </div>
                           <div>
                             <span className="font-black text-charcoal block">{u.displayName}</span>
                             <span className="text-[10px] text-charcoal/50 font-mono">@{u.username}</span>

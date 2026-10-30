@@ -422,8 +422,14 @@ export default function AdminUsersTab({
                       {/* Creator Info */}
                       <td className="py-3.5 px-5">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-2xl overflow-hidden bg-[#FAF7F2] border border-black/10 shrink-0">
-                            <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full object-cover" />
+                          <div className="w-10 h-10 rounded-2xl overflow-hidden bg-[#FAF7F2] border border-black/10 shrink-0 flex items-center justify-center">
+                            {user.avatarUrl ? (
+                              <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="font-bold text-xs text-charcoal/60 uppercase">
+                                {(user.displayName || user.username || 'U').charAt(0)}
+                              </span>
+                            )}
                           </div>
                           <div className="min-w-0">
                             <p className="font-black text-charcoal truncate">{user.displayName}</p>
@@ -572,8 +578,14 @@ export default function AdminUsersTab({
           <div className="bg-white rounded-4xl p-6 sm:p-8 max-w-2xl w-full border border-black/10 shadow-2xl text-left animate-in fade-in zoom-in-95 duration-200 my-8">
             <div className="flex items-center justify-between pb-4 border-b border-black/5">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white border border-black/10 shrink-0">
-                  <img src={selectedUserForDetails.avatarUrl} alt="" className="w-full h-full object-cover" />
+                <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white border border-black/10 shrink-0 flex items-center justify-center">
+                  {selectedUserForDetails.avatarUrl ? (
+                    <img src={selectedUserForDetails.avatarUrl} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-bold text-sm text-charcoal/60 uppercase">
+                      {(selectedUserForDetails.displayName || selectedUserForDetails.username || 'U').charAt(0)}
+                    </span>
+                  )}
                 </div>
                 <div>
                   <h3 className="font-black text-base text-charcoal">{selectedUserForDetails.displayName}</h3>

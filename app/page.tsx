@@ -709,8 +709,12 @@ export default function LandingPage() {
                       key={i}
                       className="p-3 rounded-2xl bg-[#FAF7F2] border border-black/10 flex flex-col justify-between shadow-2xs"
                     >
-                      <div className="w-full aspect-square rounded-xl overflow-hidden bg-white mb-2 border border-black/5">
-                        <img src={prod.img} alt={prod.name} className="w-full h-full object-cover" />
+                      <div className="w-full aspect-square rounded-xl overflow-hidden bg-white mb-2 border border-black/5 flex items-center justify-center">
+                        {prod.img ? (
+                          <img src={prod.img} alt={prod.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-[#E3DFF8]" />
+                        )}
                       </div>
                       <p className="text-xs font-black text-charcoal truncate">{prod.name}</p>
                       <div className="mt-1 flex items-center justify-between">

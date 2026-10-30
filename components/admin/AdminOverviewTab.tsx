@@ -218,8 +218,14 @@ export default function AdminOverviewTab({
                 className="p-3.5 rounded-2xl bg-[#FAF7F2] hover:bg-gray-100/80 border border-black/5 flex items-center justify-between transition-colors text-xs"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl overflow-hidden bg-white border border-black/10 shrink-0">
-                    <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full object-cover" />
+                  <div className="w-9 h-9 rounded-xl overflow-hidden bg-white border border-black/10 shrink-0 flex items-center justify-center">
+                    {user.avatarUrl ? (
+                      <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="font-bold text-xs text-charcoal/60 uppercase">
+                        {(user.displayName || user.username || 'U').charAt(0)}
+                      </span>
+                    )}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
