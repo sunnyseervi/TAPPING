@@ -35,7 +35,6 @@ import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 import { CardMaterial } from '@/lib/types';
 import TappingLogo from '@/components/brand/TappingLogo';
-import IndianFlag from '@/components/ui/IndianFlag';
 import GoogleAuthModal from '@/components/auth/GoogleAuthModal';
 
 export default function LandingPage() {
@@ -55,7 +54,14 @@ export default function LandingPage() {
 
   // Active showcase creator tab
   const [activeCreatorIndex, setActiveCreatorIndex] = useState(0);
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [openFaqs, setOpenFaqs] = useState<Record<number, boolean>>({ 0: true });
+
+  const toggleFaq = (idx: number) => {
+    setOpenFaqs((prev) => ({
+      ...prev,
+      [idx]: !prev[idx],
+    }));
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -172,15 +178,38 @@ export default function LandingPage() {
     {
       name: 'Aryan Verma',
       handle: 'aryanverma',
+      themeName: 'Velvet Stealth Metal',
+      themeBadge: 'Stealth Dark',
       role: 'Founder & Hardware Architect',
-      location: 'Bengaluru, India',
-      avatar: 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80',
-      bio: 'Building contactless NFC hardware and digital identity infrastructure in Bengaluru.',
+      location: 'Bengaluru',
+      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&auto=format&fit=crop&q=80',
+      bio: 'Building contactless NFC hardware and digital identity infrastructure.',
       badge: 'Hardware & Tech',
+      style: {
+        containerBg: 'bg-[#141518] border-[#2A2B32] text-white shadow-2xl',
+        headingColor: 'text-white',
+        handleColor: 'text-[#4F83FF]',
+        bioColor: 'text-white/70',
+        metaLabelColor: 'text-white/50',
+        metaValueColor: 'text-white',
+        borderDivider: 'border-white/10',
+        badgePill: 'bg-[#4F83FF]/20 text-[#4F83FF] border border-[#4F83FF]/30',
+        sectionLabel: 'text-white/50',
+        cardBg: 'bg-white/5 hover:bg-white/10 border border-white/10 text-white',
+        cardTitle: 'text-white',
+        cardSub: 'text-white/60',
+        clicksPill: 'bg-white/10 text-white/80 border border-white/10',
+        arrowColor: 'text-white/60',
+        productSliderBg: 'bg-white/5 border border-white/10',
+        productTitle: 'text-white',
+        productPrice: 'text-[#4F83FF]',
+        buyBtn: 'bg-white hover:bg-gray-100 text-[#141518]',
+        viewBioBtn: 'bg-[#4F83FF] hover:bg-[#3B6DE6] text-white shadow-md shadow-[#4F83FF]/25',
+      },
       links: [
         { title: 'Tapping Smart Metal NFC Card', sub: 'Laser-etched 13.56MHz chip', clicks: '4,820' },
         { title: 'Book 1:1 Product Advisory Call', sub: '30-min strategy session', clicks: '1,940' },
-        { title: 'Bengaluru Founders Meetup RSVP', sub: 'Quarterly hardware summit', clicks: '850' },
+        { title: 'Founders Hardware Summit RSVP', sub: 'Quarterly hardware summit', clicks: '850' },
       ],
       products: [
         { name: 'Matte Stealth Black NFC', price: '₹1,499', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300' },
@@ -190,13 +219,36 @@ export default function LandingPage() {
     {
       name: 'Mira Kapoor',
       handle: 'mirakapoor',
+      themeName: 'Warm Terracotta Bento',
+      themeBadge: 'Pastel Clay',
       role: 'Ceramicist & Spatial Designer',
-      location: 'Mumbai, India',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
-      bio: 'Functional daily ceramic objects and sculptural pottery handcrafted in Bandra studio.',
+      location: 'Mumbai Studio',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80',
+      bio: 'Functional daily ceramic objects and sculptural pottery handcrafted in studio.',
       badge: 'Art & Design',
+      style: {
+        containerBg: 'bg-[#FFF7F4] border-[#F8D5C8] text-[#241F1D] shadow-card',
+        headingColor: 'text-[#241F1D]',
+        handleColor: 'text-[#E07A5F]',
+        bioColor: 'text-[#6E5A54]',
+        metaLabelColor: 'text-[#6E5A54]/70',
+        metaValueColor: 'text-[#241F1D]',
+        borderDivider: 'border-[#F8D5C8]',
+        badgePill: 'bg-[#E07A5F]/15 text-[#E07A5F] border border-[#E07A5F]/25',
+        sectionLabel: 'text-[#6E5A54]/80',
+        cardBg: 'bg-white hover:bg-[#FFF2EC] border border-[#F8D5C8] text-charcoal shadow-2xs',
+        cardTitle: 'text-[#241F1D]',
+        cardSub: 'text-[#6E5A54]',
+        clicksPill: 'bg-[#FFF2EC] text-[#E07A5F] border border-[#F8D5C8]',
+        arrowColor: 'text-[#E07A5F]',
+        productSliderBg: 'bg-white border border-[#F8D5C8]',
+        productTitle: 'text-[#241F1D]',
+        productPrice: 'text-[#E07A5F]',
+        buyBtn: 'bg-[#E07A5F] hover:bg-[#D06B50] text-white',
+        viewBioBtn: 'bg-[#E07A5F] hover:bg-[#D06B50] text-white shadow-md shadow-[#E07A5F]/25',
+      },
       links: [
-        { title: 'Studio Exhibition RSVP • Mumbai 2026', sub: 'Gallery preview & catalog', clicks: '3,210' },
+        { title: 'Studio Exhibition RSVP • Gallery 2026', sub: 'Preview collection & catalog', clicks: '3,210' },
         { title: 'Weekend Pottery Masterclass', sub: 'Small batch hands-on session', clicks: '2,400' },
         { title: 'Architectural Custom Commissions', sub: 'Inquire for residential spaces', clicks: '980' },
       ],
@@ -208,15 +260,38 @@ export default function LandingPage() {
     {
       name: 'Rohan Mehra',
       handle: 'rohanmehra',
+      themeName: 'Neo Brutalist & Butter',
+      themeBadge: 'Neo Pop',
       role: 'Brand Designer & Creative Director',
-      location: 'New Delhi, India',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+      location: 'New Delhi',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80',
       bio: 'Crafting brand identities, typography systems, and high-performance digital experiences.',
       badge: 'Brand & Identity',
+      style: {
+        containerBg: 'bg-[#FEFCE8] border-2 border-black text-black shadow-[6px_6px_0px_#000]',
+        headingColor: 'text-black',
+        handleColor: 'text-black font-mono',
+        bioColor: 'text-zinc-800',
+        metaLabelColor: 'text-zinc-600',
+        metaValueColor: 'text-black font-black',
+        borderDivider: 'border-black/20',
+        badgePill: 'bg-[#FDF166] text-black border-2 border-black font-black',
+        sectionLabel: 'text-zinc-700 font-black',
+        cardBg: 'bg-white hover:bg-[#FEF9DB] border-2 border-black shadow-[3px_3px_0px_#000] text-black',
+        cardTitle: 'text-black font-black',
+        cardSub: 'text-zinc-700',
+        clicksPill: 'bg-[#FDF166] text-black border border-black font-mono font-bold',
+        arrowColor: 'text-black',
+        productSliderBg: 'bg-white border-2 border-black shadow-[3px_3px_0px_#000]',
+        productTitle: 'text-black font-black',
+        productPrice: 'text-black font-black',
+        buyBtn: 'bg-black text-white hover:bg-zinc-800 border border-black',
+        viewBioBtn: 'bg-[#4F83FF] hover:bg-[#3B6DE6] text-white border-2 border-black shadow-[3px_3px_0px_#000]',
+      },
       links: [
         { title: 'Selected Brand Identity Case Studies', sub: 'Visual design systems & brandbooks', clicks: '5,920' },
         { title: 'Typography & Editorial Portfolio', sub: 'Award-winning print & digital work', clicks: '3,410' },
-        { title: 'Book 1:1 Design Studio Consultation', sub: '30-minute creative strategy call', clicks: '1,680' },
+        { title: 'Book 1:1 Creative Strategy Session', sub: '30-minute creative consult', clicks: '1,680' },
       ],
       products: [
         { name: 'Studio Brand Guidelines Template', price: '₹1,499', img: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=300' },
@@ -282,10 +357,10 @@ export default function LandingPage() {
       {/* HERO SECTION WITH APPLE-GRADE TYPOGRAPHY */}
       <section className="max-w-7xl mx-auto px-6 pt-10 pb-16 flex flex-col items-center text-center relative z-10">
         
-        {/* Top Accent Pill with Indian Flag */}
+        {/* Top Accent Pill */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-black/10 shadow-2xs text-[11px] font-black uppercase tracking-wider text-charcoal/80 mb-6">
-          <IndianFlag className="w-4 h-2.8 rounded-xs" />
-          <span>The Next-Generation Link-in-Bio for India</span>
+          <span className="w-2 h-2 rounded-full bg-[#4F83FF] animate-pulse" />
+          <span>Next-Generation Bio Space &amp; Contactless Smart Cards</span>
         </div>
 
         {/* Main Headline */}
@@ -620,28 +695,28 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* INDIAN CREATOR SHOWCASE SECTION */}
+      {/* CREATOR SHOWCASE SECTION */}
       <section id="showcase" className="max-w-7xl mx-auto px-6 py-16 border-t border-black/5">
         <div className="text-center mb-10">
           <span className="text-xs font-black px-3.5 py-1 rounded-full bg-white text-charcoal border border-black/10 shadow-2xs uppercase tracking-wider">
-            Verified Indian Creators & Brands
+            Creator Showcase &amp; Custom Themes
           </span>
           <h2 className="text-3xl sm:text-5xl font-black text-[#141518] mt-3 tracking-tight">
-            Built for how India creates and sells.
+            Built for how modern creators showcase and sell.
           </h2>
           <p className="text-xs sm:text-sm text-charcoal/65 mt-2 max-w-xl mx-auto font-medium">
-            From tech founders in Bangalore to independent artists in Mumbai, see how creators organize their world in one tap.
+            Switch between creators below to see how themes, product sliders, and dynamic link blocks adapt to each unique identity.
           </p>
 
-          {/* Creator Tabs */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+          {/* Creator & Theme Tabs */}
+          <div className="flex flex-wrap items-center justify-center gap-2.5 mt-6">
             {showcaseCreators.map((c, idx) => (
               <button
                 key={c.handle}
                 onClick={() => setActiveCreatorIndex(idx)}
                 className={`px-4 py-2 rounded-full text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
                   activeCreatorIndex === idx
-                    ? 'bg-[#4F83FF] text-white shadow-xs'
+                    ? 'bg-[#4F83FF] text-white shadow-md shadow-[#4F83FF]/20 scale-105'
                     : 'bg-white hover:bg-gray-100 text-charcoal border border-black/10'
                 }`}
               >
@@ -651,18 +726,23 @@ export default function LandingPage() {
                 }`}>
                   @{c.handle}
                 </span>
+                <span className={`text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider font-black ${
+                  activeCreatorIndex === idx ? 'bg-white text-[#4F83FF]' : 'bg-[#4F83FF]/10 text-[#4F83FF]'
+                }`}>
+                  {c.themeBadge}
+                </span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Dynamic Showcase Display Card */}
-        <div className="max-w-4xl mx-auto bg-white rounded-4xl border border-black/10 p-6 sm:p-10 shadow-card">
+        {/* Dynamic Showcase Display Card - 100% Theme Based */}
+        <div className={`max-w-4xl mx-auto rounded-4xl p-6 sm:p-10 transition-all duration-300 ${currentCreator.style.containerBg}`}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
             
             {/* Left: Profile summary & telemetry */}
             <div className="md:col-span-5 flex flex-col items-center md:items-start text-center md:text-left">
-              <div className="w-20 h-20 rounded-[22px] overflow-hidden border border-black/10 shadow-sm relative">
+              <div className="w-24 h-24 rounded-[26px] overflow-hidden border border-black/10 shadow-md relative bg-black/5">
                 <img
                   src={currentCreator.avatar}
                   alt={currentCreator.name}
@@ -670,35 +750,42 @@ export default function LandingPage() {
                 />
               </div>
 
-              <div className="mt-4">
-                <span className="text-[10px] font-black uppercase tracking-wider text-[#4F83FF]">
-                  {currentCreator.badge}
-                </span>
-                <h3 className="text-xl font-black text-charcoal mt-0.5">{currentCreator.name}</h3>
-                <p className="text-xs font-mono font-bold text-charcoal/50">
+              <div className="mt-4 w-full">
+                <div className="flex items-center justify-center md:justify-start gap-2">
+                  <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${currentCreator.style.badgePill}`}>
+                    {currentCreator.badge}
+                  </span>
+                  <span className={`text-[10px] font-bold ${currentCreator.style.metaLabelColor}`}>
+                    {currentCreator.themeName}
+                  </span>
+                </div>
+                <h3 className={`text-2xl font-black mt-1.5 tracking-tight ${currentCreator.style.headingColor}`}>
+                  {currentCreator.name}
+                </h3>
+                <p className={`text-xs font-mono font-bold mt-0.5 ${currentCreator.style.handleColor}`}>
                   {displayHost}/{currentCreator.handle}
                 </p>
-                <p className="text-xs font-medium text-charcoal/70 mt-2 leading-relaxed">
+                <p className={`text-xs font-medium mt-2.5 leading-relaxed ${currentCreator.style.bioColor}`}>
                   {currentCreator.bio}
                 </p>
               </div>
 
               {/* Creator Metas */}
-              <div className="mt-5 w-full pt-5 border-t border-black/5 space-y-2 text-xs">
-                <div className="flex items-center justify-between text-charcoal/60">
-                  <span>Location</span>
-                  <span className="font-bold text-charcoal">{currentCreator.location}</span>
+              <div className={`mt-5 w-full pt-5 border-t ${currentCreator.style.borderDivider} space-y-2 text-xs`}>
+                <div className="flex items-center justify-between">
+                  <span className={currentCreator.style.metaLabelColor}>Location</span>
+                  <span className={`font-bold ${currentCreator.style.metaValueColor}`}>{currentCreator.location}</span>
                 </div>
-                <div className="flex items-center justify-between text-charcoal/60">
-                  <span>Role</span>
-                  <span className="font-bold text-charcoal">{currentCreator.role}</span>
+                <div className="flex items-center justify-between">
+                  <span className={currentCreator.style.metaLabelColor}>Role</span>
+                  <span className={`font-bold ${currentCreator.style.metaValueColor}`}>{currentCreator.role}</span>
                 </div>
               </div>
 
               <div className="mt-6 w-full flex flex-col gap-2">
                 <Link
                   href={`/${currentCreator.handle}`}
-                  className="w-full py-3 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95"
+                  className={`w-full py-3 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 transition-transform active:scale-95 ${currentCreator.style.viewBioBtn}`}
                 >
                   <Eye className="w-3.5 h-3.5" />
                   <span>View Live Bio Page</span>
@@ -708,54 +795,54 @@ export default function LandingPage() {
 
             {/* Right: Curated links and products */}
             <div className="md:col-span-7 flex flex-col gap-4">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-charcoal/50 font-bold">
-                Active Smart Blocks & Product Collections
+              <span className={`text-[11px] font-mono uppercase tracking-wider font-bold ${currentCreator.style.sectionLabel}`}>
+                Active Smart Blocks &amp; Product Collections
               </span>
 
-              {/* Curated Links */}
+              {/* Curated Links with Theme Styling */}
               <div className="space-y-2.5">
                 {currentCreator.links.map((link, i) => (
                   <div
                     key={i}
-                    className="p-3.5 rounded-2xl bg-[#FAF7F2] hover:bg-[#F2ECE1] border border-black/10 flex items-center justify-between gap-3 transition-colors"
+                    className={`p-3.5 rounded-2xl flex items-center justify-between gap-3 transition-colors ${currentCreator.style.cardBg}`}
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-black text-charcoal truncate">{link.title}</p>
-                      <p className="text-[11px] text-charcoal/60 truncate mt-0.5">{link.sub}</p>
+                      <p className={`text-xs font-black truncate ${currentCreator.style.cardTitle}`}>{link.title}</p>
+                      <p className={`text-[11px] truncate mt-0.5 ${currentCreator.style.cardSub}`}>{link.sub}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white border border-black/5 text-charcoal/70">
+                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${currentCreator.style.clicksPill}`}>
                         {link.clicks} clicks
                       </span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-charcoal/40" />
+                      <ArrowUpRight className={`w-3.5 h-3.5 ${currentCreator.style.arrowColor}`} />
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* Product Slider Preview */}
-              <div className="mt-2 pt-4 border-t border-black/5">
+              <div className={`mt-2 pt-4 border-t ${currentCreator.style.borderDivider}`}>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-black text-charcoal">Touch Product Slider</span>
-                  <span className="text-[11px] font-bold text-[#4F83FF]">Integrated Store</span>
+                  <span className={`text-xs font-black ${currentCreator.style.headingColor}`}>Touch Product Slider</span>
+                  <span className={`text-[11px] font-bold ${currentCreator.style.handleColor}`}>Integrated Store</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   {currentCreator.products.map((prod, i) => (
                     <div
                       key={i}
-                      className="p-3 rounded-2xl bg-[#FAF7F2] border border-black/10 flex flex-col justify-between shadow-2xs"
+                      className={`p-3 rounded-2xl flex flex-col justify-between shadow-2xs ${currentCreator.style.productSliderBg}`}
                     >
-                      <div className="w-full aspect-square rounded-xl overflow-hidden bg-white mb-2 border border-black/5 flex items-center justify-center">
+                      <div className="w-full aspect-square rounded-xl overflow-hidden bg-black/5 mb-2 border border-black/5 flex items-center justify-center">
                         {prod.img ? (
                           <img src={prod.img} alt={prod.name} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full bg-[#E3DFF8]" />
                         )}
                       </div>
-                      <p className="text-xs font-black text-charcoal truncate">{prod.name}</p>
+                      <p className={`text-xs font-black truncate ${currentCreator.style.productTitle}`}>{prod.name}</p>
                       <div className="mt-1 flex items-center justify-between">
-                        <span className="text-xs font-black text-charcoal">{prod.price}</span>
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded-md bg-[#141518] text-white">
+                        <span className={`text-xs font-black ${currentCreator.style.productPrice}`}>{prod.price}</span>
+                        <span className={`text-[9px] font-black px-2.5 py-1 rounded-md transition-colors ${currentCreator.style.buyBtn}`}>
                           Buy
                         </span>
                       </div>
@@ -1037,7 +1124,7 @@ export default function LandingPage() {
               a: 'Tapping is built specifically for modern creators and professionals with direct UPI payments, aerospace metal NFC card pairing, direct phonebook contact saving (.vcf), 13 high-contrast themes, zero ad tracking, and local Indian Rupee pricing.',
             },
           ].map((item, idx) => {
-            const isOpen = openFaqIndex === idx;
+            const isOpen = Boolean(openFaqs[idx]);
             return (
               <div
                 key={idx}
@@ -1045,18 +1132,18 @@ export default function LandingPage() {
               >
                 <button
                   type="button"
-                  onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                  className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-gray-50/50 transition-colors"
+                  onClick={() => toggleFaq(idx)}
+                  className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-gray-50/60 transition-colors select-none"
                 >
                   <span className="text-sm sm:text-base font-black text-charcoal tracking-tight">
                     {item.q}
                   </span>
-                  <div className={`w-8 h-8 rounded-full bg-[#FAF7F2] border border-black/10 flex items-center justify-center shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 bg-[#141518] text-white' : 'text-charcoal'}`}>
+                  <div className={`w-8 h-8 rounded-full border border-black/10 flex items-center justify-center shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 bg-[#4F83FF] text-white border-transparent' : 'bg-[#FAF7F2] text-charcoal'}`}>
                     <ChevronDown className="w-4 h-4 stroke-[2.5]" />
                   </div>
                 </button>
                 {isOpen && (
-                  <div className="px-5 pb-5 sm:px-6 sm:pb-6 text-xs sm:text-sm text-charcoal/70 leading-relaxed font-medium border-t border-black/5 pt-3">
+                  <div className="px-5 pb-5 sm:px-6 sm:pb-6 text-xs sm:text-sm text-charcoal/70 leading-relaxed font-medium border-t border-black/5 pt-3 animate-in fade-in duration-150">
                     {item.a}
                   </div>
                 )}
@@ -1071,8 +1158,7 @@ export default function LandingPage() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-charcoal/60">
           <div className="flex items-center gap-2.5">
             <TappingLogo size="xs" variant="full" />
-            <IndianFlag className="w-4 h-2.8 rounded-xs" />
-            <span className="text-charcoal/50">&bull; Made for Indian Creators</span>
+            <span className="text-charcoal/50">&bull; Smart Digital Cards &amp; Bio Space</span>
           </div>
           <div className="flex items-center gap-6">
             <a href="#features" className="text-charcoal/70 hover:text-black">
