@@ -420,12 +420,9 @@ export default function AccountOrdersSection({
                           {displayHost}/{profile.username}
                         </p>
                       </div>
-                      <p className="text-[7px] font-mono opacity-60">
-                        NFC 13.56MHz Contactless
-                      </p>
                     </div>
                     {qrCodeDataUrl ? (
-                      <div className="w-14 h-14 rounded-lg bg-white p-1 shrink-0 flex items-center justify-center shadow-xs">
+                      <div className="w-14 h-14 shrink-0 flex items-center justify-center">
                         <img src={qrCodeDataUrl} alt="Dynamic QR" className="w-full h-full object-contain" />
                       </div>
                     ) : (

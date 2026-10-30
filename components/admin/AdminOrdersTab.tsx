@@ -63,7 +63,16 @@ export default function AdminOrdersTab({
       return;
     }
     const target = inspectingOrder.qrUrl || `https://tapping.bio/${inspectingOrder.userName.toLowerCase().replace(/\s+/g, '')}`;
-    QRCodeGenerator.toDataURL(target, { width: 400, margin: 1, errorCorrectionLevel: 'M' })
+    const qrDark = inspectingOrder.frontSide?.qrColor || inspectingOrder.frontSide?.textColor || (inspectingOrder.material === 'matte_black' ? '#FFFFFF' : '#141518');
+    QRCodeGenerator.toDataURL(target, { 
+      width: 480, 
+      margin: 0, 
+      errorCorrectionLevel: 'M',
+      color: {
+        dark: qrDark,
+        light: '#00000000',
+      }
+    })
       .then(setInspectingQrDataUrl)
       .catch(console.error);
   }, [inspectingOrder]);
@@ -210,7 +219,7 @@ export default function AdminOrdersTab({
     }
   };
 
-  const handleExportPdfSide = async (order: MetalCardOrder, side: 'front' | 'back') => {
+  const handleExportPdfSide = async (order: MetalCardOrder, side: 'front' | 'back' | 'both' = 'both') => {
     setIsExporting(true);
     try {
       const design = synthesizeCardDesign(order);
@@ -221,10 +230,10 @@ export default function AdminOrdersTab({
         order.userName.toLowerCase().replace(/\s+/g, ''),
         typeof window !== 'undefined' ? window.location.host : 'tapping.bio'
       );
-      showToast('Vector PDF Exported', `Print-ready laser vector sheet generated for ${side.toUpperCase()}`, 'success');
+      showToast('Card PDF Downloaded', 'Exported factory print-ready PDF', 'success');
     } catch (e) {
       console.error(e);
-      showToast('Export Error', 'Could not export vector PDF', 'error');
+      showToast('Export Error', 'Could not export print PDF', 'error');
     } finally {
       setIsExporting(false);
     }
@@ -303,7 +312,7 @@ export default function AdminOrdersTab({
               .card-name { font-size: 16px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin: 2px 0; }
               .card-url { font-size: 8px; font-family: monospace; opacity: 0.8; }
               
-              .qr-box { width: 56px; height: 56px; background: #fff; padding: 4px; border-radius: 8px; border: 1px solid #000; position: absolute; bottom: 16px; right: 16px; display: flex; align-items: center; justify-content: center; }
+              .qr-box { width: 56px; height: 56px; background: transparent; position: absolute; bottom: 16px; right: 16px; display: flex; align-items: center; justify-content: center; }
               .qr-img { width: 100%; height: 100%; object-fit: contain; }
               
               .qa-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; border-top: 2px solid #000; padding-top: 12px; font-size: 9px; font-family: monospace; margin-top: 20px; }
@@ -315,7 +324,7 @@ export default function AdminOrdersTab({
           <body>
             <div class="header">
               <div>
-                <h1>TAPPING CONTACTLESS HARDWARE</h1>
+                <h1>TAPPING METAL CARD BLUEPRINT</h1>
                 <p>CNC FIBER LASER WORKSHOP &bull; HARDWARE PRODUCTION BLUEPRINT</p>
               </div>
               <div>
@@ -341,7 +350,7 @@ export default function AdminOrdersTab({
                 <p><strong>Side Mode:</strong> ${order.sideMode === 'single_sided' ? 'Single Sided (Plain Reverse)' : 'Double Sided Laser Etched'}</p>
                 <p><strong>Laser Infill:</strong> ${order.frontSide?.textColor || '#FFFFFF'}</p>
                 <p><strong>Typography Font:</strong> ${font}</p>
-                <p><strong>NFC Hardware Chip:</strong> NXP NTAG216 (888 Bytes) 13.56 MHz</p>
+                <p><strong>Smart Microchip:</strong> Embedded Smart Chip</p>
                 <p><strong>Dynamic QR:</strong> ${targetUrl}</p>
               </div>
             </div>
@@ -364,7 +373,7 @@ export default function AdminOrdersTab({
                 <div class="card-frame" style="${order.frontSide?.artworkUrl ? `background-image: url('${order.frontSide.artworkUrl}'); background-size: ${order.frontSide.artworkZoom ?? 100}%; background-position: center;` : ''}">
                   <div>
                     <div class="card-brand">${order.frontSide?.topLabel || 'TAPPING'}</div>
-                    <div class="card-uid">${order.frontSide?.bottomLabel || `NFC 13.56MHz • ${order.orderNumber}`}</div>
+                    <div class="card-uid">${order.frontSide?.bottomLabel && !order.frontSide.bottomLabel.includes('13.56') && !order.frontSide.bottomLabel.includes('NFC') ? order.frontSide.bottomLabel : order.orderNumber}</div>
                   </div>
                   <div class="card-chip">
                     <div class="card-chip-line"></div>
@@ -405,8 +414,8 @@ export default function AdminOrdersTab({
                         </div>
                       </div>
                       <div style="font-size: 8px; font-family: monospace; opacity: 0.7;">
-                        ${order.backSide?.bottomLabel || `UID: ${order.orderNumber}-BLK`}<br />
-                        ${order.backSide?.customNote || 'Encrypted NTAG216 Chip • 888 Bytes'}
+                        ${order.backSide?.bottomLabel || `UID: ${order.orderNumber}`}<br />
+                        ${order.backSide?.customNote && !order.backSide.customNote.includes('NTAG') && !order.backSide.customNote.includes('Lifetime') ? order.backSide.customNote : ''}
                       </div>
                     </div>
                     ${inspectingQrDataUrl && order.backSide?.showQrCode !== false ? `
@@ -430,7 +439,7 @@ export default function AdminOrdersTab({
                 <span style="color:#666;">De-ionized residue wash</span>
               </div>
               <div class="qa-item">
-                <strong>[ &nbsp; ] NFC CHIP 13.56MHz</strong>
+                <strong>[ &nbsp; ] CONTACTLESS CHIP QA</strong>
                 <span style="color:#666;">Read/Write tested OK</span>
               </div>
               <div class="qa-item">
@@ -528,15 +537,17 @@ export default function AdminOrdersTab({
                 >
                   {cfg.topLabel || 'TAPPING'}
                 </span>
-                <span 
-                  className="font-mono opacity-70 block"
-                  style={{ 
-                    fontSize: `${Math.max(7, Math.round((cfg.brandSize || 13) * 0.65))}px`,
-                    color: textColor
-                  }}
-                >
-                  {cfg.bottomLabel || `NFC 13.56MHz • ${order.orderNumber}`}
-                </span>
+                {cfg.bottomLabel && !cfg.bottomLabel.includes('13.56') && !cfg.bottomLabel.includes('NFC') && (
+                  <span 
+                    className="font-mono opacity-70 block"
+                    style={{ 
+                      fontSize: `${Math.max(7, Math.round((cfg.brandSize || 13) * 0.65))}px`,
+                      color: textColor
+                    }}
+                  >
+                    {cfg.bottomLabel}
+                  </span>
+                )}
               </div>
 
               {/* Hardware Contactless Chip */}
@@ -588,7 +599,7 @@ export default function AdminOrdersTab({
               {/* QR Code on Front (if single-sided or explicitly enabled) */}
               {(order.sideMode === 'single_sided' || cfg.showQrCode) && (
                 <div 
-                  className={`absolute z-10 ${getQrPositionClass(cfg.qrPosition)} bg-white p-1 rounded-xl shadow-md flex items-center justify-center`}
+                  className={`absolute z-10 ${getQrPositionClass(cfg.qrPosition)} flex items-center justify-center`}
                   style={{
                     width: `${cfg.qrSize || 56}px`,
                     height: `${cfg.qrSize || 56}px`,
@@ -598,7 +609,7 @@ export default function AdminOrdersTab({
                   {inspectingQrDataUrl ? (
                     <img src={inspectingQrDataUrl} alt="QR" className="h-full w-full object-contain" />
                   ) : (
-                    <QrCode className="w-full h-full text-black" />
+                    <QrCode className="w-full h-full" style={{ color: cfg.qrColor || textColor }} />
                   )}
                 </div>
               )}
@@ -650,16 +661,20 @@ export default function AdminOrdersTab({
                         fontSize: '9px' 
                       }}
                     >
-                      {cfg.bottomLabel || `UID: ${order.orderNumber}-BLK`}
-                      <br />
-                      {cfg.customNote || 'Encrypted NTAG216 Chip • 888 Bytes'}
+                      {cfg.bottomLabel || (order.orderNumber ? `UID: ${order.orderNumber}` : '')}
+                      {cfg.customNote && !cfg.customNote.includes('NTAG') && !cfg.customNote.includes('Lifetime') && (
+                        <>
+                          <br />
+                          {cfg.customNote}
+                        </>
+                      )}
                     </div>
                   </div>
 
                   {/* Back Face QR Code */}
                   {cfg.showQrCode !== false && (
                     <div 
-                      className="bg-white p-1 rounded-xl flex items-center justify-center shrink-0 shadow-md"
+                      className="flex items-center justify-center shrink-0"
                       style={{
                         width: `${cfg.qrSize || 64}px`,
                         height: `${cfg.qrSize || 64}px`,
@@ -669,7 +684,7 @@ export default function AdminOrdersTab({
                       {inspectingQrDataUrl ? (
                         <img src={inspectingQrDataUrl} alt="QR" className="h-full w-full object-contain" />
                       ) : (
-                        <QrCode className="w-full h-full text-black" />
+                        <QrCode className="w-full h-full" style={{ color: cfg.qrColor || textColor }} />
                       )}
                     </div>
                   )}
@@ -1144,6 +1159,17 @@ export default function AdminOrdersTab({
                   <button
                     type="button"
                     disabled={isExporting}
+                    onClick={() => handleExportPdfSide(inspectingOrder, 'both')}
+                    className="py-2.5 px-3 rounded-xl bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                    title="Download high-resolution print PDF"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Download PDF</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isExporting}
                     onClick={() => handleExportPngSide(inspectingOrder, 'front')}
                     className="py-2.5 px-3 rounded-xl bg-white hover:bg-gray-50 border border-black/10 text-charcoal text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                   >
@@ -1159,16 +1185,6 @@ export default function AdminOrdersTab({
                   >
                     <Download className="w-3.5 h-3.5 text-[#4F83FF]" />
                     <span>Back (PNG)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={isExporting}
-                    onClick={() => handleExportPdfSide(inspectingOrder, 'front')}
-                    className="py-2.5 px-3 rounded-xl bg-white hover:bg-gray-50 border border-black/10 text-charcoal text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
-                  >
-                    <FileText className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Laser PDF</span>
                   </button>
 
                   <a
@@ -1239,9 +1255,9 @@ export default function AdminOrdersTab({
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-charcoal/60">NFC Core Chip:</span>
+                      <span className="text-charcoal/60">Hardware Microchip:</span>
                       <span className="font-mono font-bold text-charcoal">
-                        NXP NTAG216 &bull; 13.56MHz (888 Bytes)
+                        Embedded Smart Chip
                       </span>
                     </div>
 
@@ -1462,7 +1478,7 @@ export default function AdminOrdersTab({
           {/* Header */}
           <div className="border-b-2 border-black pb-4 mb-4 flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-black tracking-tight uppercase">TAPPING CONTACTLESS HARDWARE</h1>
+              <h1 className="text-2xl font-black tracking-tight uppercase">TAPPING METAL CARD BLUEPRINT</h1>
               <p className="text-xs font-mono uppercase tracking-widest text-neutral-600">
                 CNC FIBER LASER WORKSHOP &bull; HARDWARE PRODUCTION BLUEPRINT
               </p>
@@ -1491,7 +1507,7 @@ export default function AdminOrdersTab({
               <p><strong>Side Mode:</strong> {inspectingOrder.sideMode === 'single_sided' ? 'Single Sided' : 'Double Sided'}</p>
               <p><strong>Laser Infill:</strong> {inspectingOrder.frontSide?.textColor || '#FFFFFF'}</p>
               <p><strong>Typography Font:</strong> {inspectingOrder.frontSide?.fontFamily?.replace(/'/g, '').split(',')[0] || 'Plus Jakarta Sans'}</p>
-              <p><strong>NFC Chip:</strong> NXP NTAG216 High Frequency 13.56 MHz (888 Bytes)</p>
+              <p><strong>Smart Microchip:</strong> Embedded Smart Chip</p>
               <p><strong>Target URL:</strong> {inspectingOrder.qrUrl}</p>
             </div>
           </div>
@@ -1542,7 +1558,7 @@ export default function AdminOrdersTab({
               <span className="text-neutral-500">De-ionized residue wash</span>
             </div>
             <div className="border border-neutral-300 p-2">
-              <span className="block font-bold">[ &nbsp; ] NFC CHIP 13.56MHz</span>
+              <span className="block font-bold">[ &nbsp; ] CONTACTLESS CHIP QA</span>
               <span className="text-neutral-500">Read/Write tested OK</span>
             </div>
             <div className="border border-neutral-300 p-2">

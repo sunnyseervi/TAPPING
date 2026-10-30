@@ -58,29 +58,35 @@ body {
   transform: rotateY(180deg);
 }
 
-/* Solid Flat Metal Finishes (Zero Multi-Gradients) */
+/* Luxury Metallic Finishes (Brushed Gold, Titanium Silver, Rose Gold, Stealth Matte Black) */
 .metal-matte-black {
-  background: radial-gradient(circle at 30% 25%, #2B2E36 0%, #17181C 55%, #0B0C0E 100%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  background: radial-gradient(circle at 25% 20%, #2D3039 0%, #17181D 50%, #0A0B0D 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.22), inset 0 -1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .metal-brushed-gold {
-  background: linear-gradient(135deg, #ECC86B 0%, #D4AF37 40%, #B8922C 70%, #ECC86B 100%);
-  border: 1px solid rgba(138, 100, 20, 0.4);
-  box-shadow: 0 15px 35px -5px rgba(212, 175, 55, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  background: 
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0px, rgba(255, 255, 255, 0.05) 1px, transparent 1px, transparent 3px),
+    linear-gradient(135deg, #ECC86A 0%, #B88A28 18%, #FFF4CC 38%, #DAA520 54%, #996515 72%, #F3D068 100%);
+  border: 1px solid rgba(255, 235, 160, 0.65);
+  box-shadow: 0 20px 45px -10px rgba(184, 138, 40, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.85), inset 0 -1px 2px rgba(120, 80, 10, 0.4);
 }
 
 .metal-rose-gold {
-  background: linear-gradient(135deg, #E6ADB7 0%, #D896A2 40%, #BF7A88 70%, #E6ADB7 100%);
-  border: 1px solid rgba(168, 90, 105, 0.4);
-  box-shadow: 0 15px 35px -5px rgba(216, 150, 162, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background: 
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0px, rgba(255, 255, 255, 0.05) 1px, transparent 1px, transparent 3px),
+    linear-gradient(135deg, #FAD0C4 0%, #E89EAD 22%, #FFF0EB 42%, #C77383 65%, #A85A6A 80%, #F7C0C8 100%);
+  border: 1px solid rgba(255, 220, 225, 0.55);
+  box-shadow: 0 20px 45px -10px rgba(199, 115, 131, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.8), inset 0 -1px 2px rgba(120, 50, 65, 0.35);
 }
 
 .metal-titanium-silver {
-  background: linear-gradient(135deg, #FFFFFF 0%, #E2E6EB 40%, #CAD1D9 70%, #E8ECF0 100%);
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  box-shadow: 0 15px 35px -5px rgba(100, 116, 139, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  background: 
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0px, rgba(255, 255, 255, 0.08) 1px, transparent 1px, transparent 3px),
+    linear-gradient(135deg, #FFFFFF 0%, #D1D5DB 20%, #F9FAFB 40%, #9CA3AF 60%, #E5E7EB 80%, #FFFFFF 100%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 20px 45px -10px rgba(75, 85, 99, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.95), inset 0 -1px 2px rgba(0, 0, 0, 0.25);
 }
 
 /* Continuous Horizontal Infinite Marquee */

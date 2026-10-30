@@ -61,6 +61,8 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   const [placedOrder, setPlacedOrder] = useState<MetalCardOrder | null>(null);
   const [saveConfirmModalOpen, setSaveConfirmModalOpen] = useState(false);
   const [displayHost, setDisplayHost] = useState('tapping.bio');
+  const [frontQrDataUrl, setFrontQrDataUrl] = useState('');
+  const [backQrDataUrl, setBackQrDataUrl] = useState('');
   const [qrDataUrl, setQrDataUrl] = useState('');
   const baseCardRef = useRef(nfcCard);
   const updateCardRef = useRef(onUpdateCard);
@@ -147,10 +149,11 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     primaryText: nfcCard.frontSide?.primaryText || nfcCard.engravedName || username.toUpperCase(),
     secondaryText: nfcCard.frontSide?.secondaryText || nfcCard.engravedTagline || 'DIGITAL CREATOR & FOUNDER',
     topLabel: nfcCard.frontSide?.topLabel || 'TAPPING',
-    bottomLabel: nfcCard.frontSide?.bottomLabel || 'NFC 13.56MHz CONTACTLESS',
+    bottomLabel: nfcCard.frontSide?.bottomLabel || '',
     showChip: nfcCard.frontSide?.showChip ?? true,
     showQrCode: nfcCard.frontSide?.showQrCode ?? false,
     textColor: nfcCard.frontSide?.textColor || '#FFFFFF',
+    qrColor: nfcCard.frontSide?.qrColor || nfcCard.frontSide?.textColor || '#FFFFFF',
     textAlign: nfcCard.frontSide?.textAlign || 'left',
     customNote: nfcCard.frontSide?.customNote || '',
     isPlain: nfcCard.frontSide?.isPlain ?? false,
@@ -184,13 +187,14 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
     bottomLabelOffsetY: nfcCard.backSide?.bottomLabelOffsetY ?? 0,
     primaryText: nfcCard.backSide?.primaryText || 'TAP ANY PHONE TO CONNECT',
     secondaryText: nfcCard.backSide?.secondaryText || `${displayHost}/${username}`,
-    topLabel: nfcCard.backSide?.topLabel || 'TAPPING SMART CARD',
-    bottomLabel: nfcCard.backSide?.bottomLabel || `UID: ${nfcCard.cardUid || 'TAP-IN-9482'}`,
+    topLabel: nfcCard.backSide?.topLabel || 'TAPPING',
+    bottomLabel: nfcCard.backSide?.bottomLabel || (nfcCard.cardUid ? `UID: ${nfcCard.cardUid}` : ''),
     showChip: nfcCard.backSide?.showChip ?? false,
     showQrCode: nfcCard.backSide?.showQrCode ?? true,
     textColor: nfcCard.backSide?.textColor || '#FFFFFF',
+    qrColor: nfcCard.backSide?.qrColor || nfcCard.backSide?.textColor || '#FFFFFF',
     textAlign: nfcCard.backSide?.textAlign || 'left',
-    customNote: nfcCard.backSide?.customNote || 'Encrypted NTAG216 Chip',
+    customNote: nfcCard.backSide?.customNote || '',
     isPlain: nfcCard.backSide?.isPlain ?? (nfcCard.sideMode === 'single_sided'),
   });
 
@@ -430,8 +434,35 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
   React.useEffect(() => {
     const origin = typeof window === 'undefined' ? `https://${displayHost}` : window.location.origin;
     const target = redirectMode === 'direct_vcard' ? `${origin}/${username}?download=vcard` : `${origin}/${username}`;
-    QRCodeGenerator.toDataURL(target, { width: 320, margin: 1, errorCorrectionLevel: 'M' }).then(setQrDataUrl).catch(console.error);
-  }, [displayHost, redirectMode, username]);
+
+    const frontColor = frontSide.qrColor || frontSide.textColor || '#FFFFFF';
+    QRCodeGenerator.toDataURL(target, {
+      width: 480,
+      margin: 0,
+      errorCorrectionLevel: 'M',
+      color: {
+        dark: frontColor,
+        light: '#00000000',
+      },
+    }).then((url) => {
+      setFrontQrDataUrl(url);
+      if (activeSide === 'front') setQrDataUrl(url);
+    }).catch(console.error);
+
+    const backColor = backSide.qrColor || backSide.textColor || '#FFFFFF';
+    QRCodeGenerator.toDataURL(target, {
+      width: 480,
+      margin: 0,
+      errorCorrectionLevel: 'M',
+      color: {
+        dark: backColor,
+        light: '#00000000',
+      },
+    }).then((url) => {
+      setBackQrDataUrl(url);
+      if (activeSide === 'back') setQrDataUrl(url);
+    }).catch(console.error);
+  }, [displayHost, redirectMode, username, activeSide, frontSide.qrColor, frontSide.textColor, backSide.qrColor, backSide.textColor]);
 
   React.useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -887,15 +918,17 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                     >
                       {frontSide.topLabel || 'TAPPING'}
                     </span>
-                    <span 
-                      className="font-mono opacity-70 block"
-                      style={{ 
-                        fontSize: `${Math.max(7, Math.round((frontSide.brandSize || 13) * 0.65))}px`,
-                        color: frontSide.textColor || '#FFFFFF'
-                      }}
-                    >
-                      {frontSide.bottomLabel || 'NFC 13.56MHz'}
-                    </span>
+                    {frontSide.bottomLabel && !frontSide.bottomLabel.includes('13.56') && !frontSide.bottomLabel.includes('NFC') && (
+                      <span 
+                        className="font-mono opacity-70 block"
+                        style={{ 
+                          fontSize: `${Math.max(7, Math.round((frontSide.brandSize || 13) * 0.65))}px`,
+                          color: frontSide.textColor || '#FFFFFF'
+                        }}
+                      >
+                        {frontSide.bottomLabel}
+                      </span>
+                    )}
                   </div>
 
                   {/* Chip Indicator */}
@@ -955,13 +988,13 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                     </p>
                   </div>
 
-                  {/* Dynamic QR Code — Directly Draggable with Mouse & Touch */}
+                  {/* Dynamic QR Code — Directly Draggable with Mouse & Touch (Seamless Transparent) */}
                   {(sideMode === 'single_sided' || frontSide.showQrCode) && (
                     <div 
                       onMouseDown={(e) => startDrag(e, 'qr')}
                       onTouchStart={(e) => startDrag(e, 'qr')}
                       onClick={(e) => { e.stopPropagation(); setActiveElement('qr'); }}
-                      className={`absolute z-10 pointer-events-auto cursor-grab active:cursor-grabbing ${getQrPositionClass(frontSide.qrPosition)} bg-white p-1 rounded-xl shadow-md flex items-center justify-center ${
+                      className={`absolute z-10 pointer-events-auto cursor-grab active:cursor-grabbing ${getQrPositionClass(frontSide.qrPosition)} flex items-center justify-center ${
                         activeElement === 'qr' ? 'ring-2 ring-[#4F83FF]' : 'hover:ring-1 hover:ring-white/60'
                       }`}
                       style={{
@@ -971,7 +1004,11 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                       }}
                       title="Drag to reposition QR code"
                     >
-                      {qrDataUrl ? <img src={qrDataUrl} alt="Scannable profile QR code" className="h-full w-full" draggable={false} /> : <QrCode className="w-full h-full text-black" />}
+                      {frontQrDataUrl ? (
+                        <img src={frontQrDataUrl} alt="QR code" className="h-full w-full object-contain" draggable={false} />
+                      ) : (
+                        <QrCode className="w-full h-full" style={{ color: frontSide.qrColor || frontSide.textColor || '#FFFFFF' }} />
+                      )}
                     </div>
                   )}
                 </div>
@@ -1030,7 +1067,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                           fontSize: `${backSide.secondaryTextSize || 10}px` 
                         }}
                       >
-                        PRECISION MILLED CONTACTLESS HARDWARE
+                        PRECISION MILLED METAL CARD
                       </p>
                       <div 
                         className="mt-3 font-mono opacity-50"
@@ -1039,7 +1076,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                           fontSize: '9px' 
                         }}
                       >
-                        UID: {nfcCard.cardUid || 'TAP-9482-BLK'} &bull; NTAG216
+                        UID: {nfcCard.cardUid || 'TAP-9482-BLK'}
                       </div>
                     </div>
                   ) : (
@@ -1082,9 +1119,13 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                             fontSize: '10px' 
                           }}
                         >
-                          {backSide.bottomLabel || `UID: ${nfcCard.cardUid || 'TAP-9482-BLK'}`}
-                          <br />
-                          {backSide.customNote || 'Encrypted NTAG216 Chip'}
+                          {backSide.bottomLabel || (nfcCard.cardUid ? `UID: ${nfcCard.cardUid}` : '')}
+                          {backSide.customNote && !backSide.customNote.includes('NTAG') && !backSide.customNote.includes('Lifetime') && (
+                            <>
+                              <br />
+                              {backSide.customNote}
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -1092,7 +1133,8 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                         <div 
                           onMouseDown={(e) => startDrag(e, 'qr')}
                           onTouchStart={(e) => startDrag(e, 'qr')}
-                          className="bg-white p-1 rounded-xl flex items-center justify-center shrink-0 shadow-md pointer-events-auto cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-[#4F83FF]"
+                          onClick={(e) => { e.stopPropagation(); setActiveElement('qr'); }}
+                          className="flex items-center justify-center shrink-0 pointer-events-auto cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-[#4F83FF]"
                           style={{
                             width: `${backSide.qrSize || 64}px`,
                             height: `${backSide.qrSize || 64}px`,
@@ -1100,7 +1142,11 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                           }}
                           title="Drag to reposition QR code"
                         >
-                          {qrDataUrl ? <img src={qrDataUrl} alt="Scannable profile QR code" className="h-full w-full" draggable={false} /> : <QrCode className="w-full h-full text-black" />}
+                          {backQrDataUrl ? (
+                            <img src={backQrDataUrl} alt="QR code" className="h-full w-full object-contain" draggable={false} />
+                          ) : (
+                            <QrCode className="w-full h-full" style={{ color: backSide.qrColor || backSide.textColor || '#FFFFFF' }} />
+                          )}
                         </div>
                       )}
                     </div>
@@ -1915,6 +1961,85 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                   </button>
                 </div>
               </div>
+
+              {/* Barcode / QR Code Color Setting */}
+              <div className="pt-2 border-t border-black/5 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-charcoal/70 block">
+                      Barcode &amp; QR Color
+                    </span>
+                    <span className="text-[9px] text-charcoal/50">
+                      Transparent background &bull; metallic texture shows through
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-[#FAF7F2] border border-black/10">
+                    <span
+                      className="w-3 h-3 rounded-full border border-black/20"
+                      style={{ backgroundColor: currentConfig.qrColor || currentConfig.textColor || '#FFFFFF' }}
+                    />
+                    <span className="font-mono text-[10px] font-bold text-charcoal">
+                      {currentConfig.qrColor || currentConfig.textColor || '#FFFFFF'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={currentConfig.qrColor || currentConfig.textColor || '#FFFFFF'}
+                    onChange={(e) => updateCurrentConfig({ qrColor: e.target.value.toUpperCase() })}
+                    className="w-8 h-8 rounded-lg border border-black/20 cursor-pointer p-0.5 bg-white shadow-2xs shrink-0"
+                    title="Choose Barcode/QR color"
+                  />
+                  <input
+                    type="text"
+                    value={currentConfig.qrColor || currentConfig.textColor || '#FFFFFF'}
+                    onChange={(e) => {
+                      let val = e.target.value.toUpperCase();
+                      if (!val.startsWith('#')) val = '#' + val;
+                      updateCurrentConfig({ qrColor: val });
+                    }}
+                    placeholder="#FFFFFF"
+                    className="flex-1 px-2.5 py-1 rounded-lg border border-black/10 font-mono text-[11px] font-bold uppercase focus:outline-none focus:ring-1 focus:ring-[#4F83FF]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => updateCurrentConfig({ qrColor: currentConfig.textColor || '#FFFFFF' })}
+                    className="px-2 py-1 rounded-lg bg-[#FAF7F2] hover:bg-gray-100 border border-black/10 text-[10px] font-bold text-charcoal/70 cursor-pointer whitespace-nowrap"
+                    title="Match text color"
+                  >
+                    Match Text
+                  </button>
+                </div>
+
+                {/* Color Quick Presets */}
+                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                  {[
+                    { hex: '#FFFFFF', name: 'White' },
+                    { hex: '#111111', name: 'Black' },
+                    { hex: '#ECC86A', name: '24K Gold' },
+                    { hex: '#E2E8F0', name: 'Silver' },
+                    { hex: '#E0A899', name: 'Rose Gold' },
+                    { hex: '#3B82F6', name: 'Blue' },
+                    { hex: '#10B981', name: 'Emerald' },
+                  ].map((preset) => {
+                    const isSelected = (currentConfig.qrColor || currentConfig.textColor || '#FFFFFF').toUpperCase() === preset.hex.toUpperCase();
+                    return (
+                      <button
+                        key={preset.hex}
+                        type="button"
+                        onClick={() => updateCurrentConfig({ qrColor: preset.hex })}
+                        className={`w-5 h-5 rounded-md border flex items-center justify-center transition-transform active:scale-90 cursor-pointer ${
+                          isSelected ? 'ring-2 ring-[#4F83FF] scale-110' : 'border-black/20 hover:scale-105'
+                        }`}
+                        style={{ backgroundColor: preset.hex }}
+                        title={preset.name}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             {/* Sub-section E: Contactless Chip Graphic Toggle */}
@@ -2369,7 +2494,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                         {material === 'custom_color' ? `Custom Shade (${customCardColor})` : currentMat.name}
                       </span>
                       <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                        NTAG216 Chip
+                        Smart Chip
                       </span>
                     </div>
                     <p className="text-[11px] text-charcoal/80 font-bold mt-1">
@@ -2387,7 +2512,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                 {/* Pricing & Free Delivery Summary */}
                 <div className="p-3.5 rounded-2xl bg-white border border-black/10 space-y-2 text-xs">
                   <div className="flex justify-between items-center text-charcoal/70">
-                    <span>1x Precision Laser Metal NFC Card</span>
+                    <span>1x Precision Metal Smart Card</span>
                     <span className="font-mono font-bold text-charcoal">₹1,499</span>
                   </div>
                   <div className="flex justify-between items-center text-charcoal/70">
@@ -2395,7 +2520,7 @@ export default function NFCCardStudio({ nfcCard, username, onUpdateCard }: NFCCa
                     <span className="font-bold text-emerald-600">FREE</span>
                   </div>
                   <div className="flex justify-between items-center text-charcoal/70">
-                    <span>NTAG216 Microchip Encoding</span>
+                    <span>Smart Microchip Encoding</span>
                     <span className="font-bold text-emerald-600">FREE</span>
                   </div>
                   <div className="pt-2 border-t border-black/5 flex justify-between items-center text-sm font-black text-charcoal">

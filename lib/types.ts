@@ -225,6 +225,9 @@ export interface CardSideConfig {
   showQrCode?: boolean; // QR code on this side
   showChip?: boolean; // Contactless chip indicator
   textColor?: string; // Laser etch color
+  qrColor?: string; // Barcode / QR color
+  showQrBackground?: boolean; // Optional QR backing
+  qrBgColor?: string; // Optional QR backing color
   textAlign?: 'left' | 'center' | 'right';
   customNote?: string; // Additional free-form custom etch
   isPlain?: boolean; // When true, no text, brand, UID, or QR code will be rendered on this side; only the pure material finish or custom artwork

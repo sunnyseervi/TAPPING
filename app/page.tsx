@@ -497,7 +497,6 @@ export default function LandingPage() {
                       <span className="font-extrabold text-sm tracking-widest uppercase">
                         TAPPING
                       </span>
-                      <span className="text-[9px] font-mono opacity-60">NFC 13.56MHz</span>
                     </div>
 
                     {/* Gold Smart Chip Contact Pads */}
@@ -516,7 +515,7 @@ export default function LandingPage() {
                     </h3>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-[9px] font-mono tracking-wider opacity-80">
-                        NFC SMART TAP HARDWARE &bull; TAP-IN-10001
+                        TAP-IN-10001
                       </span>
                     </div>
                   </div>
@@ -534,11 +533,11 @@ export default function LandingPage() {
                       </p>
                     </div>
                     <p className="text-[9px] font-mono opacity-60">
-                      ISO 14443A • Water Resistant • Lifetime NFC Core
+                      TAP OR SCAN TO CONNECT
                     </p>
                   </div>
-                  <div className="w-16 h-16 rounded-xl bg-white p-1.5 shadow-xs flex items-center justify-center">
-                    <QrCode className="w-full h-full text-charcoal" />
+                  <div className="w-16 h-16 flex items-center justify-center">
+                    <QrCode className="w-full h-full text-current" />
                   </div>
                 </div>
               </div>

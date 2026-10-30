@@ -647,7 +647,7 @@ export function enrichOrderBlueprint(order: MetalCardOrder): MetalCardOrder {
 
   const frontSide: CardSideConfig = {
     topLabel: order.frontSide?.topLabel || 'TAPPING',
-    bottomLabel: order.frontSide?.bottomLabel || `NFC 13.56MHz • ${order.orderNumber}`,
+    bottomLabel: order.frontSide?.bottomLabel || order.orderNumber,
     primaryText: order.frontSide?.primaryText || order.engravedName || 'TAPPING CREATOR',
     secondaryText: order.frontSide?.secondaryText || order.engravedTagline || 'DIGITAL IDENTITY',
     fontFamily: order.frontSide?.fontFamily || "'Plus Jakarta Sans', sans-serif",
@@ -662,6 +662,7 @@ export function enrichOrderBlueprint(order: MetalCardOrder): MetalCardOrder {
     brandSize: order.frontSide?.brandSize || 13,
     qrSize: order.frontSide?.qrSize || 56,
     textColor: order.frontSide?.textColor || defaultTextColor,
+    qrColor: order.frontSide?.qrColor || order.frontSide?.textColor || defaultTextColor,
     artworkUrl: order.frontSide?.artworkUrl || '',
     artworkOpacity: order.frontSide?.artworkOpacity ?? 90,
     artworkZoom: order.frontSide?.artworkZoom ?? 100,
@@ -682,7 +683,7 @@ export function enrichOrderBlueprint(order: MetalCardOrder): MetalCardOrder {
 
   const backSide: CardSideConfig = {
     topLabel: order.backSide?.topLabel || 'TAPPING',
-    bottomLabel: order.backSide?.bottomLabel || `UID: ${order.orderNumber}-CORE`,
+    bottomLabel: order.backSide?.bottomLabel || (order.orderNumber ? `UID: ${order.orderNumber}` : ''),
     primaryText: order.backSide?.primaryText || 'TAP ANY PHONE TO CONNECT',
     secondaryText: order.backSide?.secondaryText || order.qrUrl || 'https://tapping.bio',
     fontFamily: order.backSide?.fontFamily || "'Plus Jakarta Sans', sans-serif",
@@ -697,7 +698,8 @@ export function enrichOrderBlueprint(order: MetalCardOrder): MetalCardOrder {
     brandSize: order.backSide?.brandSize || 13,
     qrSize: order.backSide?.qrSize || 64,
     textColor: order.backSide?.textColor || defaultTextColor,
-    customNote: order.backSide?.customNote || 'ISO 14443A • NTAG216 Chip',
+    qrColor: order.backSide?.qrColor || order.backSide?.textColor || defaultTextColor,
+    customNote: order.backSide?.customNote || '',
     isPlain: order.backSide?.isPlain ?? (order.sideMode === 'single_sided'),
     artworkUrl: order.backSide?.artworkUrl || '',
     artworkOpacity: order.backSide?.artworkOpacity ?? 85,
