@@ -37,7 +37,6 @@ import {
   ArrowUpRight,
   Ban,
   Clock,
-  Sparkles,
   Lock
 } from 'lucide-react';
 import { downloadVCardFile } from '@/lib/vcard';
@@ -239,7 +238,7 @@ export default function PublicProfilePage() {
       <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-[#FAF7F2] text-charcoal text-center">
         <div className="max-w-md w-full p-8 rounded-4xl bg-white border border-black/10 shadow-card flex flex-col items-center">
           <div className="w-16 h-16 rounded-3xl bg-[#B6F554] text-charcoal border border-black/10 flex items-center justify-center mb-4 shadow-xs">
-            <Sparkles className="w-8 h-8 stroke-[2.3]" />
+            <Globe className="w-8 h-8 stroke-[2.3]" />
           </div>
           <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 mb-2">
             AVAILABLE HANDLE
@@ -819,43 +818,31 @@ export default function PublicProfilePage() {
         )}
       </main>
 
-      {/* Create your personalized link in bio CTA Button & Footer */}
-      <footer className="w-full pt-8 pb-14 flex flex-col items-center justify-center gap-3.5 mt-auto shrink-0 z-20">
+      {/* Theme-Based Link-in-Bio CTA: Single Button, Zero Stars, Full Theme Integration */}
+      <footer className="w-full pt-6 pb-8 flex flex-col items-center justify-center gap-3 mt-auto shrink-0 z-10">
         <a
           href="/"
-          className={`group inline-flex items-center gap-2.5 px-6 py-3.5 rounded-full text-xs font-black shadow-card transition-all duration-200 active:scale-95 hover:scale-[1.02] cursor-pointer ${
+          className={`w-full max-w-md min-h-[52px] px-5 py-3.5 rounded-2xl border shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-between group ${
             contentIsDark 
-              ? 'bg-white text-[#141518] hover:bg-gray-100 ring-1 ring-white/20' 
-              : 'bg-[#141518] text-white hover:bg-black ring-1 ring-black/10'
+              ? 'bg-white/10 hover:bg-white/15 text-white border-white/15 backdrop-blur-md' 
+              : 'bg-white hover:bg-gray-50 text-charcoal border-black/10'
           }`}
+          style={{
+            ...getFontFamilyStyle(profile.fontFamily),
+          }}
         >
-          <div className="w-5 h-5 rounded-full bg-[#FDF166] flex items-center justify-center shrink-0 shadow-2xs">
-            <Sparkles className="w-3 h-3 text-[#141518] stroke-[2.8]" />
-          </div>
-          <span>Create your personalized link in bio</span>
-          <ArrowUpRight className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 stroke-[2.5]" />
+          <span className="text-xs font-black truncate">
+            Create your personalized link in bio
+          </span>
+          <ArrowUpRight className="w-4 h-4 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 stroke-[2.2]" />
         </a>
 
-        <span className={`text-[11px] font-bold tracking-wider ${contentIsDark ? 'text-white/50' : 'text-charcoal/40'}`}>
+        <span className={`text-[10px] font-bold tracking-wider ${contentIsDark ? 'text-white/40' : 'text-charcoal/40'}`}>
           Powered by TAPPING &bull; Digital Cards &amp; Bio Space
         </span>
       </footer>
     </div>
   </div>
-
-      {/* Floating Bottom Pill for Quick Access */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto px-4 max-w-sm w-full flex justify-center">
-        <a
-          href="/"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#141518]/90 hover:bg-black text-white text-xs font-black shadow-float backdrop-blur-md border border-white/20 transition-all hover:scale-105 active:scale-95"
-        >
-          <div className="w-4 h-4 rounded-full bg-[#FDF166] flex items-center justify-center shrink-0">
-            <Sparkles className="w-2.5 h-2.5 text-[#141518] stroke-[3]" />
-          </div>
-          <span>Create your personalized link in bio</span>
-          <ArrowUpRight className="w-3 h-3 text-[#FDF166] stroke-[2.5]" />
-        </a>
-      </div>
 
       {/* DYNAMIC QR CODE DISPLAY MODAL */}
       {showQRModal && (

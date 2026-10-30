@@ -23,7 +23,6 @@ import {
   SlidersHorizontal,
   Palette,
   ShoppingBag,
-  Sparkles,
   TrendingUp,
   ShieldCheck,
   Zap,

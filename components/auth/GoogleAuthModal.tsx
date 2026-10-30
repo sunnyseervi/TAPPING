@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Mail, Check, Sparkles } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 import { 
   saveStoredProfile, 
   getStoredProfile, 
@@ -34,23 +34,21 @@ export default function GoogleAuthModal({
 }: GoogleAuthModalProps) {
   const router = useRouter();
   const { showToast } = useToast();
-  const [googleEmail, setGoogleEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
 
   const targetHandle = (claimedUsername || (typeof window !== 'undefined' ? localStorage.getItem('tapping_claimed_handle') : '') || '').toLowerCase().trim();
 
-  const handleGoogleSignIn = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const handleGoogleSignIn = () => {
     setIsLoading(true);
 
     setTimeout(() => {
-      const email = (googleEmail.trim() || `${targetHandle || 'user'}@gmail.com`).toLowerCase();
-      const existingUser = getUserByEmail(email);
+      const email = `${targetHandle || 'creator'}@gmail.com`;
+      const existingUser = targetHandle ? getUserByUsername(targetHandle) : getUserByEmail(email);
 
       if (existingUser) {
-        // User already has an account with this email -> Load their profile and directly open dashboard!
+        // User already has an account -> Load their profile and directly open dashboard
         const existingProfile = existingUser.profile || {
           ...initialProfile,
           id: existingUser.id,
@@ -58,7 +56,7 @@ export default function GoogleAuthModal({
           displayName: existingUser.displayName,
           avatarUrl: existingUser.avatarUrl,
           isActivated: existingUser.isActivated !== false,
-          socialLinks: { email },
+          socialLinks: { email: existingUser.email || email },
         };
 
         saveStoredProfile(existingProfile);
@@ -67,7 +65,7 @@ export default function GoogleAuthModal({
         }
 
         setIsLoading(false);
-        showToast('Welcome Back', `Signed into your account @${existingUser.username}`, 'success');
+        showToast('Welcome Back', `Signed in to your account @${existingUser.username}`, 'success');
         if (onAuthenticated) onAuthenticated(existingProfile);
         onClose();
         router.push(redirectTo);
@@ -75,17 +73,7 @@ export default function GoogleAuthModal({
       }
 
       // New User -> Create their profile with the exact handle chosen while claiming
-      let finalHandle = targetHandle;
-      if (!finalHandle) {
-        finalHandle = email.split('@')[0].replace(/[^a-z0-9_-]/g, '') || 'creator';
-      }
-
-      // If chosen handle was somehow taken by another email, ensure uniqueness
-      const existingHandleOwner = getUserByUsername(finalHandle);
-      if (existingHandleOwner && existingHandleOwner.email.toLowerCase() !== email) {
-        finalHandle = `${finalHandle}${Math.floor(100 + Math.random() * 900)}`;
-      }
-
+      const finalHandle = targetHandle || `creator_${Date.now().toString().slice(-4)}`;
       const displayName = finalHandle.charAt(0).toUpperCase() + finalHandle.slice(1);
       const newProfile: Profile = {
         ...initialProfile,
@@ -147,10 +135,9 @@ export default function GoogleAuthModal({
         </div>
 
         {targetHandle ? (
-          <div className="mb-2">
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-black uppercase tracking-wider">
-              <Sparkles className="w-3 h-3 text-emerald-600" />
-              <span>Claiming @{targetHandle}</span>
+          <div className="mb-2.5">
+            <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-black uppercase tracking-wider">
+              Claiming @{targetHandle}
             </span>
           </div>
         ) : null}
@@ -160,30 +147,15 @@ export default function GoogleAuthModal({
         </h2>
         <p className="text-xs text-charcoal-muted mt-1.5 leading-relaxed">
           {targetHandle 
-            ? `Sign in to claim @${targetHandle} and create your bio space.` 
-            : 'Sign in to access your bio dashboard, links, and smart card.'}
+            ? `Continue with Google to claim @${targetHandle} and build your profile.` 
+            : 'Continue with Google to access your bio dashboard, links, and cards.'}
         </p>
 
-        <form onSubmit={handleGoogleSignIn} className="mt-5 space-y-3">
-          <div className="text-left">
-            <label className="text-[10px] font-bold text-charcoal/60 block mb-1">
-              Google Account Email (Gmail)
-            </label>
-            <div className="relative flex items-center">
-              <Mail className="w-4 h-4 text-charcoal/40 absolute left-3 pointer-events-none" />
-              <input
-                type="email"
-                value={googleEmail}
-                onChange={(e) => setGoogleEmail(e.target.value)}
-                placeholder="your.email@gmail.com"
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-black/15 text-xs font-semibold focus:outline-none focus:border-black font-sans"
-              />
-            </div>
-          </div>
-
-          {/* Clean Google Login Button */}
+        {/* Clean One-Click Google Login Button - NO Email Input Form */}
+        <div className="mt-6">
           <button
-            type="submit"
+            type="button"
+            onClick={handleGoogleSignIn}
             disabled={isLoading}
             className="w-full py-3.5 px-4 rounded-2xl border border-black/15 bg-white hover:bg-gray-50 flex items-center justify-center gap-3 text-xs font-bold text-charcoal shadow-xs transition-all active:scale-[0.98] disabled:opacity-60 cursor-pointer"
           >
@@ -209,9 +181,9 @@ export default function GoogleAuthModal({
                 />
               </svg>
             )}
-            <span>{isLoading ? 'Signing in with Google...' : 'Continue with Google'}</span>
+            <span>{isLoading ? 'Connecting to Google...' : 'Continue with Google'}</span>
           </button>
-        </form>
+        </div>
 
         <p className="text-[10px] text-charcoal/50 mt-4">
           Secured with Google OAuth 2.0 authentication.

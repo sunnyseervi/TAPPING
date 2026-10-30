@@ -16,8 +16,7 @@ import {
   ArrowUpRight,
   Wifi,
   CreditCard,
-  ShoppingBag,
-  Sparkles
+  ShoppingBag
 } from 'lucide-react';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 import { downloadVCardFile } from '@/lib/vcard';
@@ -591,26 +590,26 @@ export default function LivePhonePreview({
             )}
 
             {/* Create your personalized link in bio CTA Button */}
-            <div className="w-full pt-5 pb-3 flex flex-col items-center justify-center gap-1.5 mt-auto shrink-0">
+            <div className="w-full pt-4 pb-2 flex flex-col items-center justify-center gap-1.5 mt-auto shrink-0">
               <a
                 href="/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black shadow-2xs transition-transform active:scale-95 cursor-pointer ${
+                className={`w-full py-2 px-3 rounded-xl border text-[9px] font-black shadow-2xs transition-transform active:scale-95 cursor-pointer flex items-center justify-between ${
                   contentIsDark
-                    ? 'bg-white text-charcoal hover:bg-gray-100'
-                    : 'bg-[#141518] text-white hover:bg-black'
+                    ? 'bg-white/10 hover:bg-white/15 text-white border-white/15'
+                    : 'bg-white hover:bg-gray-50 text-charcoal border-black/10'
                 }`}
+                style={{
+                  ...getFontFamilyStyle(profile.fontFamily),
+                }}
               >
-                <div className="w-3.5 h-3.5 rounded-full bg-[#FDF166] flex items-center justify-center shrink-0">
-                  <Sparkles className="w-2 h-2 text-[#141518] stroke-[2.5]" />
-                </div>
-                <span>Create your personalized link in bio</span>
-                <ArrowUpRight className="w-2.5 h-2.5 opacity-60 group-hover:opacity-100 transition-opacity shrink-0" />
+                <span className="truncate">Create your personalized link in bio</span>
+                <ArrowUpRight className="w-3 h-3 opacity-60 shrink-0 stroke-[2.2]" />
               </a>
 
               <span className={`text-[8px] font-bold tracking-wider ${contentIsDark ? 'text-white/40' : 'text-charcoal/40'}`}>
-                Powered by TAPPING &bull; Bio Space
+                Powered by TAPPING
               </span>
             </div>
           </div>

@@ -45,7 +45,7 @@ import StoreManager from '@/components/dashboard/StoreManager';
 import NFCTagShop from '@/components/dashboard/NFCTagShop';
 import AccountOrdersSection from '@/components/dashboard/AccountOrdersSection';
 import { useToast } from '@/components/ui/Toast';
-import { Check, X, CreditCard, Zap, ArrowRight, QrCode, Building, ShieldCheck, Lock, Sparkles } from 'lucide-react';
+import { Check, X, CreditCard, Zap, ArrowRight, QrCode, Building, ShieldCheck, Lock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 function DashboardContent() {

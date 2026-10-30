@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Profile } from '@/lib/types';
-import { Menu, Bell, ExternalLink, MoreHorizontal, Sparkles, Check, Globe } from 'lucide-react';
+import { Menu, Bell, ExternalLink, MoreHorizontal, Check, Globe } from 'lucide-react';
 
 interface DashboardHeaderProps {
   profile: Profile;
@@ -96,7 +96,7 @@ export default function DashboardHeader({
               </>
             ) : (
               <>
-                <Sparkles className="w-3.5 h-3.5 text-[#FDF166]" />
+                <Globe className="w-3.5 h-3.5" />
                 <span>Publish to Web</span>
               </>
             )}
