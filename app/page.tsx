@@ -279,7 +279,7 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* HERO SECTION (LINKTREE INSPIRED WITH APPLE-GRADE TYPOGRAPHY) */}
+      {/* HERO SECTION WITH APPLE-GRADE TYPOGRAPHY */}
       <section className="max-w-7xl mx-auto px-6 pt-10 pb-16 flex flex-col items-center text-center relative z-10">
         
         {/* Top Accent Pill with Indian Flag */}
@@ -328,8 +328,8 @@ export default function LandingPage() {
         {handle.trim() && availability && (
           <div className="mt-3 flex items-center justify-center animate-in fade-in duration-150">
             {availability.available ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-black">
-                <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#4F83FF]/10 text-[#4F83FF] border border-[#4F83FF]/30 text-xs font-black">
+                <Check className="w-3.5 h-3.5 text-[#4F83FF] stroke-[3]" />
                 <span>@{handle.toLowerCase()} is available!</span>
               </span>
             ) : (
@@ -355,7 +355,7 @@ export default function LandingPage() {
             
             {/* Top Indicator */}
             <div className="flex items-center gap-2 mb-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#4F83FF] animate-pulse" />
               <span className="text-xs font-black text-charcoal tracking-tight">
                 Live Bio Profile Preview &bull; @{handle ? handle.toLowerCase() : 'yourname'}
               </span>
@@ -631,7 +631,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* INDIAN CREATOR SHOWCASE SECTION (REPLACED UGLY SEAT CARD WITH ELEGANT LINKTREE-GRADE SHOWCASE) */}
+      {/* INDIAN CREATOR SHOWCASE SECTION */}
       <section id="showcase" className="max-w-7xl mx-auto px-6 py-16 border-t border-black/5">
         <div className="text-center mb-10">
           <span className="text-xs font-black px-3.5 py-1 rounded-full bg-white text-charcoal border border-black/10 shadow-2xs uppercase tracking-wider">
@@ -808,7 +808,7 @@ export default function LandingPage() {
             </div>
             <div className="mt-6 pt-4 border-t border-black/5 flex items-center justify-between text-xs font-bold text-charcoal/60">
               <span>Drag & Reorder</span>
-              <span className="font-mono text-emerald-600">Active</span>
+              <span className="font-mono text-[#4F83FF]">Active</span>
             </div>
           </div>
 
@@ -825,24 +825,24 @@ export default function LandingPage() {
             </div>
             <div className="mt-6 pt-4 border-t border-black/5 flex items-center justify-between text-xs font-bold text-charcoal/60">
               <span>Apple & Android Native</span>
-              <span className="font-mono text-emerald-600">vCard 3.0</span>
+              <span className="font-mono text-[#4F83FF]">vCard 3.0</span>
             </div>
           </div>
 
           {/* Bento Card 3: Metal NFC */}
-          <div className="bg-[#141518] text-white rounded-3xl p-7 shadow-card flex flex-col justify-between">
+          <div className="bg-white rounded-3xl p-7 border border-black/10 shadow-card flex flex-col justify-between">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-4">
-                <CreditCard className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-2xl bg-[#FAF7F2] border border-black/10 flex items-center justify-center mb-4">
+                <CreditCard className="w-6 h-6 text-charcoal" />
               </div>
-              <h3 className="text-lg font-black text-white">Aerospace Metal NFC</h3>
-              <p className="text-xs text-white/70 mt-2 leading-relaxed font-medium">
+              <h3 className="text-lg font-black text-charcoal">Aerospace Metal NFC</h3>
+              <p className="text-xs text-charcoal/70 mt-2 leading-relaxed font-medium">
                 Laser-engraved stainless steel, brushed gold, and matte black cards powered by NTAG216 contactless microchips that work indefinitely.
               </p>
             </div>
-            <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-bold text-white/60">
+            <div className="mt-6 pt-4 border-t border-black/5 flex items-center justify-between text-xs font-bold text-charcoal/60">
               <span>13.56MHz Frequency</span>
-              <span className="font-mono text-amber-400">Zero Battery</span>
+              <span className="font-mono text-charcoal/80">Zero Battery</span>
             </div>
           </div>
         </div>
@@ -884,7 +884,7 @@ export default function LandingPage() {
               }`}
             >
               <span>Yearly Billing</span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-black">
+              <span className="px-2 py-0.5 rounded-full bg-[#4F83FF]/10 text-[#4F83FF] text-[9px] font-black">
                 Save 16%
               </span>
             </button>
@@ -897,8 +897,8 @@ export default function LandingPage() {
           {/* Monthly Plan: ₹299 / month */}
           <div className={`p-8 rounded-4xl border flex flex-col justify-between transition-all ${
             billingCycle === 'monthly'
-              ? 'bg-white border-2 border-black shadow-card'
-              : 'bg-white/60 border-black/10 opacity-90'
+              ? 'bg-white border-2 border-[#4F83FF] shadow-card'
+              : 'bg-white/80 border-black/10'
           }`}>
             <div>
               <div className="flex items-center justify-between">
@@ -932,9 +932,7 @@ export default function LandingPage() {
                   'Real-time visitor and click analytics',
                 ].map((feat, idx) => (
                   <div key={idx} className="flex items-center gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 stroke-[3]" />
-                    </div>
+                    <Check className="w-4 h-4 text-[#4F83FF] stroke-[3] shrink-0" />
                     <span>{feat}</span>
                   </div>
                 ))}
@@ -951,35 +949,35 @@ export default function LandingPage() {
           </div>
 
           {/* Yearly Plan: ₹2,999 / year */}
-          <div className={`p-8 rounded-4xl border flex flex-col justify-between transition-all relative overflow-hidden ${
+          <div className={`p-8 rounded-4xl border flex flex-col justify-between transition-all relative overflow-hidden bg-white shadow-card ${
             billingCycle === 'yearly'
-              ? 'bg-[#141518] text-white border-2 border-black shadow-2xl'
-              : 'bg-white border-black/10'
+              ? 'border-2 border-[#4F83FF]'
+              : 'border-black/10'
           }`}>
             <div className="absolute top-4 right-4">
-              <span className="px-3 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider shadow-2xs">
+              <span className="px-3 py-1 rounded-full bg-[#4F83FF] text-white text-[10px] font-black uppercase tracking-wider shadow-2xs">
                 Best Value
               </span>
             </div>
 
             <div>
-              <span className={`text-xs font-black uppercase tracking-wider block ${billingCycle === 'yearly' ? 'text-white/60' : 'text-charcoal/60'}`}>
+              <span className="text-xs font-black uppercase tracking-wider block text-charcoal/60">
                 Annual Membership (Save 16%)
               </span>
 
               <div className="flex items-baseline gap-1 mt-4">
-                <span className={`text-4xl sm:text-5xl font-black tracking-tight ${billingCycle === 'yearly' ? 'text-white' : 'text-charcoal'}`}>
+                <span className="text-4xl sm:text-5xl font-black tracking-tight text-charcoal">
                   ₹2,999
                 </span>
-                <span className={`text-xs font-bold ${billingCycle === 'yearly' ? 'text-white/60' : 'text-charcoal/60'}`}>
+                <span className="text-xs font-bold text-charcoal/60">
                   / year (₹250/mo)
                 </span>
               </div>
-              <p className={`text-xs mt-2 font-medium ${billingCycle === 'yearly' ? 'text-white/70' : 'text-charcoal/70'}`}>
+              <p className="text-xs mt-2 font-medium text-charcoal/70">
                 Everything you need for the entire year plus hardware discounts and priority custom domain access.
               </p>
 
-              <div className={`space-y-3 mt-6 pt-6 border-t text-xs font-bold ${billingCycle === 'yearly' ? 'border-white/10 text-white/85' : 'border-black/5 text-charcoal/80'}`}>
+              <div className="space-y-3 mt-6 pt-6 border-t border-black/5 text-xs font-bold text-charcoal/80">
                 {[
                   'Everything in Monthly Plan included',
                   'Slidable Product Showcase & direct buy links',
@@ -991,9 +989,7 @@ export default function LandingPage() {
                   'Priority creator support & fast fulfillment',
                 ].map((feat, idx) => (
                   <div key={idx} className="flex items-center gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-emerald-400/20 text-emerald-400 flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 stroke-[3]" />
-                    </div>
+                    <Check className="w-4 h-4 text-[#4F83FF] stroke-[3] shrink-0" />
                     <span>{feat}</span>
                   </div>
                 ))}
@@ -1002,10 +998,10 @@ export default function LandingPage() {
 
             <Link
               href="/dashboard?action=upgrade&plan=yearly"
-              className="mt-8 w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-gray-100 text-charcoal font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
+              className="mt-8 w-full py-3.5 px-4 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95"
             >
               <span>Activate Yearly (₹2,999)</span>
-              <ArrowRight className="w-4 h-4 text-charcoal" />
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
@@ -1048,8 +1044,8 @@ export default function LandingPage() {
               a: 'Every Tapping creator receives a permanent Dynamic Vector QR Code that never expires or breaks. You can update your bio links, themes, or products anytime without ever needing to reprint your QR code.',
             },
             {
-              q: 'How does Tapping compare to Linktree in India?',
-              a: 'Unlike standard link trees, Tapping is built specifically for the Indian ecosystem with direct UPI payments, aerospace metal NFC card pairing, direct phonebook contact saving (.vcf), 13 high-contrast themes, zero ad tracking, and local Indian Rupee pricing.',
+              q: 'Why should creators choose Tapping for their bio space?',
+              a: 'Tapping is built specifically for modern creators and professionals with direct UPI payments, aerospace metal NFC card pairing, direct phonebook contact saving (.vcf), 13 high-contrast themes, zero ad tracking, and local Indian Rupee pricing.',
             },
           ].map((item, idx) => {
             const isOpen = openFaqIndex === idx;
@@ -1081,19 +1077,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FOOTER & SEO DIRECTORY */}
-      <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-black/10 space-y-8">
-        <div className="flex flex-wrap gap-2 items-center justify-center text-[11px] font-bold text-charcoal/60">
-          <span className="text-charcoal font-black">Popular Indian Creator Searches:</span>
-          <span className="px-2.5 py-1 rounded-full bg-white border border-black/5">Link in bio India</span>
-          <span className="px-2.5 py-1 rounded-full bg-white border border-black/5">Smart NFC Card Bangalore</span>
-          <span className="px-2.5 py-1 rounded-full bg-white border border-black/5">Digital Visiting Card vCard</span>
-          <span className="px-2.5 py-1 rounded-full bg-white border border-black/5">Vector QR Generator</span>
-          <span className="px-2.5 py-1 rounded-full bg-white border border-black/5">UPI Creator Store</span>
-          <span className="px-2.5 py-1 rounded-full bg-white border border-black/5">Metal Contactless Cards</span>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-charcoal/60 pt-4 border-t border-black/5">
+      {/* FOOTER */}
+      <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-black/10">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-charcoal/60">
           <div className="flex items-center gap-2.5">
             <TappingLogo size="xs" variant="full" />
             <IndianFlag className="w-4 h-2.8 rounded-xs" />
@@ -1109,10 +1095,7 @@ export default function LandingPage() {
             <a href="#faq" className="text-charcoal/70 hover:text-black">
               FAQ
             </a>
-            <Link href="/admin" className="text-charcoal/70 hover:text-black hover:underline">
-              Admin Access
-            </Link>
-            <Link href="/dashboard" className="text-charcoal font-black hover:underline">
+            <Link href="/dashboard" className="text-[#4F83FF] font-black hover:underline">
               Creator Dashboard &rarr;
             </Link>
           </div>

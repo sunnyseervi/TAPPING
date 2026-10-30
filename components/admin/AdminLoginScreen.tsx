@@ -69,7 +69,7 @@ export default function AdminLoginScreen({ onLoginSuccess }: AdminLoginScreenPro
           type="button"
           onClick={handleGoogleSignIn}
           disabled={isLoading}
-          className="w-full py-3.5 px-5 rounded-2xl bg-[#141518] hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-3 shadow-sm transition-transform active:scale-95 cursor-pointer disabled:opacity-60"
+          className="w-full py-3.5 px-5 rounded-2xl bg-[#4F83FF] hover:bg-[#3B6DE6] text-white text-xs font-black flex items-center justify-center gap-3 shadow-md shadow-[#4F83FF]/20 transition-transform active:scale-95 cursor-pointer disabled:opacity-60"
         >
           {isLoading ? (
             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

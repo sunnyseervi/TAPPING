@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   keywords: [
     'Link in bio India',
     'Best link in bio for Indian creators',
-    'Linktree alternative India',
+    'Smart digital identity suite India',
     'Digital visiting card India',
     'Smart metal NFC card India',
     'Contactless business card Bangalore',
@@ -246,10 +246,10 @@ const jsonLd = {
         },
         {
           '@type': 'Question',
-          name: 'How does Tapping compare to Linktree in India?',
+          name: 'Why should creators choose Tapping for their bio space?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Unlike standard link trees, Tapping is built specifically for the Indian ecosystem with direct UPI payments, aerospace metal NFC card pairing, direct phonebook contact saving (.vcf), 13 high-contrast themes, zero ad tracking, and local Indian Rupee pricing.',
+            text: 'Tapping is built specifically for creators with direct UPI payments, aerospace metal NFC card pairing, instant phonebook contact saving (.vcf), 13 high-contrast themes, zero ad tracking, and transparent Indian Rupee pricing.',
           },
         },
       ],

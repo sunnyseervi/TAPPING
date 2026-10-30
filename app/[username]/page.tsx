@@ -386,7 +386,7 @@ export default function PublicProfilePage() {
   return (
     <div className="min-h-screen sm:h-screen w-full bg-[#E5E5E7] dark:bg-[#0D0F12] flex items-center justify-center p-0 sm:py-6 sm:px-4 relative overflow-hidden selection:bg-[#FDF166] selection:text-charcoal transition-colors">
       
-      {/* DESKTOP-ONLY FLOATING QR BADGE: Selena Gomez Linktree Reference (Bottom-Right) */}
+      {/* DESKTOP-ONLY FLOATING QR BADGE: Mobile Quick Scan (Bottom-Right) */}
       <div 
         onClick={() => {
           recordQRScan();

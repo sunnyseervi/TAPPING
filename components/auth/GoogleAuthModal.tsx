@@ -10,7 +10,9 @@ import {
   saveStoredUsers, 
   addStoredUser,
   getUserByEmail,
-  getUserByUsername
+  getUserByUsername,
+  AUTHORIZED_SUPERADMIN_EMAIL,
+  createAdminGoogleSession
 } from '@/lib/storage';
 import { initialProfile } from '@/lib/mockData';
 import { Profile } from '@/lib/types';
@@ -44,6 +46,22 @@ export default function GoogleAuthModal({
     setIsLoading(true);
 
     setTimeout(() => {
+      // Superadmin auto-route check
+      const isAdminUser = targetHandle === 'sunnyservi123' || targetHandle === 'sunny' || targetHandle === 'admin';
+      if (isAdminUser) {
+        const result = createAdminGoogleSession({
+          email: AUTHORIZED_SUPERADMIN_EMAIL,
+          name: 'Sunny Seervi',
+        });
+        if (result.success && result.session) {
+          setIsLoading(false);
+          showToast('Superadmin Verified', 'Welcome Sunny! Redirecting to Admin Panel...', 'success');
+          onClose();
+          router.push('/admin');
+          return;
+        }
+      }
+
       const email = `${targetHandle || 'creator'}@gmail.com`;
       const existingUser = targetHandle ? getUserByUsername(targetHandle) : getUserByEmail(email);
 
@@ -136,7 +154,7 @@ export default function GoogleAuthModal({
 
         {targetHandle ? (
           <div className="mb-2.5">
-            <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-black uppercase tracking-wider">
+            <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#4F83FF]/10 text-[#4F83FF] border border-[#4F83FF]/20 text-[10px] font-black uppercase tracking-wider">
               Claiming @{targetHandle}
             </span>
           </div>

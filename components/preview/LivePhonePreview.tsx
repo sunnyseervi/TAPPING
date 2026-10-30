@@ -139,7 +139,7 @@ export default function LivePhonePreview({
       {/* Top Preview Controls Bar */}
       <div className="w-full max-w-[340px] flex items-center justify-between mb-3 px-1 text-xs">
         <div className="flex items-center gap-2 font-black text-charcoal">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[#4F83FF] animate-pulse" />
           <span className="tracking-tight">Live Phone Preview</span>
         </div>
         <button
