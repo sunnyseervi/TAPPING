@@ -182,8 +182,14 @@ export default function PublicProfilePage() {
     );
   }
 
-  // Check if creator has not yet activated their profile with payment
-  if (userRecord && (userRecord.status === 'pending_payment' || userRecord.isActivated === false)) {
+  // Check if creator has not yet activated / published their profile with payment
+  const activeProfile = getStoredProfile();
+  const isTargetCurrentCreator = activeProfile && activeProfile.username.toLowerCase() === usernameParam.toLowerCase();
+
+  const isDraftOrPending = (userRecord && (userRecord.status === 'pending_payment' || userRecord.isActivated === false)) ||
+    (!userRecord && isTargetCurrentCreator && activeProfile.isActivated === false);
+
+  if (isDraftOrPending) {
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-[#FAF7F2] text-charcoal text-center">
         <div className="max-w-md w-full p-8 rounded-4xl bg-white border border-black/10 shadow-card flex flex-col items-center">
@@ -191,20 +197,30 @@ export default function PublicProfilePage() {
             <Clock className="w-8 h-8 stroke-[2.3]" />
           </div>
           <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 mb-2">
-            RESERVED &bull; PAYMENT PENDING
+            DRAFT &bull; NOT PUBLISHED
           </span>
-          <h1 className="text-2xl font-black tracking-tight text-charcoal">Profile Pending Activation</h1>
+          <h1 className="text-2xl font-black tracking-tight text-charcoal">Profile in Draft</h1>
           <p className="text-xs text-charcoal/70 mt-2 leading-relaxed font-medium">
-            The handle <strong className="text-charcoal font-black">@{usernameParam}</strong> is reserved on TAPPING, but profile activation requires an active creator pass.
+            The handle <strong className="text-charcoal font-black">@{usernameParam}</strong> is reserved, but has not been published yet. Complete activation to make this profile public.
           </p>
           <div className="mt-6 w-full pt-6 border-t border-black/10 flex flex-col gap-2.5">
-            <a
-              href="/dashboard?action=activate"
-              className="w-full py-3.5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95"
-            >
-              <span>Activate This Profile</span>
-              <ArrowUpRight className="w-4 h-4 text-[#FDF166]" />
-            </a>
+            {isTargetCurrentCreator ? (
+              <a
+                href="/dashboard?action=upgrade"
+                className="w-full py-3.5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95"
+              >
+                <span>Publish in Dashboard</span>
+                <ArrowUpRight className="w-4 h-4 text-[#FDF166]" />
+              </a>
+            ) : (
+              <a
+                href="/"
+                className="w-full py-3.5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95"
+              >
+                <span>Claim Your Own TAPPING Handle</span>
+                <ArrowUpRight className="w-4 h-4 text-[#FDF166]" />
+              </a>
+            )}
             <a
               href="/"
               className="w-full py-2.5 rounded-2xl bg-[#FAF7F2] text-charcoal font-bold text-xs hover:bg-black/5 transition-colors"
@@ -218,8 +234,7 @@ export default function PublicProfilePage() {
   }
 
   // Check if this handle is completely unclaimed
-  const activeProfile = getStoredProfile();
-  if (!userRecord && usernameParam.toLowerCase() !== activeProfile.username.toLowerCase()) {
+  if (!userRecord && !isTargetCurrentCreator) {
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-[#FAF7F2] text-charcoal text-center">
         <div className="max-w-md w-full p-8 rounded-4xl bg-white border border-black/10 shadow-card flex flex-col items-center">
@@ -235,7 +250,7 @@ export default function PublicProfilePage() {
           </p>
           <div className="mt-6 w-full pt-6 border-t border-black/10 flex flex-col gap-2.5">
             <a
-              href="/dashboard"
+              href="/"
               className="w-full py-3.5 rounded-2xl bg-[#141518] hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-95"
             >
               <span>Claim @{usernameParam} Now</span>

@@ -7,6 +7,7 @@ import {
   ArrowRight, 
   ArrowUpRight, 
   Check, 
+  X,
   QrCode, 
   CreditCard, 
   Layers, 
@@ -29,18 +30,21 @@ import {
   Eye,
   ChevronDown
 } from 'lucide-react';
-import { saveStoredProfile, getStoredProfile, getStoredVCard } from '@/lib/storage';
+import { saveStoredProfile, getStoredProfile, getStoredVCard, isUsernameAvailable } from '@/lib/storage';
 import { downloadVCardFile } from '@/lib/vcard';
 import { useToast } from '@/components/ui/Toast';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 import { CardMaterial } from '@/lib/types';
 import TappingLogo from '@/components/brand/TappingLogo';
 import IndianFlag from '@/components/ui/IndianFlag';
+import GoogleAuthModal from '@/components/auth/GoogleAuthModal';
 
 export default function LandingPage() {
   const router = useRouter();
   const { showToast } = useToast();
   const [handle, setHandle] = useState('');
+  const [availability, setAvailability] = useState<{ available: boolean; reason?: string } | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [displayHost, setDisplayHost] = useState('tapping.bio');
 
   // Metal NFC Hardware Studio State in Hero
@@ -58,20 +62,42 @@ export default function LandingPage() {
     if (typeof window !== 'undefined') {
       setDisplayHost(window.location.host);
       const p = getStoredProfile();
-      if (p && p.username && p.username !== 'alex' && p.username !== 'aarav' && p.username !== 'creator') {
+      if (p && p.username && p.username !== 'creator') {
         setIsSignedIn(true);
       }
     }
   }, []);
 
+  // Real-time handle availability checking
+  useEffect(() => {
+    const clean = handle.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    if (!clean) {
+      setAvailability(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      const res = isUsernameAvailable(clean);
+      setAvailability(res);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [handle]);
+
   const handleClaim = (e: React.FormEvent) => {
     e.preventDefault();
-    const clean = handle.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'creator';
-    const profile = getStoredProfile();
-    profile.username = clean;
-    saveStoredProfile(profile);
-    showToast('Handle Claimed', `Welcome @${clean}! Set up your bio and metal card.`, 'success');
-    router.push('/dashboard?tab=profile');
+    const clean = handle.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    if (!clean) {
+      showToast('Enter a Handle', 'Please type your name or creator handle to claim', 'info');
+      return;
+    }
+    const res = isUsernameAvailable(clean);
+    if (!res.available) {
+      showToast('Handle Unavailable', `@${clean} is ${res.reason || 'taken'}. Please try another handle.`, 'error');
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('tapping_claimed_handle', clean);
+    }
+    setShowAuthModal(true);
   };
 
   const handleCopyLink = () => {
@@ -230,20 +256,25 @@ export default function LandingPage() {
             </Link>
           ) : (
             <>
-              <Link
-                href="/dashboard"
-                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-black/10 bg-white hover:bg-gray-50 text-xs font-bold text-charcoal shadow-xs transition-colors"
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(true)}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-black/10 bg-white hover:bg-gray-50 text-xs font-bold text-charcoal shadow-xs transition-colors cursor-pointer"
               >
                 <span>Sign In</span>
-              </Link>
+              </button>
 
-              <Link
-                href="/dashboard"
-                className="px-5 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
+              <button
+                type="button"
+                onClick={() => {
+                  const input = document.getElementById('claim-handle-input');
+                  if (input) input.focus();
+                }}
+                className="px-5 py-2.5 rounded-full bg-[#141518] hover:bg-black text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
               >
                 <span>Get Started</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              </button>
             </>
           )}
         </div>
@@ -277,9 +308,10 @@ export default function LandingPage() {
           <div className="flex items-center pl-4 sm:pl-6 flex-1 w-full text-sm font-mono font-bold text-charcoal min-h-[46px]">
             <span className="text-charcoal/40 font-bold select-none">{displayHost}/</span>
             <input
+              id="claim-handle-input"
               type="text"
               value={handle}
-              onChange={(e) => setHandle(e.target.value)}
+              onChange={(e) => setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
               placeholder="yourname"
               className="bg-transparent focus:outline-none w-full text-sm font-black text-charcoal placeholder:text-charcoal/30 ml-0.5"
             />
@@ -293,12 +325,29 @@ export default function LandingPage() {
           </button>
         </form>
 
-        <p className="text-[11px] font-bold text-charcoal/45 mt-3">
-          Free to claim • No credit card required • Instant live link
+        {/* Real-Time Handle Availability Badge */}
+        {handle.trim() && availability && (
+          <div className="mt-3 flex items-center justify-center animate-in fade-in duration-150">
+            {availability.available ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-black">
+                <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                <span>@{handle.toLowerCase()} is available!</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-900 border border-rose-300 text-xs font-black">
+                <X className="w-3.5 h-3.5 text-rose-600 stroke-[3]" />
+                <span>@{handle.toLowerCase()} is {availability.reason || 'unavailable'}</span>
+              </span>
+            )}
+          </div>
+        )}
+
+        <p className="text-[11px] font-bold text-charcoal/50 mt-3">
+          Reserve your handle &bull; Customize your bio space &bull; Publish with Pro
         </p>
       </section>
 
-      {/* HARDWARE & LIVE BIO DEMO: TILTED PHONE + LASER-ENGRAVED METAL NFC CARD */}
+      {/* LIVE BIO PROFILE PREVIEW & SMART METAL CARD */}
       <section className="max-w-7xl mx-auto px-6 pb-20 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center justify-center">
           
@@ -309,7 +358,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-2 mb-3">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-black text-charcoal tracking-tight">
-                Live Bio Profile Preview &bull; @{handle || 'creator'}
+                Live Bio Profile Preview &bull; @{handle ? handle.toLowerCase() : 'yourname'}
               </span>
             </div>
 
@@ -340,7 +389,7 @@ export default function LandingPage() {
                     <div className="w-20 h-20 rounded-[24px] overflow-hidden ring-2 ring-white/90 border border-black/10 shadow-sm bg-[#FAF7F2] flex items-center justify-center relative">
                       <img
                         src="https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80"
-                        alt="Indian Flag - Tapping Creator"
+                        alt="Creator Avatar"
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1597058712635-3182d1eacc1e?w=600&auto=format&fit=crop&q=80';
@@ -355,27 +404,27 @@ export default function LandingPage() {
 
                   {/* Name & Handle */}
                   <h2 className="text-base font-black text-charcoal mt-2.5 tracking-tight leading-tight">
-                    {handle ? `@${handle}` : 'Creator Space'}
+                    {handle ? (handle.charAt(0).toUpperCase() + handle.slice(1)) : 'Your Name'}
                   </h2>
                   <p className="text-[11px] font-bold text-charcoal/60 mt-0.5 font-mono">
-                    @{handle || 'creator'}
+                    @{handle ? handle.toLowerCase() : 'yourname'}
                   </p>
 
-                  {/* Work & Location with Indian Flag */}
+                  {/* Work & Location */}
                   <div className="inline-flex items-center gap-1.5 mt-1 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-white text-charcoal border border-black/10 shadow-2xs">
                     <IndianFlag className="w-3.5 h-2.5 rounded-xs" />
                     <Briefcase className="w-3 h-3 text-[#141518]" />
-                    <span>Founder & Architect • Tapping Technologies India</span>
+                    <span>Digital Creator &bull; Bio Space</span>
                   </div>
 
                   <div className="flex items-center gap-1 mt-1 text-[9px] font-semibold text-charcoal/50">
                     <MapPin className="w-3 h-3 text-rose-500" />
-                    <span>Bengaluru, Karnataka, India</span>
+                    <span>India &bull; Global</span>
                   </div>
 
                   {/* Bio */}
                   <p className="text-[10px] text-charcoal/70 mt-2 max-w-[250px] leading-relaxed font-medium">
-                    Founder & Product Architect. Designing smart contactless NFC hardware, digital cards & bio spaces in India.
+                    Welcome to my official bio link. Connect with my latest works, projects, and exclusive digital contact card.
                   </p>
 
                   {/* CTA: Save Contact Card */}
@@ -1070,6 +1119,16 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Google Authentication Modal for Claiming Handle & Sign-In */}
+      <GoogleAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        claimedUsername={handle.trim().toLowerCase()}
+        onAuthenticated={() => {
+          setIsSignedIn(true);
+        }}
+      />
     </div>
   );
 }

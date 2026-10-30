@@ -24,7 +24,7 @@ export const initialProfile: Profile = {
   bgImageBlur: 0,
   accentColor: '#FED5C3',
   isVerified: true,
-  isActivated: true,
+  isActivated: false,
   mobileNumber: '',
   socialLinks: {},
   createdAt: new Date().toISOString(),
@@ -134,9 +134,9 @@ export const initialAnalytics: AnalyticsSummary = {
 };
 
 export const initialSubscription: Subscription = {
-  tier: 'pro',
-  status: 'active',
-  expiresAt: '2027-10-25T00:00:00.000Z',
+  tier: 'free',
+  status: 'trialing',
+  expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
 };
 
 export const initialStore: StoreConfig = {

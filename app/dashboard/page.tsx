@@ -18,6 +18,8 @@ import {
   getProfileActivated,
   getStoredSubscription,
   saveStoredSubscription,
+  getStoredUsers,
+  saveStoredUsers,
 } from '@/lib/storage';
 import { 
   initialProfile, 
@@ -196,6 +198,19 @@ function DashboardContent() {
     saveStoredStore(newStore);
   };
 
+  const isPublished = profile.isActivated !== false && subscription.status === 'active';
+
+  const handlePublishClick = () => {
+    if (!profile.isActivated || subscription.status !== 'active') {
+      setUpgradeModalStep('plan');
+      setShowUpgradeModal(true);
+      showToast('Publish Profile', 'Select a plan to publish your profile live to the web', 'info');
+    } else {
+      saveStoredProfile(profile);
+      showToast('Live on Web!', `Your profile is live at /${profile.username}`, 'success');
+    }
+  };
+
   const handleActivatePlan = (plan: 'monthly' | 'yearly') => {
     setIsProcessingUpgrade(true);
     setTimeout(() => {
@@ -206,6 +221,31 @@ function DashboardContent() {
       };
       setSubscription(updatedSub);
       saveStoredSubscription(updatedSub);
+
+      const updatedProfile: Profile = {
+        ...profile,
+        isActivated: true,
+      };
+      setProfile(updatedProfile);
+      saveStoredProfile(updatedProfile);
+
+      // Also update in users list if present
+      const users = getStoredUsers();
+      const userIndex = users.findIndex(
+        (u) => u.id === profile.id || (profile.socialLinks?.email && u.email === profile.socialLinks.email) || u.username.toLowerCase() === profile.username.toLowerCase()
+      );
+      if (userIndex !== -1) {
+        users[userIndex] = {
+          ...users[userIndex],
+          isActivated: true,
+          status: 'active',
+          plan: plan === 'yearly' ? 'pro_yearly' : 'pro_monthly',
+          profile: updatedProfile,
+        };
+        saveStoredUsers(users);
+      }
+
+      window.dispatchEvent(new CustomEvent('tapping-profile-activated'));
 
       try {
         confetti({
@@ -221,8 +261,8 @@ function DashboardContent() {
       setIsProcessingUpgrade(false);
       setUpgradeModalStep('success');
       showToast(
-        'Account Activated!',
-        `TAPPING Pro (${plan === 'yearly' ? '\u20B92,999/yr' : '\u20B9299/mo'}) unlocked with permanent dynamic QR & custom themes`,
+        'Account Activated & Published!',
+        `TAPPING Pro (${plan === 'yearly' ? '\u20B92,999/yr' : '\u20B9299/mo'}) unlocked. Your profile @${profile.username} is now live!`,
         'success'
       );
     }, 1100);
@@ -591,6 +631,8 @@ function DashboardContent() {
             profile={profile}
             onToggleSidebar={handleToggleSidebar}
             onSelectTab={handleSelectTab}
+            onPublishClick={handlePublishClick}
+            isPublished={isPublished}
           />
 
           {/* User Data Modules Workspace (100% Full Width — Fits Screen) */}

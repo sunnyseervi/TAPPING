@@ -825,6 +825,36 @@ export function getUserByUsername(username: string): UserRecord | undefined {
   return users.find((u) => u.username.toLowerCase() === username.toLowerCase());
 }
 
+export function getUserByEmail(email: string): UserRecord | undefined {
+  if (!email) return undefined;
+  const users = getStoredUsers();
+  const cleanEmail = email.trim().toLowerCase();
+  return users.find((u) => u.email.toLowerCase() === cleanEmail);
+}
+
+export function isUsernameAvailable(username: string): { available: boolean; reason?: string } {
+  if (!username) return { available: false, reason: 'Enter a name' };
+  const clean = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  if (clean.length < 2) return { available: false, reason: 'Too short (min 2 chars)' };
+  if (clean.length > 30) return { available: false, reason: 'Too long (max 30 chars)' };
+
+  const reserved = [
+    'admin', 'administrator', 'root', 'api', 'dashboard', 'login', 'signup',
+    'signin', 'auth', 'settings', 'checkout', 'pay', 'vcard', 'help', 'terms',
+    'privacy', 'creator', 'official', 'support', 'null', 'undefined', 'tapping'
+  ];
+  if (reserved.includes(clean)) {
+    return { available: false, reason: 'Reserved handle' };
+  }
+
+  const existing = getUserByUsername(clean);
+  if (existing) {
+    return { available: false, reason: 'Already taken' };
+  }
+
+  return { available: true };
+}
+
 export function addStoredUser(newUser: Partial<UserRecord>): UserRecord {
   const users = getStoredUsers();
   const id = `usr_${Date.now()}`;
