@@ -819,14 +819,43 @@ export default function PublicProfilePage() {
         )}
       </main>
 
-      {/* Powered by Tapping Branding Footer */}
-      <footer className="w-full py-5 text-center mt-auto shrink-0">
+      {/* Create your personalized link in bio CTA Button & Footer */}
+      <footer className="w-full pt-8 pb-14 flex flex-col items-center justify-center gap-3.5 mt-auto shrink-0 z-20">
+        <a
+          href="/"
+          className={`group inline-flex items-center gap-2.5 px-6 py-3.5 rounded-full text-xs font-black shadow-card transition-all duration-200 active:scale-95 hover:scale-[1.02] cursor-pointer ${
+            contentIsDark 
+              ? 'bg-white text-[#141518] hover:bg-gray-100 ring-1 ring-white/20' 
+              : 'bg-[#141518] text-white hover:bg-black ring-1 ring-black/10'
+          }`}
+        >
+          <div className="w-5 h-5 rounded-full bg-[#FDF166] flex items-center justify-center shrink-0 shadow-2xs">
+            <Sparkles className="w-3 h-3 text-[#141518] stroke-[2.8]" />
+          </div>
+          <span>Create your personalized link in bio</span>
+          <ArrowUpRight className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 stroke-[2.5]" />
+        </a>
+
         <span className={`text-[11px] font-bold tracking-wider ${contentIsDark ? 'text-white/50' : 'text-charcoal/40'}`}>
           Powered by TAPPING &bull; Digital Cards &amp; Bio Space
         </span>
       </footer>
     </div>
   </div>
+
+      {/* Floating Bottom Pill for Quick Access */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto px-4 max-w-sm w-full flex justify-center">
+        <a
+          href="/"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#141518]/90 hover:bg-black text-white text-xs font-black shadow-float backdrop-blur-md border border-white/20 transition-all hover:scale-105 active:scale-95"
+        >
+          <div className="w-4 h-4 rounded-full bg-[#FDF166] flex items-center justify-center shrink-0">
+            <Sparkles className="w-2.5 h-2.5 text-[#141518] stroke-[3]" />
+          </div>
+          <span>Create your personalized link in bio</span>
+          <ArrowUpRight className="w-3 h-3 text-[#FDF166] stroke-[2.5]" />
+        </a>
+      </div>
 
       {/* DYNAMIC QR CODE DISPLAY MODAL */}
       {showQRModal && (

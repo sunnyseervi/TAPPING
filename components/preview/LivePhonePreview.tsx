@@ -16,7 +16,8 @@ import {
   ArrowUpRight,
   Wifi,
   CreditCard,
-  ShoppingBag
+  ShoppingBag,
+  Sparkles
 } from 'lucide-react';
 import { InstagramIcon, TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/ui/SocialIcons';
 import { downloadVCardFile } from '@/lib/vcard';
@@ -588,6 +589,30 @@ export default function LivePhonePreview({
                 </div>
               </div>
             )}
+
+            {/* Create your personalized link in bio CTA Button */}
+            <div className="w-full pt-5 pb-3 flex flex-col items-center justify-center gap-1.5 mt-auto shrink-0">
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black shadow-2xs transition-transform active:scale-95 cursor-pointer ${
+                  contentIsDark
+                    ? 'bg-white text-charcoal hover:bg-gray-100'
+                    : 'bg-[#141518] text-white hover:bg-black'
+                }`}
+              >
+                <div className="w-3.5 h-3.5 rounded-full bg-[#FDF166] flex items-center justify-center shrink-0">
+                  <Sparkles className="w-2 h-2 text-[#141518] stroke-[2.5]" />
+                </div>
+                <span>Create your personalized link in bio</span>
+                <ArrowUpRight className="w-2.5 h-2.5 opacity-60 group-hover:opacity-100 transition-opacity shrink-0" />
+              </a>
+
+              <span className={`text-[8px] font-bold tracking-wider ${contentIsDark ? 'text-white/40' : 'text-charcoal/40'}`}>
+                Powered by TAPPING &bull; Bio Space
+              </span>
+            </div>
           </div>
 
           {/* Bottom Home Indicator Bar */}
