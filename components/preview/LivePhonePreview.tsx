@@ -236,7 +236,7 @@ export default function LivePhonePreview({
               <div className="relative mt-2">
                 <div className="w-20 h-20 rounded-[24px] overflow-hidden ring-1.5 ring-white/80 border border-black/10 shadow-sm bg-white relative flex items-center justify-center">
                   <img
-                    src={profile.avatarUrl || 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80'}
+                    src={profile.avatarUrl || undefined}
                     alt={profile.displayName}
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=600&auto=format&fit=crop&q=80';
@@ -247,10 +247,6 @@ export default function LivePhonePreview({
                       transformOrigin: 'center center',
                     }}
                   />
-                </div>
-                {/* Official Indian Flag Badge on bottom-right corner of Avatar */}
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-black/10 shadow-sm flex items-center justify-center overflow-hidden">
-                  <IndianFlag className="w-4 h-2.8 rounded-xs" />
                 </div>
               </div>
 

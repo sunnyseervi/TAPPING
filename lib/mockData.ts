@@ -43,7 +43,7 @@ export const initialVCard: VCardProfile = {
   website: '',
   streetAddress: '',
   city: '',
-  country: 'India',
+  country: '',
   note: '',
 };
 
@@ -115,7 +115,7 @@ export const initialNFCCard: NFCCardDesign = {
     city: '',
     state: '',
     zip: '',
-    country: 'India',
+    country: '',
   },
 };
 

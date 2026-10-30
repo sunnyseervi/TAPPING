@@ -383,7 +383,7 @@ export default function LandingPage() {
                 {/* SCROLLABLE INNER PHONE SCREEN SHOWING REAL GENERATED CONTENT */}
                 <div className="w-full bg-[#FAF7F2] rounded-b-[40px] overflow-y-auto max-h-[580px] no-scrollbar px-4 pt-1 pb-6 flex flex-col items-center text-center">
                   
-                  {/* Squircle Avatar with Authentic Indian Flag Picture & Flag Badge */}
+                  {/* Squircle Avatar */}
                   <div className="relative mt-2">
                     <div className="w-20 h-20 rounded-[24px] overflow-hidden ring-2 ring-white/90 border border-black/10 shadow-sm bg-[#FAF7F2] flex items-center justify-center relative">
                       <img
@@ -395,10 +395,6 @@ export default function LandingPage() {
                         }}
                       />
                     </div>
-                    {/* Official Indian Flag Badge on Avatar */}
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-black/10 shadow-sm flex items-center justify-center overflow-hidden">
-                      <IndianFlag className="w-4 h-2.8 rounded-xs" />
-                    </div>
                   </div>
 
                   {/* Name & Handle */}
@@ -409,16 +405,10 @@ export default function LandingPage() {
                     @{handle ? handle.toLowerCase() : 'yourname'}
                   </p>
 
-                  {/* Work & Location */}
+                  {/* Work Badge */}
                   <div className="inline-flex items-center gap-1.5 mt-1 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-white text-charcoal border border-black/10 shadow-2xs">
-                    <IndianFlag className="w-3.5 h-2.5 rounded-xs" />
                     <Briefcase className="w-3 h-3 text-[#141518]" />
                     <span>Digital Creator &bull; Bio Space</span>
-                  </div>
-
-                  <div className="flex items-center gap-1 mt-1 text-[9px] font-semibold text-charcoal/50">
-                    <MapPin className="w-3 h-3 text-rose-500" />
-                    <span>India &bull; Global</span>
                   </div>
 
                   {/* Bio */}
@@ -507,8 +497,7 @@ export default function LandingPage() {
                   </div>
 
                   <p className="text-[9px] font-black uppercase tracking-widest text-charcoal/50 mt-4 flex items-center justify-center gap-1.5">
-                    <IndianFlag className="w-3.5 h-2.5 rounded-xs" />
-                    <span>Tapping • Made for India</span>
+                    <span>Tapping • Digital Bio Space</span>
                   </p>
                 </div>
               </div>
